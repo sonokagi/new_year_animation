@@ -20,8 +20,10 @@ const CONFIG = {
     },
     LAYOUT: {
         SCREEN_OCCUPANCY: 0.95,     // Use up to 95% of screen dimensions
-        WHEEL_RADIUS_RATIO: 0.82,
-        ARC_RADIUS_RATIO: 0.62,
+        WHEEL_RADIUS_RATIO_X: 0.82 * 1.25,
+        WHEEL_RADIUS_RATIO_Y: 0.82 * 0.9,
+        ARC_RADIUS_RATIO_X: 0.68 * 1.25,
+        ARC_RADIUS_RATIO_Y: 0.68 * 0.9,
         WHEEL_X_RATIO: 1.2,
         MARGIN: 0.02,
         NEEDLE_LENGTH_RATIO: 0.55   // 手動調整用：1:8の隙間になるよう調整した値
@@ -142,10 +144,11 @@ function drawZodiacWheel() {
             if (abs(angle - CONFIG.ANGLES.HIGHLIGHT) < CONFIG.ANGLES.SPACING / 2) highlighted = true;
         }
 
+        let rx = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_X;
+        let ry = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_Y;
+
         push();
-        rotate(angle);
-        translate(wheelRadius, 0);
-        rotate(-angle);
+        translate(rx * cos(angle), ry * sin(angle));
 
         noStroke();
         let boxSize = highlighted ? viewport.toSize(0.60) : viewport.toSize(0.30);
@@ -173,21 +176,22 @@ function drawZodiacWheel() {
 function drawDecoration() {
     let wheelX = viewport.toX(CONFIG.LAYOUT.WHEEL_X_RATIO);
     let wheelY = viewport.toY(0);
-    let arcRadius = viewport.frameH * CONFIG.LAYOUT.ARC_RADIUS_RATIO;
+    let arcRadiusX = viewport.frameH * CONFIG.LAYOUT.ARC_RADIUS_RATIO_X;
+    let arcRadiusY = viewport.frameH * CONFIG.LAYOUT.ARC_RADIUS_RATIO_Y;
     let lMargin = CONFIG.LAYOUT.MARGIN * 2;
 
     // Red Arc
     noFill();
     stroke(CONFIG.COLORS.ACCENT);
     strokeWeight(3);
-    arc(wheelX, wheelY, arcRadius * 2, arcRadius * 2, CONFIG.ANGLES.ARC_START, CONFIG.ANGLES.ARC_END);
+    arc(wheelX, wheelY, arcRadiusX * 2, arcRadiusY * 2, CONFIG.ANGLES.ARC_START, CONFIG.ANGLES.ARC_END);
 
     // Red Dots on Arc
     fill(CONFIG.COLORS.ACCENT);
     noStroke();
     for (let i = 0; i < CONFIG.ANGLES.DOT_COUNT; i++) {
         let a = CONFIG.ANGLES.DOT_START + i * CONFIG.ANGLES.DOT_SPACING;
-        circle(wheelX + cos(a) * arcRadius, wheelY + sin(a) * arcRadius, viewport.toSize(0.06));
+        circle(wheelX + cos(a) * arcRadiusX, wheelY + sin(a) * arcRadiusY, viewport.toSize(0.06));
     }
 
     // Red Needle
@@ -196,9 +200,10 @@ function drawDecoration() {
     let needleStartX = viewport.toX(1.0 - lMargin);
 
     // Target: Center of the highlighted zodiac box
-    let wheelRadius = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO;
-    let targetX = wheelX + cos(CONFIG.ANGLES.HIGHLIGHT) * wheelRadius;
-    let targetY = wheelY + sin(CONFIG.ANGLES.HIGHLIGHT) * wheelRadius;
+    let wheelRadiusX = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_X;
+    let wheelRadiusY = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_Y;
+    let targetX = wheelX + cos(CONFIG.ANGLES.HIGHLIGHT) * wheelRadiusX;
+    let targetY = wheelY + sin(CONFIG.ANGLES.HIGHLIGHT) * wheelRadiusY;
 
     // Vector from Start to Target
     let dx = targetX - needleStartX;
@@ -220,11 +225,12 @@ function drawOuterFrame() {
 function getTileEdges(angle, size) {
     let wheelX = viewport.toX(CONFIG.LAYOUT.WHEEL_X_RATIO);
     let wheelY = viewport.toY(0);
-    let wheelRadius = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO;
+    let wheelRadiusX = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_X;
+    let wheelRadiusY = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_Y;
 
     return {
-        bottom: wheelY + sin(angle) * wheelRadius + size / 2,
-        left: wheelX + cos(angle) * wheelRadius - size / 2
+        bottom: wheelY + sin(angle) * wheelRadiusY + size / 2,
+        left: wheelX + cos(angle) * wheelRadiusX - size / 2
     };
 }
 
