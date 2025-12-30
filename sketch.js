@@ -13,14 +13,18 @@ const CONFIG = {
         HIGHLIGHT: 137.5,
         ABOVE: 150.0,
         ARC_START: 110,
-        ARC_END: 250
+        ARC_END: 250,
+        DOT_START: 120,
+        DOT_SPACING: 35,
+        DOT_COUNT: 4
     },
     LAYOUT: {
         SCREEN_OCCUPANCY: 0.95,     // Use up to 95% of screen dimensions
-        WHEEL_RADIUS_RATIO: 0.7,
+        WHEEL_RADIUS_RATIO: 0.82,
+        ARC_RADIUS_RATIO: 0.62,
         WHEEL_X_RATIO: 1.2,
         MARGIN: 0.02,
-        NEEDLE_LENGTH_RATIO: 0.8
+        NEEDLE_LENGTH_RATIO: 0.55   // 手動調整用：1:8の隙間になるよう調整した値
     },
     ANIMATION: {
         LERP_SPEED: 0.1,
@@ -105,10 +109,10 @@ function draw() {
 
     background(CONFIG.COLORS.BG);
 
-    drawZodiacWheel();
     drawDecoration();
     drawOuterFrame();
     drawTextContent();
+    drawZodiacWheel();
 }
 
 function mousePressed() {
@@ -169,29 +173,40 @@ function drawZodiacWheel() {
 function drawDecoration() {
     let wheelX = viewport.toX(CONFIG.LAYOUT.WHEEL_X_RATIO);
     let wheelY = viewport.toY(0);
-    let wheelRadius = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO;
+    let arcRadius = viewport.frameH * CONFIG.LAYOUT.ARC_RADIUS_RATIO;
     let lMargin = CONFIG.LAYOUT.MARGIN * 2;
 
     // Red Arc
     noFill();
     stroke(CONFIG.COLORS.ACCENT);
     strokeWeight(3);
-    arc(wheelX, wheelY, wheelRadius * 2, wheelRadius * 2, CONFIG.ANGLES.ARC_START, CONFIG.ANGLES.ARC_END);
+    arc(wheelX, wheelY, arcRadius * 2, arcRadius * 2, CONFIG.ANGLES.ARC_START, CONFIG.ANGLES.ARC_END);
 
     // Red Dots on Arc
     fill(CONFIG.COLORS.ACCENT);
     noStroke();
-    for (let a = CONFIG.ANGLES.ARC_START; a <= CONFIG.ANGLES.ARC_END; a += 35) {
-        circle(wheelX + cos(a) * wheelRadius, wheelY + sin(a) * wheelRadius, viewport.toSize(0.06));
+    for (let i = 0; i < CONFIG.ANGLES.DOT_COUNT; i++) {
+        let a = CONFIG.ANGLES.DOT_START + i * CONFIG.ANGLES.DOT_SPACING;
+        circle(wheelX + cos(a) * arcRadius, wheelY + sin(a) * arcRadius, viewport.toSize(0.06));
     }
 
     // Red Needle
     stroke(CONFIG.COLORS.NEEDLE);
     strokeWeight(15);
     let needleStartX = viewport.toX(1.0 - lMargin);
-    line(needleStartX, wheelY,
-        wheelX + cos(CONFIG.ANGLES.HIGHLIGHT) * wheelRadius * CONFIG.LAYOUT.NEEDLE_LENGTH_RATIO,
-        wheelY + sin(CONFIG.ANGLES.HIGHLIGHT) * wheelRadius * CONFIG.LAYOUT.NEEDLE_LENGTH_RATIO);
+
+    // Target: Center of the highlighted zodiac box
+    let wheelRadius = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO;
+    let targetX = wheelX + cos(CONFIG.ANGLES.HIGHLIGHT) * wheelRadius;
+    let targetY = wheelY + sin(CONFIG.ANGLES.HIGHLIGHT) * wheelRadius;
+
+    // Vector from Start to Target
+    let dx = targetX - needleStartX;
+    let dy = targetY - wheelY;
+
+    // Draw needle using a fixed ratio for easy manual adjustment
+    let ratio = CONFIG.LAYOUT.NEEDLE_LENGTH_RATIO;
+    line(needleStartX, wheelY, needleStartX + dx * ratio, wheelY + dy * ratio);
 }
 
 function drawOuterFrame() {
