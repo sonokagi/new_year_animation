@@ -51,6 +51,61 @@ class Viewport {
     get height() { return this._height; }
 }
 
+class Layout {
+    constructor(vp) {
+        this.vp = vp;
+        this._update();
+    }
+
+    _update() {
+        // 1. Wheel Geometry
+        this.wheelCenter = {
+            x: this.vp.x(CONFIG.WHEEL.CENTER_X_RATIO),
+            y: this.vp.y(0)
+        };
+        this.wheelRadius = {
+            x: this.vp.height * CONFIG.WHEEL.RADIUS_RATIO_X,
+            y: this.vp.height * CONFIG.WHEEL.RADIUS_RATIO_Y
+        };
+
+        // 2. Decoration Geometry
+        this.arcRadius = {
+            x: this.vp.height * CONFIG.DECORATION.ARC_RADIUS_RATIO_X,
+            y: this.vp.height * CONFIG.DECORATION.ARC_RADIUS_RATIO_Y
+        };
+
+        // 3. Spacing & Margins
+        this.margin = this.vp.scale(CONFIG.SCREEN.MARGIN);
+    }
+
+    // Semantic helper for needle start position
+    get needleStart() {
+        return {
+            x: this.vp.x(1.0 - CONFIG.SCREEN.MARGIN * 2),
+            y: this.wheelCenter.y
+        };
+    }
+
+    // POSITION HELPERS
+
+    // Absolute position for a specific angle on the wheel
+    getWheelPosition(angle) {
+        return {
+            x: this.wheelCenter.x + cos(angle) * this.wheelRadius.x,
+            y: this.wheelCenter.y + sin(angle) * this.wheelRadius.y
+        };
+    }
+
+    // Label positioning (adapted from getTileEdges)
+    getLabelEdges(angle, size) {
+        const pos = this.getWheelPosition(angle);
+        return {
+            bottom: pos.y + size / 2,
+            left: pos.x - size / 2
+        };
+    }
+}
+
 let zodiacs = [
     "子", "丑", "寅", "卯", "辰", "巳",
     "午", "未", "申", "酉", "戌", "亥"
@@ -67,6 +122,7 @@ let activeIndex = getZodiacIndex(currentYear);
 
 // Layout State
 let viewport;
+let layout;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -99,6 +155,7 @@ function updateLayout() {
     let frameSize = min(constrainedWidth, constrainedHeight);
 
     viewport = new Viewport(centerX, centerY, frameSize, frameSize);
+    layout = new Layout(viewport);
 }
 
 /**
@@ -136,15 +193,10 @@ function mousePressed() {
 }
 
 function drawZodiacWheel() {
-    let wheelX = viewport.x(CONFIG.WHEEL.CENTER_X_RATIO);
-    let wheelY = viewport.y(0);
-
     push();
-    translate(wheelX, wheelY);
+    translate(layout.wheelCenter.x, layout.wheelCenter.y);
 
     let startAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE - (CONFIG.WHEEL.ACTIVE_SLOT * CONFIG.WHEEL.SPACING_ANGLE);
-
-    // Calculate highlight range based on spacing (can be adjusted for "sharpness" of transition)
     let highlightRange = CONFIG.WHEEL.SPACING_ANGLE;
 
     for (let i = 12; i >= 0; i--) {
@@ -154,17 +206,11 @@ function drawZodiacWheel() {
         // Calculate distance to HIGHLIGHT center
         let angleDist = abs(angle - CONFIG.WHEEL.HIGHLIGHT_ANGLE);
 
-        // Calculate highlight factor (1.0 at center, 0.0 at highlightRange distance)
+        // Calculate highlight factor
         let hFactor = map(angleDist, 0, highlightRange, 1.0, 0.0, true);
 
-        // Use an easing function for a smoother feel (optional, but nice)
-        // hFactor = sin(hFactor * 90); // Simple sine ease
-
-        let rx = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_X;
-        let ry = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_Y;
-
         push();
-        translate(rx * cos(angle), ry * sin(angle));
+        translate(layout.wheelRadius.x * cos(angle), layout.wheelRadius.y * sin(angle));
 
         noStroke();
 
@@ -173,7 +219,6 @@ function drawZodiacWheel() {
         let textSizeVal = lerp(viewport.scale(0.24), viewport.scale(0.48), hFactor);
 
         // Interpolate color (Gray to Black)
-        // TEXT_SUB is gray (120), TEXT_MAIN is black (0)
         let textColor = lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor);
 
         fill(textColor);
@@ -192,44 +237,33 @@ function drawZodiacWheel() {
 }
 
 function drawDecoration() {
-    let wheelX = viewport.x(CONFIG.WHEEL.CENTER_X_RATIO);
-    let wheelY = viewport.y(0);
-    let arcRadiusX = viewport.height * CONFIG.DECORATION.ARC_RADIUS_RATIO_X;
-    let arcRadiusY = viewport.height * CONFIG.DECORATION.ARC_RADIUS_RATIO_Y;
-    let lMargin = CONFIG.SCREEN.MARGIN * 2;
-
     // Red Arc
     noFill();
     stroke(CONFIG.COLORS.ACCENT);
     strokeWeight(3);
-    arc(wheelX, wheelY, arcRadiusX * 2, arcRadiusY * 2, CONFIG.DECORATION.ARC_START_ANGLE, CONFIG.DECORATION.ARC_END_ANGLE);
+    arc(layout.wheelCenter.x, layout.wheelCenter.y, layout.arcRadius.x * 2, layout.arcRadius.y * 2, CONFIG.DECORATION.ARC_START_ANGLE, CONFIG.DECORATION.ARC_END_ANGLE);
 
     // Red Dots on Arc
     fill(CONFIG.COLORS.ACCENT);
     noStroke();
     for (let i = 0; i < CONFIG.DECORATION.DOT_COUNT; i++) {
         let a = CONFIG.DECORATION.DOT_START_ANGLE + i * CONFIG.DECORATION.DOT_SPACING_ANGLE;
-        circle(wheelX + cos(a) * arcRadiusX, wheelY + sin(a) * arcRadiusY, viewport.scale(0.06));
+        circle(layout.wheelCenter.x + cos(a) * layout.arcRadius.x, layout.wheelCenter.y + sin(a) * layout.arcRadius.y, viewport.scale(0.06));
     }
 
     // Red Needle
     stroke(CONFIG.COLORS.NEEDLE);
     strokeWeight(15);
-    let needleStartX = viewport.x(1.0 - lMargin);
-
-    // Target: Center of the highlighted zodiac box
-    let wheelRadiusX = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_X;
-    let wheelRadiusY = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_Y;
-    let targetX = wheelX + cos(CONFIG.WHEEL.HIGHLIGHT_ANGLE) * wheelRadiusX;
-    let targetY = wheelY + sin(CONFIG.WHEEL.HIGHLIGHT_ANGLE) * wheelRadiusY;
+    let start = layout.needleStart;
+    let target = layout.getWheelPosition(CONFIG.WHEEL.HIGHLIGHT_ANGLE);
 
     // Vector from Start to Target
-    let dx = targetX - needleStartX;
-    let dy = targetY - wheelY;
+    let dx = target.x - start.x;
+    let dy = target.y - start.y;
 
     // Draw needle using a fixed ratio for easy manual adjustment
     let ratio = CONFIG.DECORATION.NEEDLE_LENGTH_RATIO;
-    line(needleStartX, wheelY, needleStartX + dx * ratio, wheelY + dy * ratio);
+    line(start.x, start.y, start.x + dx * ratio, start.y + dy * ratio);
 }
 
 function drawOuterFrame() {
@@ -250,23 +284,8 @@ function getZodiacIndex(year) {
     return ((year - 4) % 12 + 12) % 12;
 }
 
-// Coordinate Calculation helper
-function getTileEdges(angle, size) {
-    let wheelX = viewport.x(CONFIG.WHEEL.CENTER_X_RATIO);
-    let wheelY = viewport.y(0);
-    let wheelRadiusX = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_X;
-    let wheelRadiusY = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_Y;
-
-    return {
-        bottom: wheelY + sin(angle) * wheelRadiusY + size / 2,
-        left: wheelX + cos(angle) * wheelRadiusX - size / 2
-    };
-}
 
 function drawTextContent() {
-    let lMargin = CONFIG.SCREEN.MARGIN * 2;
-    let frameMarginPxl = viewport.scale(lMargin);
-
     // 1. HAPPY NEW YEAR!
     textAlign(RIGHT, CENTER);
     fill(CONFIG.COLORS.TEXT_MAIN);
@@ -274,7 +293,7 @@ function drawTextContent() {
     textSize(viewport.scale(0.24));
     textStyle(BOLDITALIC);
 
-    let headerX = viewport.x(1.0 - lMargin);
+    let headerX = viewport.x(1.0 - CONFIG.SCREEN.MARGIN * 2);
     text("HAPPY", headerX, viewport.y(-0.2));
     text("NEW YEAR!", headerX, viewport.y(0));
 
@@ -282,25 +301,24 @@ function drawTextContent() {
     textAlign(RIGHT, BOTTOM);
     textStyle(NORMAL);
 
-    let posCurr = getTileEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE, viewport.scale(0.60));
-    let posPrev = getTileEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE + CONFIG.WHEEL.SPACING_ANGLE, viewport.scale(0.30));
+    let posCurr = layout.getLabelEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE, viewport.scale(0.60));
+    let posPrev = layout.getLabelEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE + CONFIG.WHEEL.SPACING_ANGLE, viewport.scale(0.30));
 
     // Previous Year (Gray)
     fill(CONFIG.COLORS.TEXT_SUB);
     textSize(viewport.scale(0.1));
-    text((displayYear - 1) + ":", posPrev.left - frameMarginPxl, posPrev.bottom);
+    text((displayYear - 1) + ":", posCurr.left - layout.margin, posPrev.bottom);
 
     // Current Year (Black)
-    // Use displayYear logic for the main label
     fill(CONFIG.COLORS.TEXT_MAIN);
     textSize(viewport.scale(0.2));
-    text(displayYear + ":", posCurr.left - frameMarginPxl, posCurr.bottom);
+    text(displayYear + ":", posCurr.left - layout.margin, posCurr.bottom);
 
     // 3. Footer
     textAlign(LEFT, BOTTOM);
     textSize(viewport.scale(0.07));
     fill(50);
-    text("今年もよろしくお願いします。", viewport.x(-1.0 + lMargin), viewport.y(1.0 - lMargin));
+    text("今年もよろしくお願いします。", viewport.x(-1.0 + CONFIG.SCREEN.MARGIN * 2), viewport.y(1.0 - CONFIG.SCREEN.MARGIN * 2));
 }
 
 
