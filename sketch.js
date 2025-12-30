@@ -59,6 +59,7 @@ let currentYear = new Date().getFullYear();
 let scrollOffset = 0;
 let targetScroll = 0;
 let isAnimating = false;
+let displayYear = currentYear - 1; // Initialize to previous year for transition effect
 let activeIndex = getZodiacIndex(currentYear);
 
 // Layout State
@@ -103,6 +104,8 @@ function updateAnimation() {
         scrollOffset = 0;
         targetScroll = 0;
         isAnimating = false;
+        // Update displayYear only when animation finishes
+        displayYear = currentYear;
     }
 }
 
@@ -278,12 +281,13 @@ function drawTextContent() {
     // Previous Year (Gray)
     fill(CONFIG.COLORS.TEXT_SUB);
     textSize(viewport.toSize(0.1));
-    text((currentYear - 1) + ":", posPrev.left - frameMarginPxl, posPrev.bottom);
+    text((displayYear - 1) + ":", posPrev.left - frameMarginPxl, posPrev.bottom);
 
     // Current Year (Black)
+    // Use displayYear logic for the main label
     fill(CONFIG.COLORS.TEXT_MAIN);
     textSize(viewport.toSize(0.2));
-    text(currentYear + ":", posCurr.left - frameMarginPxl, posCurr.bottom);
+    text(displayYear + ":", posCurr.left - frameMarginPxl, posCurr.bottom);
 
     // 3. Footer
     textAlign(LEFT, BOTTOM);
