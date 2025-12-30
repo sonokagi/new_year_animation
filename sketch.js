@@ -53,7 +53,7 @@ let zodiacs = [
     "午", "未", "申", "酉", "戌", "亥"
 ];
 
-let currentYear = 2025;
+let currentYear = new Date().getFullYear();
 
 // Animation Variables
 let scrollOffset = 0;
