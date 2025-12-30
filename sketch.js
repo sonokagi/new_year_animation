@@ -70,6 +70,9 @@ function setup() {
     textAlign(CENTER, CENTER);
     rectMode(CENTER);
     angleMode(DEGREES);
+
+    // Trigger initial animation
+    triggerZodiacAnimation();
 }
 
 function windowResized() {
@@ -99,7 +102,6 @@ function updateAnimation() {
     if (isAnimating && abs(scrollOffset - targetScroll) < CONFIG.ANIMATION.THRESHOLD) {
         scrollOffset = 0;
         targetScroll = 0;
-        activeIndex = getZodiacIndex(currentYear);
         isAnimating = false;
     }
 }
@@ -119,8 +121,8 @@ function draw() {
 function mousePressed() {
     if (isAnimating) return;
     currentYear++;
-    targetScroll = CONFIG.ANGLES.SPACING;
-    isAnimating = true;
+    activeIndex = getZodiacIndex(currentYear);
+    triggerZodiacAnimation();
 }
 
 function drawZodiacWheel() {
@@ -220,6 +222,12 @@ function drawOuterFrame() {
 }
 
 // Calculation helpers
+function triggerZodiacAnimation() {
+    scrollOffset = -CONFIG.ANGLES.SPACING;
+    targetScroll = 0;
+    isAnimating = true;
+}
+
 function getZodiacIndex(year) {
     return ((year - 4) % 12 + 12) % 12;
 }
