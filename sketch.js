@@ -11,7 +11,6 @@ const CONFIG = {
         SPACING: 12.5,
         ACTIVE_SLOT: 4,
         HIGHLIGHT: 137.5,
-        ABOVE: 150.0,
         ARC_START: 110,
         ARC_END: 250,
         DOT_START: 120,
@@ -254,7 +253,7 @@ function drawTextContent() {
     textStyle(NORMAL);
 
     let posCurr = getTileEdges(CONFIG.ANGLES.HIGHLIGHT, viewport.toSize(0.60));
-    let posPrev = getTileEdges(CONFIG.ANGLES.ABOVE, viewport.toSize(0.30));
+    let posPrev = getTileEdges(CONFIG.ANGLES.HIGHLIGHT + CONFIG.ANGLES.SPACING, viewport.toSize(0.30));
 
     // Previous Year (Gray)
     fill(CONFIG.COLORS.TEXT_SUB);
