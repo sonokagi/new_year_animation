@@ -54,12 +54,12 @@ let zodiacs = [
 ];
 
 let currentYear = 2025;
-let activeIndex = 5;
 
 // Animation Variables
 let scrollOffset = 0;
 let targetScroll = 0;
 let isAnimating = false;
+let activeIndex = getZodiacIndex(currentYear);
 
 // Layout State
 let viewport;
@@ -99,7 +99,7 @@ function updateAnimation() {
     if (isAnimating && abs(scrollOffset - targetScroll) < CONFIG.ANIMATION.THRESHOLD) {
         scrollOffset = 0;
         targetScroll = 0;
-        activeIndex = (activeIndex + 1) % 12;
+        activeIndex = getZodiacIndex(currentYear);
         isAnimating = false;
     }
 }
@@ -217,6 +217,11 @@ function drawOuterFrame() {
     stroke(0);
     strokeWeight(2);
     rect(viewport.toX(0), viewport.toY(0), viewport.frameW, viewport.frameH);
+}
+
+// Calculation helpers
+function getZodiacIndex(year) {
+    return ((year - 4) % 12 + 12) % 12;
 }
 
 // Coordinate Calculation helper
