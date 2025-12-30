@@ -18,7 +18,8 @@ const CONFIG = {
         DOT_COUNT: 4              // 装飾ドットの個数
     },
     LAYOUT: {
-        SCREEN_OCCUPANCY: 0.95,     // 画面占有率（95%）
+        SCREEN_OCCUPANCY_W: 0.95,   // 横方向の画面占有率
+        SCREEN_OCCUPANCY_H: 0.70,   // 縦方向の画面占有率
         WHEEL_RADIUS_RATIO_X: 0.82 * 1.25, // 干支ホイールの横半径比率
         WHEEL_RADIUS_RATIO_Y: 0.82 * 0.9,  // 干支ホイールの縦半径比率
         ARC_RADIUS_RATIO_X: 0.68 * 1.25,   // 赤い円弧の横半径比率
@@ -89,7 +90,11 @@ function updateLayout() {
 
     // Fixed 1:1 Aspect Ratio (Square)
     // Always fit within the smaller dimension of the screen
-    let frameSize = min(width, height) * CONFIG.LAYOUT.SCREEN_OCCUPANCY;
+    // Fixed 1:1 Aspect Ratio (Square)
+    // Always fit within the smaller dimension of the screen, considering separate occupancy rules
+    let constrainedWidth = width * CONFIG.LAYOUT.SCREEN_OCCUPANCY_W;
+    let constrainedHeight = height * CONFIG.LAYOUT.SCREEN_OCCUPANCY_H;
+    let frameSize = min(constrainedWidth, constrainedHeight);
 
     viewport = new Viewport(centerX, centerY, frameSize, frameSize);
 }
