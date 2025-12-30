@@ -126,7 +126,6 @@ function mousePressed() {
 function drawZodiacWheel() {
     let wheelX = viewport.toX(CONFIG.LAYOUT.WHEEL_X_RATIO);
     let wheelY = viewport.toY(0);
-    let wheelRadius = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO;
 
     push();
     translate(wheelX, wheelY);
