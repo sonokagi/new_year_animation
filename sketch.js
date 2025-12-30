@@ -7,26 +7,28 @@ const CONFIG = {
         ACCENT: [255, 0, 0],      // アクセント色（赤）
         NEEDLE: [255, 0, 0]       // 針の色
     },
-    ANGLES: {
-        SPACING: 12.5,            // 干支どうしの間隔（度数）
-        ACTIVE_SLOT: 4,           // アクティブな干支が配置の何番目に来るか
-        HIGHLIGHT: 137.5,         // アクティブな干支を表示する基準角度
-        ARC_START: 110,           // 赤い円弧の開始角度
-        ARC_END: 250,             // 赤い円弧の終了角度
-        DOT_START: 120,           // 装飾ドットの開始角度
-        DOT_SPACING: 35,          // 装飾ドットの間隔
-        DOT_COUNT: 4              // 装飾ドットの個数
+    SCREEN: {
+        OCCUPANCY_W: 0.95,        // 横方向の画面占有率
+        OCCUPANCY_H: 0.70,        // 縦方向の画面占有率
+        MARGIN: 0.02              // 基本マージン（2%）
     },
-    LAYOUT: {
-        SCREEN_OCCUPANCY_W: 0.95,   // 横方向の画面占有率
-        SCREEN_OCCUPANCY_H: 0.70,   // 縦方向の画面占有率
-        WHEEL_RADIUS_RATIO_X: 0.82 * 1.25, // 干支ホイールの横半径比率
-        WHEEL_RADIUS_RATIO_Y: 0.82 * 0.9,  // 干支ホイールの縦半径比率
-        ARC_RADIUS_RATIO_X: 0.68 * 1.25,   // 赤い円弧の横半径比率
-        ARC_RADIUS_RATIO_Y: 0.68 * 0.9,    // 赤い円弧の縦半径比率
-        WHEEL_X_RATIO: 1.2,                // ホイールの中心X座標のオフセット比率
-        MARGIN: 0.02,                      // 基本マージン（2%）
-        NEEDLE_LENGTH_RATIO: 0.55          // 針の長さ比率（1:8の隙間用）
+    WHEEL: {
+        SPACING_ANGLE: 12.5,      // 干支どうしの間隔（度数）
+        ACTIVE_SLOT: 4,           // アクティブな干支が配置の何番目に来るか
+        HIGHLIGHT_ANGLE: 137.5,   // アクティブな干支を表示する基準角度
+        CENTER_X_RATIO: 1.2,      // ホイールの中心X座標のオフセット比率
+        RADIUS_RATIO_X: 0.82 * 1.25, // 干支ホイールの横半径比率
+        RADIUS_RATIO_Y: 0.82 * 0.9   // 干支ホイールの縦半径比率
+    },
+    DECORATION: {
+        ARC_START_ANGLE: 110,     // 赤い円弧の開始角度
+        ARC_END_ANGLE: 250,       // 赤い円弧の終了角度
+        ARC_RADIUS_RATIO_X: 0.68 * 1.25, // 赤い円弧の横半径比率
+        ARC_RADIUS_RATIO_Y: 0.68 * 0.9,  // 赤い円弧の縦半径比率
+        DOT_START_ANGLE: 120,     // 装飾ドットの開始角度
+        DOT_SPACING_ANGLE: 35,    // 装飾ドットの間隔
+        DOT_COUNT: 4,             // 装飾ドットの個数
+        NEEDLE_LENGTH_RATIO: 0.55 // 針の長さ比率（1:8の隙間用）
     },
     ANIMATION: {
         LERP_SPEED: 0.1,          // アニメーションの滑らかさ
@@ -92,8 +94,8 @@ function updateLayout() {
     // Always fit within the smaller dimension of the screen
     // Fixed 1:1 Aspect Ratio (Square)
     // Always fit within the smaller dimension of the screen, considering separate occupancy rules
-    let constrainedWidth = width * CONFIG.LAYOUT.SCREEN_OCCUPANCY_W;
-    let constrainedHeight = height * CONFIG.LAYOUT.SCREEN_OCCUPANCY_H;
+    let constrainedWidth = width * CONFIG.SCREEN.OCCUPANCY_W;
+    let constrainedHeight = height * CONFIG.SCREEN.OCCUPANCY_H;
     let frameSize = min(constrainedWidth, constrainedHeight);
 
     viewport = new Viewport(centerX, centerY, frameSize, frameSize);
@@ -134,23 +136,23 @@ function mousePressed() {
 }
 
 function drawZodiacWheel() {
-    let wheelX = viewport.x(CONFIG.LAYOUT.WHEEL_X_RATIO);
+    let wheelX = viewport.x(CONFIG.WHEEL.CENTER_X_RATIO);
     let wheelY = viewport.y(0);
 
     push();
     translate(wheelX, wheelY);
 
-    let startAngle = CONFIG.ANGLES.HIGHLIGHT - (CONFIG.ANGLES.ACTIVE_SLOT * CONFIG.ANGLES.SPACING);
+    let startAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE - (CONFIG.WHEEL.ACTIVE_SLOT * CONFIG.WHEEL.SPACING_ANGLE);
 
     // Calculate highlight range based on spacing (can be adjusted for "sharpness" of transition)
-    let highlightRange = CONFIG.ANGLES.SPACING;
+    let highlightRange = CONFIG.WHEEL.SPACING_ANGLE;
 
     for (let i = 12; i >= 0; i--) {
-        let angle = startAngle + i * CONFIG.ANGLES.SPACING + scrollOffset;
-        let zodiacIdx = (activeIndex - (i - CONFIG.ANGLES.ACTIVE_SLOT) + 12) % 12;
+        let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + scrollOffset;
+        let zodiacIdx = (activeIndex - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
         // Calculate distance to HIGHLIGHT center
-        let angleDist = abs(angle - CONFIG.ANGLES.HIGHLIGHT);
+        let angleDist = abs(angle - CONFIG.WHEEL.HIGHLIGHT_ANGLE);
 
         // Calculate highlight factor (1.0 at center, 0.0 at highlightRange distance)
         let hFactor = map(angleDist, 0, highlightRange, 1.0, 0.0, true);
@@ -158,8 +160,8 @@ function drawZodiacWheel() {
         // Use an easing function for a smoother feel (optional, but nice)
         // hFactor = sin(hFactor * 90); // Simple sine ease
 
-        let rx = viewport.height * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_X;
-        let ry = viewport.height * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_Y;
+        let rx = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_X;
+        let ry = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_Y;
 
         push();
         translate(rx * cos(angle), ry * sin(angle));
@@ -190,23 +192,23 @@ function drawZodiacWheel() {
 }
 
 function drawDecoration() {
-    let wheelX = viewport.x(CONFIG.LAYOUT.WHEEL_X_RATIO);
+    let wheelX = viewport.x(CONFIG.WHEEL.CENTER_X_RATIO);
     let wheelY = viewport.y(0);
-    let arcRadiusX = viewport.height * CONFIG.LAYOUT.ARC_RADIUS_RATIO_X;
-    let arcRadiusY = viewport.height * CONFIG.LAYOUT.ARC_RADIUS_RATIO_Y;
-    let lMargin = CONFIG.LAYOUT.MARGIN * 2;
+    let arcRadiusX = viewport.height * CONFIG.DECORATION.ARC_RADIUS_RATIO_X;
+    let arcRadiusY = viewport.height * CONFIG.DECORATION.ARC_RADIUS_RATIO_Y;
+    let lMargin = CONFIG.SCREEN.MARGIN * 2;
 
     // Red Arc
     noFill();
     stroke(CONFIG.COLORS.ACCENT);
     strokeWeight(3);
-    arc(wheelX, wheelY, arcRadiusX * 2, arcRadiusY * 2, CONFIG.ANGLES.ARC_START, CONFIG.ANGLES.ARC_END);
+    arc(wheelX, wheelY, arcRadiusX * 2, arcRadiusY * 2, CONFIG.DECORATION.ARC_START_ANGLE, CONFIG.DECORATION.ARC_END_ANGLE);
 
     // Red Dots on Arc
     fill(CONFIG.COLORS.ACCENT);
     noStroke();
-    for (let i = 0; i < CONFIG.ANGLES.DOT_COUNT; i++) {
-        let a = CONFIG.ANGLES.DOT_START + i * CONFIG.ANGLES.DOT_SPACING;
+    for (let i = 0; i < CONFIG.DECORATION.DOT_COUNT; i++) {
+        let a = CONFIG.DECORATION.DOT_START_ANGLE + i * CONFIG.DECORATION.DOT_SPACING_ANGLE;
         circle(wheelX + cos(a) * arcRadiusX, wheelY + sin(a) * arcRadiusY, viewport.scale(0.06));
     }
 
@@ -216,17 +218,17 @@ function drawDecoration() {
     let needleStartX = viewport.x(1.0 - lMargin);
 
     // Target: Center of the highlighted zodiac box
-    let wheelRadiusX = viewport.height * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_X;
-    let wheelRadiusY = viewport.height * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_Y;
-    let targetX = wheelX + cos(CONFIG.ANGLES.HIGHLIGHT) * wheelRadiusX;
-    let targetY = wheelY + sin(CONFIG.ANGLES.HIGHLIGHT) * wheelRadiusY;
+    let wheelRadiusX = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_X;
+    let wheelRadiusY = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_Y;
+    let targetX = wheelX + cos(CONFIG.WHEEL.HIGHLIGHT_ANGLE) * wheelRadiusX;
+    let targetY = wheelY + sin(CONFIG.WHEEL.HIGHLIGHT_ANGLE) * wheelRadiusY;
 
     // Vector from Start to Target
     let dx = targetX - needleStartX;
     let dy = targetY - wheelY;
 
     // Draw needle using a fixed ratio for easy manual adjustment
-    let ratio = CONFIG.LAYOUT.NEEDLE_LENGTH_RATIO;
+    let ratio = CONFIG.DECORATION.NEEDLE_LENGTH_RATIO;
     line(needleStartX, wheelY, needleStartX + dx * ratio, wheelY + dy * ratio);
 }
 
@@ -239,7 +241,7 @@ function drawOuterFrame() {
 
 // Calculation helpers
 function triggerZodiacAnimation() {
-    scrollOffset = -CONFIG.ANGLES.SPACING;
+    scrollOffset = -CONFIG.WHEEL.SPACING_ANGLE;
     targetScroll = 0;
     isAnimating = true;
 }
@@ -250,10 +252,10 @@ function getZodiacIndex(year) {
 
 // Coordinate Calculation helper
 function getTileEdges(angle, size) {
-    let wheelX = viewport.x(CONFIG.LAYOUT.WHEEL_X_RATIO);
+    let wheelX = viewport.x(CONFIG.WHEEL.CENTER_X_RATIO);
     let wheelY = viewport.y(0);
-    let wheelRadiusX = viewport.height * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_X;
-    let wheelRadiusY = viewport.height * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_Y;
+    let wheelRadiusX = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_X;
+    let wheelRadiusY = viewport.height * CONFIG.WHEEL.RADIUS_RATIO_Y;
 
     return {
         bottom: wheelY + sin(angle) * wheelRadiusY + size / 2,
@@ -262,7 +264,7 @@ function getTileEdges(angle, size) {
 }
 
 function drawTextContent() {
-    let lMargin = CONFIG.LAYOUT.MARGIN * 2;
+    let lMargin = CONFIG.SCREEN.MARGIN * 2;
     let frameMarginPxl = viewport.scale(lMargin);
 
     // 1. HAPPY NEW YEAR!
@@ -280,8 +282,8 @@ function drawTextContent() {
     textAlign(RIGHT, BOTTOM);
     textStyle(NORMAL);
 
-    let posCurr = getTileEdges(CONFIG.ANGLES.HIGHLIGHT, viewport.scale(0.60));
-    let posPrev = getTileEdges(CONFIG.ANGLES.HIGHLIGHT + CONFIG.ANGLES.SPACING, viewport.scale(0.30));
+    let posCurr = getTileEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE, viewport.scale(0.60));
+    let posPrev = getTileEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE + CONFIG.WHEEL.SPACING_ANGLE, viewport.scale(0.30));
 
     // Previous Year (Gray)
     fill(CONFIG.COLORS.TEXT_SUB);
