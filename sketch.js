@@ -1,3 +1,34 @@
+/* --- CONFIGURATION --- */
+const CONFIG = {
+    COLORS: {
+        BG: 255,
+        TEXT_MAIN: 0,
+        TEXT_SUB: 120,
+        ACCENT: [255, 0, 0],
+        NEEDLE: [255, 0, 0]
+    },
+    ANGLES: {
+        SPACING: 12.5,
+        ACTIVE_SLOT: 4,
+        HIGHLIGHT: 137.5,
+        ABOVE: 150.0,
+        ARC_START: 110,
+        ARC_END: 250
+    },
+    LAYOUT: {
+        FRAME_H_RATIO: 0.9,
+        FRAME_W_RATIO: 0.85,
+        WHEEL_RADIUS_RATIO: 0.7,
+        WHEEL_X_RATIO: 0.6,
+        MARGIN: 0.02,
+        NEEDLE_LENGTH_RATIO: 0.8
+    },
+    ANIMATION: {
+        LERP_SPEED: 0.1,
+        THRESHOLD: 0.05
+    }
+};
+
 let zodiacs = [
     "子", "丑", "寅", "卯", "辰", "巳",
     "午", "未", "申", "酉", "戌", "亥"
@@ -11,208 +42,204 @@ let scrollOffset = 0;
 let targetScroll = 0;
 let isAnimating = false;
 
-// Layout Variables
-let wheelRadius;
-let wheelX, wheelY;
+// Layout Variables (Global but will be updated by updateLayout)
+let wheelRadius, wheelX, wheelY;
+let layout = {};
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
     textFont("Noto Sans JP");
     textAlign(CENTER, CENTER);
     rectMode(CENTER);
-    angleMode(DEGREES); // Switch to Degrees for simplicity
+    angleMode(DEGREES);
 }
 
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
 }
 
-function draw() {
-    background(255);
-
-    // 1. Establish Layout Frame
-    let frameH = height * 0.9;
-    let frameW = frameH * 0.85;
-    if (frameW > width * 0.95) {
-        frameW = width * 0.95;
-        frameH = frameW / 0.85;
-    }
-
+/**
+ * Recalculates layout parameters based on current window size.
+ */
+function updateLayout() {
     let centerX = width / 2;
     let centerY = height / 2;
 
-    // 2. Wheel Config
-    wheelRadius = frameH * 0.7;
-    wheelX = centerX + frameW * 0.6;
+    let frameH = height * CONFIG.LAYOUT.FRAME_H_RATIO;
+    let frameW = frameH * CONFIG.LAYOUT.FRAME_W_RATIO;
+    if (frameW > width * 0.95) {
+        frameW = width * 0.95;
+        frameH = frameW / CONFIG.LAYOUT.FRAME_W_RATIO;
+    }
+
+    // Sync old globals for backward compatibility during refactoring
+    wheelRadius = frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO;
+    wheelX = centerX + frameW * CONFIG.LAYOUT.WHEEL_X_RATIO;
     wheelY = centerY;
-    let frameMargin = frameW * 0.02;
-    let textMargin = frameMargin;
 
-    // 3. Animation Logic (Sliding Window Reset)
-    scrollOffset = lerp(scrollOffset, targetScroll, 0.1);
+    layout = {
+        centerX, centerY,
+        frameW, frameH,
+        wheelX, wheelY,
+        wheelRadius,
+        margin: frameW * CONFIG.LAYOUT.MARGIN
+    };
+}
 
-    // When the slide is nearly complete, reset and shift activeIndex
-    if (isAnimating && abs(scrollOffset - targetScroll) < 0.05) {
+/**
+ * Handles the smooth scrolling animation and state updates.
+ */
+function updateAnimation() {
+    scrollOffset = lerp(scrollOffset, targetScroll, CONFIG.ANIMATION.LERP_SPEED);
+
+    if (isAnimating && abs(scrollOffset - targetScroll) < CONFIG.ANIMATION.THRESHOLD) {
         scrollOffset = 0;
         targetScroll = 0;
         activeIndex = (activeIndex + 1) % 12;
         isAnimating = false;
     }
+}
 
-    // 4. Draw Wheel (13 Slots Sliding Window)
+function draw() {
+    updateLayout();
+    updateAnimation();
+
+    background(CONFIG.COLORS.BG);
+
+    drawZodiacWheel();
+    drawDecoration();
+    drawOuterFrame();
+    drawTextContent();
+}
+
+function mousePressed() {
+    if (isAnimating) return;
+    currentYear++;
+    targetScroll = CONFIG.ANGLES.SPACING;
+    isAnimating = true;
+}
+
+function drawZodiacWheel() {
     push();
-    translate(wheelX, wheelY);
+    translate(layout.wheelX, layout.wheelY);
 
-    let spacing = 12.5;
-    // Slot 4 is the "Active" slot (where the needle points, 137.5 degrees)
-    // startAngle is the angle of Slot 0. 
-    // Slot 4 at 137.5 means startAngle + 4 * 12.5 = 137.5 => startAngle = 87.5
-    let startAngle = 87.5;
+    let startAngle = CONFIG.ANGLES.HIGHLIGHT - (CONFIG.ANGLES.ACTIVE_SLOT * CONFIG.ANGLES.SPACING);
 
     for (let i = 12; i >= 0; i--) {
-        // Angle slides by scrollOffset
-        let angle = startAngle + i * spacing + scrollOffset;
-
-        // Map the slot to a zodiac index relative to the current activeIndex
-        // Initially (scroll=0, slot=4), we want zodiacs[activeIndex]
-        let zodiacIdx = (activeIndex - (i - 4) + 12) % 12;
+        let angle = startAngle + i * CONFIG.ANGLES.SPACING + scrollOffset;
+        let zodiacIdx = (activeIndex - (i - CONFIG.ANGLES.ACTIVE_SLOT) + 12) % 12;
 
         let highlighted = false;
-        if (!isAnimating && i === 4) highlighted = true;
+        if (!isAnimating && i === CONFIG.ANGLES.ACTIVE_SLOT) highlighted = true;
         if (isAnimating) {
-            // When sliding targetScroll = 12.5, Slot 3 moves into Slot 4's position.
-            if (abs(angle - 137.5) < spacing / 2) highlighted = true;
+            if (abs(angle - CONFIG.ANGLES.HIGHLIGHT) < CONFIG.ANGLES.SPACING / 2) highlighted = true;
         }
 
         push();
         rotate(angle);
-        translate(wheelRadius, 0);
-        rotate(-angle); // Counter-rotate to keep upright
+        translate(layout.wheelRadius, 0);
+        rotate(-angle);
 
         noStroke();
+        let boxSize = highlighted ? layout.frameW * 0.30 : layout.frameW * 0.15;
+        let textSizeVal = highlighted ? layout.frameW * 0.24 : layout.frameW * 0.12;
 
-        // Size Logic
-        let boxSize = highlighted ? frameW * 0.30 : frameW * 0.15;
-        let textSizeVal = highlighted ? frameW * 0.24 : frameW * 0.12;
-
-        // Shape
         if (highlighted) {
-            fill(0); // Black
+            fill(CONFIG.COLORS.TEXT_MAIN);
         } else {
-            fill(120); // Grey
+            fill(CONFIG.COLORS.TEXT_SUB);
         }
         stroke(1);
         rect(0, 0, boxSize, boxSize);
 
-        // Text
         fill(255);
         noStroke();
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
         textSize(textSizeVal);
         text(zodiacs[zodiacIdx], 0, 0);
-
         pop();
     }
     pop();
+}
 
-    // 5. Draw Static Arc Line and Dots
+function drawDecoration() {
+    // Red Arc
     noFill();
-    stroke(255, 0, 0);
+    stroke(CONFIG.COLORS.ACCENT);
     strokeWeight(3);
-    // arc(x, y, w, h, start, stop)
-    arc(wheelX, wheelY, wheelRadius * 2, wheelRadius * 2, 110, 250);
+    arc(layout.wheelX, layout.wheelY, layout.wheelRadius * 2, layout.wheelRadius * 2, CONFIG.ANGLES.ARC_START, CONFIG.ANGLES.ARC_END);
 
-    // Draw dots on the arc
-    fill(255, 0, 0);
+    // Red Dots on Arc
+    fill(CONFIG.COLORS.ACCENT);
     noStroke();
-    for (let a = 110; a <= 250; a += 35) {
-        let dx = wheelX + cos(a) * wheelRadius;
-        let dy = wheelY + sin(a) * wheelRadius;
-        circle(dx, dy, frameW * 0.03);
+    for (let a = CONFIG.ANGLES.ARC_START; a <= CONFIG.ANGLES.ARC_END; a += 35) {
+        circle(layout.wheelX + cos(a) * layout.wheelRadius, layout.wheelY + sin(a) * layout.wheelRadius, layout.frameW * 0.03);
     }
 
-    // 6. Draw Red Clock Hand (8 o'clock needle)
-    stroke(255, 0, 0);
-    strokeWeight(15); // Thick needle
-    let needleStartX = centerX + frameW * 0.5 - frameMargin;
-    line(needleStartX, wheelY, wheelX + cos(137.5) * wheelRadius * 0.8, wheelY + sin(137.5) * wheelRadius * 0.8);
+    // Red Needle
+    stroke(CONFIG.COLORS.NEEDLE);
+    strokeWeight(15);
+    let needleStartX = layout.centerX + layout.frameW * 0.5 - layout.margin;
+    line(needleStartX, layout.wheelY,
+        layout.wheelX + cos(CONFIG.ANGLES.HIGHLIGHT) * layout.wheelRadius * CONFIG.LAYOUT.NEEDLE_LENGTH_RATIO,
+        layout.wheelY + sin(CONFIG.ANGLES.HIGHLIGHT) * layout.wheelRadius * CONFIG.LAYOUT.NEEDLE_LENGTH_RATIO);
+}
 
-    // 7. Draw Outer Frame
+function drawOuterFrame() {
     noFill();
     stroke(0);
     strokeWeight(2);
-    rect(centerX, centerY, frameW, frameH);
+    rect(layout.centerX, layout.centerY, layout.frameW, layout.frameH);
+}
 
-    // 8. Draw Static Text (Year Labels)
-    let angleHighlight = 137.5;
-    let angleAbove = 150.0;
-    let sizeHighlight = frameW * 0.30;
-    let sizeNormal = frameW * 0.15;
-
-    // Shared Layout Metrics
-    // frameMargin is now defined globally
-    textMargin = frameMargin; // Margin from tiles
-
-    // HAPPY NEW YEAR
-    textAlign(RIGHT, CENTER);
-    fill(0);
-    noStroke();
-    textSize(frameW * 0.12);
-    textStyle(BOLDITALIC);
-
-    let headerX = centerX + frameW * 0.5 - frameMargin;
-
-    text("HAPPY", headerX, centerY - frameH * 0.1);
-    text("NEW YEAR!", headerX, centerY);
-
-    // Coordinate Calculation helper
-    let getTileEdges = (angle, size) => {
-        return {
-            bottom: wheelY + sin(angle) * wheelRadius + size / 2,
-            left: wheelX + cos(angle) * wheelRadius - size / 2
-        };
+// Coordinate Calculation helper
+function getTileEdges(angle, size) {
+    return {
+        bottom: layout.wheelY + sin(angle) * layout.wheelRadius + size / 2,
+        left: layout.wheelX + cos(angle) * layout.wheelRadius - size / 2
     };
+}
 
-    let posCurr = getTileEdges(angleHighlight, sizeHighlight);
-    let posPrev = getTileEdges(angleAbove, sizeNormal);
+function drawTextContent() {
+    // 1. HAPPY NEW YEAR!
+    textAlign(RIGHT, CENTER);
+    fill(CONFIG.COLORS.TEXT_MAIN);
+    noStroke();
+    textSize(layout.frameW * 0.12);
+    textStyle(BOLDITALIC);
+    let headerX = layout.centerX + layout.frameW * 0.5 - layout.margin;
+    text("HAPPY", headerX, layout.centerY - layout.frameH * 0.1);
+    text("NEW YEAR!", headerX, layout.centerY);
 
+    // 2. Year Labels (Aligned to tiles)
     textAlign(RIGHT, BOTTOM);
     textStyle(NORMAL);
 
-    // Previous Year (Small, Gray)
-    fill(120);
-    textSize(frameW * 0.05);
-    text((currentYear - 1) + ":", posPrev.left - textMargin, posPrev.bottom);
+    let posCurr = getTileEdges(CONFIG.ANGLES.HIGHLIGHT, layout.frameW * 0.30);
+    let posPrev = getTileEdges(CONFIG.ANGLES.ABOVE, layout.frameW * 0.15);
 
-    // Current Year (Large, Black)
-    fill(0);
-    textSize(frameW * 0.1);
-    text(currentYear + ":", posCurr.left - textMargin, posCurr.bottom);
+    // Previous Year (Gray)
+    fill(CONFIG.COLORS.TEXT_SUB);
+    textSize(layout.frameW * 0.05);
+    text((currentYear - 1) + ":", posPrev.left - layout.margin, posPrev.bottom);
 
-    // Footer
+    // Current Year (Black)
+    fill(CONFIG.COLORS.TEXT_MAIN);
+    textSize(layout.frameW * 0.1);
+    text(currentYear + ":", posCurr.left - layout.margin, posCurr.bottom);
+
+    // 3. Footer
     textAlign(LEFT, BOTTOM);
-    textSize(frameW * 0.035);
+    textSize(layout.frameW * 0.035);
     fill(50);
-    text("今年もよろしくお願いします。", centerX - frameW * 0.5 + frameMargin, centerY + frameH * 0.5 - frameMargin);
-
-
-    // DEBUG INFO (Uncomment to view)
-    /*
-    fill(255, 0, 0);
-    textAlign(LEFT, TOP);
-    textSize(12);
-    text("FPS: " + nf(frameRate(), 0, 1), 10, 10);
-    text("Radius: " + wheelRadius, 10, 25);
-    text("WheelX: " + wheelX, 10, 40);
-    text("Rotation: " + nf(currentRotation, 0, 1), 10, 55);
-    */
+    text("今年もよろしくお願いします。", layout.centerX - layout.frameW * 0.5 + layout.margin, layout.centerY + layout.frameH * 0.5 - layout.margin);
 }
 
 function mousePressed() {
-    if (isAnimating) return; // Prevent double clicks during transition
+    if (isAnimating) return;
     currentYear++;
-    targetScroll = 12.5; // Slide Slot 3 into Slot 4's position
+    targetScroll = CONFIG.ANGLES.SPACING;
     isAnimating = true;
 }
 
