@@ -134,15 +134,21 @@ function drawZodiacWheel() {
 
     let startAngle = CONFIG.ANGLES.HIGHLIGHT - (CONFIG.ANGLES.ACTIVE_SLOT * CONFIG.ANGLES.SPACING);
 
+    // Calculate highlight range based on spacing (can be adjusted for "sharpness" of transition)
+    let highlightRange = CONFIG.ANGLES.SPACING;
+
     for (let i = 12; i >= 0; i--) {
         let angle = startAngle + i * CONFIG.ANGLES.SPACING + scrollOffset;
         let zodiacIdx = (activeIndex - (i - CONFIG.ANGLES.ACTIVE_SLOT) + 12) % 12;
 
-        let highlighted = false;
-        if (!isAnimating && i === CONFIG.ANGLES.ACTIVE_SLOT) highlighted = true;
-        if (isAnimating) {
-            if (abs(angle - CONFIG.ANGLES.HIGHLIGHT) < CONFIG.ANGLES.SPACING / 2) highlighted = true;
-        }
+        // Calculate distance to HIGHLIGHT center
+        let angleDist = abs(angle - CONFIG.ANGLES.HIGHLIGHT);
+
+        // Calculate highlight factor (1.0 at center, 0.0 at highlightRange distance)
+        let hFactor = map(angleDist, 0, highlightRange, 1.0, 0.0, true);
+
+        // Use an easing function for a smoother feel (optional, but nice)
+        // hFactor = sin(hFactor * 90); // Simple sine ease
 
         let rx = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_X;
         let ry = viewport.frameH * CONFIG.LAYOUT.WHEEL_RADIUS_RATIO_Y;
@@ -151,14 +157,16 @@ function drawZodiacWheel() {
         translate(rx * cos(angle), ry * sin(angle));
 
         noStroke();
-        let boxSize = highlighted ? viewport.toSize(0.60) : viewport.toSize(0.30);
-        let textSizeVal = highlighted ? viewport.toSize(0.48) : viewport.toSize(0.24);
 
-        if (highlighted) {
-            fill(CONFIG.COLORS.TEXT_MAIN);
-        } else {
-            fill(CONFIG.COLORS.TEXT_SUB);
-        }
+        // Interpolate size
+        let boxSize = lerp(viewport.toSize(0.30), viewport.toSize(0.60), hFactor);
+        let textSizeVal = lerp(viewport.toSize(0.24), viewport.toSize(0.48), hFactor);
+
+        // Interpolate color (Gray to Black)
+        // TEXT_SUB is gray (120), TEXT_MAIN is black (0)
+        let textColor = lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor);
+
+        fill(textColor);
         stroke(1);
         rect(0, 0, boxSize, boxSize);
 
