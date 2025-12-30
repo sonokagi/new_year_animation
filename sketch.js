@@ -1,35 +1,35 @@
 /* --- CONFIGURATION --- */
 const CONFIG = {
     COLORS: {
-        BG: 255,
-        TEXT_MAIN: 0,
-        TEXT_SUB: 120,
-        ACCENT: [255, 0, 0],
-        NEEDLE: [255, 0, 0]
+        BG: 255,                  // 背景色
+        TEXT_MAIN: 0,             // メインテキスト色（黒）
+        TEXT_SUB: 120,            // サブテキスト色（グレー）
+        ACCENT: [255, 0, 0],      // アクセント色（赤）
+        NEEDLE: [255, 0, 0]       // 針の色
     },
     ANGLES: {
-        SPACING: 12.5,
-        ACTIVE_SLOT: 4,
-        HIGHLIGHT: 137.5,
-        ARC_START: 110,
-        ARC_END: 250,
-        DOT_START: 120,
-        DOT_SPACING: 35,
-        DOT_COUNT: 4
+        SPACING: 12.5,            // 干支どうしの間隔（度数）
+        ACTIVE_SLOT: 4,           // アクティブな干支が配置の何番目に来るか
+        HIGHLIGHT: 137.5,         // アクティブな干支を表示する基準角度
+        ARC_START: 110,           // 赤い円弧の開始角度
+        ARC_END: 250,             // 赤い円弧の終了角度
+        DOT_START: 120,           // 装飾ドットの開始角度
+        DOT_SPACING: 35,          // 装飾ドットの間隔
+        DOT_COUNT: 4              // 装飾ドットの個数
     },
     LAYOUT: {
-        SCREEN_OCCUPANCY: 0.95,     // Use up to 95% of screen dimensions
-        WHEEL_RADIUS_RATIO_X: 0.82 * 1.25,
-        WHEEL_RADIUS_RATIO_Y: 0.82 * 0.9,
-        ARC_RADIUS_RATIO_X: 0.68 * 1.25,
-        ARC_RADIUS_RATIO_Y: 0.68 * 0.9,
-        WHEEL_X_RATIO: 1.2,
-        MARGIN: 0.02,
-        NEEDLE_LENGTH_RATIO: 0.55   // 手動調整用：1:8の隙間になるよう調整した値
+        SCREEN_OCCUPANCY: 0.95,     // 画面占有率（95%）
+        WHEEL_RADIUS_RATIO_X: 0.82 * 1.25, // 干支ホイールの横半径比率
+        WHEEL_RADIUS_RATIO_Y: 0.82 * 0.9,  // 干支ホイールの縦半径比率
+        ARC_RADIUS_RATIO_X: 0.68 * 1.25,   // 赤い円弧の横半径比率
+        ARC_RADIUS_RATIO_Y: 0.68 * 0.9,    // 赤い円弧の縦半径比率
+        WHEEL_X_RATIO: 1.2,                // ホイールの中心X座標のオフセット比率
+        MARGIN: 0.02,                      // 基本マージン（2%）
+        NEEDLE_LENGTH_RATIO: 0.55          // 針の長さ比率（1:8の隙間用）
     },
     ANIMATION: {
-        LERP_SPEED: 0.1,
-        THRESHOLD: 0.05
+        LERP_SPEED: 0.1,          // アニメーションの滑らかさ
+        THRESHOLD: 0.05           // アニメーション終了判定の閾値
     }
 };
 
