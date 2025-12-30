@@ -16,10 +16,9 @@ const CONFIG = {
         ARC_END: 250
     },
     LAYOUT: {
-        FRAME_H_RATIO: 0.9,
-        FRAME_W_RATIO: 0.85,
+        SCREEN_OCCUPANCY: 0.95,     // Use up to 95% of screen dimensions
         WHEEL_RADIUS_RATIO: 0.7,
-        WHEEL_X_RATIO: 1.2, // 60% of frameW = 120% of halfW
+        WHEEL_X_RATIO: 1.2,
         MARGIN: 0.02,
         NEEDLE_LENGTH_RATIO: 0.8
     },
@@ -78,15 +77,12 @@ function windowResized() {
 function updateLayout() {
     let centerX = width / 2;
     let centerY = height / 2;
-    let frameH = height * CONFIG.LAYOUT.FRAME_H_RATIO;
-    let frameW = frameH * CONFIG.LAYOUT.FRAME_W_RATIO;
 
-    if (frameW > width * 0.95) {
-        frameW = width * 0.95;
-        frameH = frameW / CONFIG.LAYOUT.FRAME_W_RATIO;
-    }
+    // Fixed 1:1 Aspect Ratio (Square)
+    // Always fit within the smaller dimension of the screen
+    let frameSize = min(width, height) * CONFIG.LAYOUT.SCREEN_OCCUPANCY;
 
-    viewport = new Viewport(centerX, centerY, frameW, frameH);
+    viewport = new Viewport(centerX, centerY, frameSize, frameSize);
 }
 
 /**
