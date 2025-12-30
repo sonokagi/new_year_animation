@@ -76,6 +76,43 @@ class Layout {
 
         // 3. Spacing & Margins
         this.margin = this.vp.scale(CONFIG.SCREEN.MARGIN);
+
+        // 4. Text Layout Metrics
+        this.text = {
+            sizes: {
+                header: this.vp.scale(0.24),
+                yearMain: this.vp.scale(0.2),
+                yearSub: this.vp.scale(0.1),
+                footer: this.vp.scale(0.07),
+                boxMain: this.vp.scale(0.60),
+                boxSub: this.vp.scale(0.30)
+            }
+        };
+
+        // Calculate independent anchor points for labels
+        const mainEdges = this.getLabelEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE, this.text.sizes.boxMain);
+        const subEdges = this.getLabelEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE + CONFIG.WHEEL.SPACING_ANGLE, this.text.sizes.boxSub);
+
+        // Pre-calculated Text Positions (The "View Model")
+        this.text.pos = {
+            header: {
+                x: this.vp.x(1.0 - CONFIG.SCREEN.MARGIN * 2),
+                yHappy: this.vp.y(-0.2),
+                yNewYear: this.vp.y(0)
+            },
+            yearMain: {
+                x: mainEdges.left - this.margin,
+                y: mainEdges.bottom
+            },
+            yearSub: {
+                x: subEdges.left - this.margin,
+                y: subEdges.bottom
+            },
+            footer: {
+                x: this.vp.x(-1.0 + CONFIG.SCREEN.MARGIN * 2),
+                y: this.vp.y(1.0 - CONFIG.SCREEN.MARGIN * 2)
+            }
+        };
     }
 
     // Semantic helper for needle start position
@@ -286,39 +323,37 @@ function getZodiacIndex(year) {
 
 
 function drawTextContent() {
+    const pos = layout.text.pos;
+    const sizes = layout.text.sizes;
+
     // 1. HAPPY NEW YEAR!
     textAlign(RIGHT, CENTER);
     fill(CONFIG.COLORS.TEXT_MAIN);
     noStroke();
-    textSize(viewport.scale(0.24));
+    textSize(sizes.header);
     textStyle(BOLDITALIC);
-
-    let headerX = viewport.x(1.0 - CONFIG.SCREEN.MARGIN * 2);
-    text("HAPPY", headerX, viewport.y(-0.2));
-    text("NEW YEAR!", headerX, viewport.y(0));
+    text("HAPPY", pos.header.x, pos.header.yHappy);
+    text("NEW YEAR!", pos.header.x, pos.header.yNewYear);
 
     // 2. Year Labels (Aligned to tiles)
     textAlign(RIGHT, BOTTOM);
     textStyle(NORMAL);
 
-    let posCurr = layout.getLabelEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE, viewport.scale(0.60));
-    let posPrev = layout.getLabelEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE + CONFIG.WHEEL.SPACING_ANGLE, viewport.scale(0.30));
-
     // Previous Year (Gray)
     fill(CONFIG.COLORS.TEXT_SUB);
-    textSize(viewport.scale(0.1));
-    text((displayYear - 1) + ":", posCurr.left - layout.margin, posPrev.bottom);
+    textSize(sizes.yearSub);
+    text((displayYear - 1) + ":", pos.yearSub.x, pos.yearSub.y);
 
     // Current Year (Black)
     fill(CONFIG.COLORS.TEXT_MAIN);
-    textSize(viewport.scale(0.2));
-    text(displayYear + ":", posCurr.left - layout.margin, posCurr.bottom);
+    textSize(sizes.yearMain);
+    text(displayYear + ":", pos.yearMain.x, pos.yearMain.y);
 
     // 3. Footer
     textAlign(LEFT, BOTTOM);
-    textSize(viewport.scale(0.07));
+    textSize(sizes.footer);
     fill(50);
-    text("今年もよろしくお願いします。", viewport.x(-1.0 + CONFIG.SCREEN.MARGIN * 2), viewport.y(1.0 - CONFIG.SCREEN.MARGIN * 2));
+    text("今年もよろしくお願いします。", pos.footer.x, pos.footer.y);
 }
 
 
