@@ -114,6 +114,14 @@ class Layout {
                 y: this.vp.y(1.45)
             }
         };
+
+        // 5. Outer Frame Geometry
+        this.outerFrame = {
+            x1: this.vp.x(-0.95),
+            y1: this.vp.y(-0.9),
+            x2: this.vp.x(1),
+            y2: this.vp.y(1.05)
+        };
     }
 
     // Semantic helper for needle start position
@@ -360,7 +368,7 @@ function drawOuterFrame() {
     stroke(0);
     strokeWeight(2);
     rectMode(CORNERS);
-    rect(viewport.x(-0.95), viewport.y(-0.9), viewport.x(1), viewport.y(1.05));
+    rect(layout.outerFrame.x1, layout.outerFrame.y1, layout.outerFrame.x2, layout.outerFrame.y2);
 }
 
 // Calculation helpers
