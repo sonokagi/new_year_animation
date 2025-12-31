@@ -9,22 +9,22 @@ const CONFIG = {
     },
     SCREEN: {
         OCCUPANCY_W: 0.95,        // 横方向の画面占有率
-        OCCUPANCY_H: 0.70,        // 縦方向の画面占有率
+        OCCUPANCY_H: 0.65,        // 縦方向の画面占有率
         MARGIN: 0.02              // 基本マージン（2%）
     },
     WHEEL: {
         SPACING_ANGLE: 11,      // 干支どうしの間隔（度数）
         ACTIVE_SLOT: 3,           // アクティブな干支が配置の何番目に来るか
-        HIGHLIGHT_ANGLE: 132,   // アクティブな干支を表示する基準角度
+        HIGHLIGHT_ANGLE: 133,   // アクティブな干支を表示する基準角度
         CENTER_X_RATIO: 1.2,      // ホイールの中心X座標のオフセット比率
         RADIUS_RATIO_X: 0.82 * 1.25, // 干支ホイールの横半径比率
-        RADIUS_RATIO_Y: 0.82 * 0.9   // 干支ホイールの縦半径比率
+        RADIUS_RATIO_Y: 0.82 * 0.8   // 干支ホイールの縦半径比率
     },
     DECORATION: {
-        ARC_START_ANGLE: 100,     // 赤い円弧の開始角度
-        ARC_END_ANGLE: 250,       // 赤い円弧の終了角度
+        ARC_START_ANGLE: 101.5,     // 赤い円弧の開始角度
+        ARC_END_ANGLE: 228,       // 赤い円弧の終了角度
         ARC_RADIUS_RATIO_X: 0.68 * 1.25, // 赤い円弧の横半径比率
-        ARC_RADIUS_RATIO_Y: 0.68 * 0.9,  // 赤い円弧の縦半径比率
+        ARC_RADIUS_RATIO_Y: 0.68 * 0.75,  // 赤い円弧の縦半径比率
         DOT_START_ANGLE: 120,     // 装飾ドットの開始角度
         DOT_SPACING_ANGLE: 35,    // 装飾ドットの間隔
         DOT_COUNT: 4,             // 装飾ドットの個数
@@ -82,7 +82,7 @@ class Layout {
         this.text = {
             sizes: {
                 header: this.vp.scale(0.24),
-                yearMain: this.vp.scale(0.2),
+                yearMain: this.vp.scale(0.17),
                 yearSub: this.vp.scale(0.1),
                 footer: this.vp.scale(0.07),
                 boxMain: this.vp.scale(0.60),
@@ -111,7 +111,7 @@ class Layout {
             },
             footer: {
                 x: this.vp.x(-1.0 + CONFIG.SCREEN.MARGIN),
-                y: this.vp.y(1.0 - CONFIG.SCREEN.MARGIN)
+                y: this.vp.y(1.45)
             }
         };
     }
@@ -204,7 +204,6 @@ function setup() {
     createCanvas(windowWidth, windowHeight);
     textFont("Noto Sans JP");
     textAlign(CENTER, CENTER);
-    rectMode(CENTER);
     angleMode(DEGREES);
 
     animator = new Animator();
@@ -310,6 +309,7 @@ function drawZodiacItem(data) {
     fill(c);
 
     stroke(1, data.opacity);
+    rectMode(CENTER);
     rect(0, 0, data.boxSize, data.boxSize);
 
     fill(255);
@@ -359,7 +359,8 @@ function drawOuterFrame() {
     noFill();
     stroke(0);
     strokeWeight(2);
-    rect(viewport.x(0), viewport.y(0), viewport.width, viewport.height);
+    rectMode(CORNERS);
+    rect(viewport.x(-0.95), viewport.y(-0.9), viewport.x(1), viewport.y(1.05));
 }
 
 // Calculation helpers
