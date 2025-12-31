@@ -189,7 +189,6 @@ let zodiacs = [
 
 // Domain State
 let currentYear = new Date().getFullYear();
-let activeIndex = getZodiacIndex(currentYear);
 
 // Animation State
 let animator;
@@ -251,7 +250,6 @@ function draw() {
 function mousePressed() {
     if (animator.running) return;
     currentYear++;
-    activeIndex = getZodiacIndex(currentYear);
     animator.play(currentYear);
 }
 
@@ -267,7 +265,7 @@ function drawZodiacWheel() {
 
     for (let i = 12; i >= 0; i--) {
         let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + animator.scrollOffset;
-        let zodiacIdx = (activeIndex - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
+        let zodiacIdx = (getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
         // Calculate distance to HIGHLIGHT center
         let angleDist = abs(angle - CONFIG.WHEEL.HIGHLIGHT_ANGLE);
