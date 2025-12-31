@@ -18,7 +18,11 @@ const CONFIG = {
         HIGHLIGHT_ANGLE: 133,   // アクティブな干支を表示する基準角度
         CENTER_X_RATIO: 1.2,      // ホイールの中心X座標のオフセット比率
         RADIUS_RATIO_X: 0.82 * 1.25, // 干支ホイールの横半径比率
-        RADIUS_RATIO_Y: 0.82 * 0.8   // 干支ホイールの縦半径比率
+        RADIUS_RATIO_Y: 0.82 * 0.8,  // 干支ホイールの縦半径比率
+        // 各スロットの角度微調整 (基準間隔からのオフセット)
+        // Index: -1(Entrance Source), 0(Active), 1..12
+        // Default: All 0
+        ANGLE_ADJUSTMENTS: [1, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     },
     DECORATION: {
         ARC_START_ANGLE: 101.5,     // 赤い円弧の開始角度
@@ -162,7 +166,6 @@ class Animator {
         this.running = false;
 
         // Derived Values (Cached for rendering)
-        this.scrollOffset = 0;
         this.needleAngle = 0;
         this.exitOpacity = 255;
     }
@@ -187,7 +190,6 @@ class Animator {
         }
 
         // Calculate derived values based on new progress
-        this.scrollOffset = lerp(-CONFIG.WHEEL.SPACING_ANGLE, 0, this.progress);
         this.needleAngle = lerp(-CONFIG.DECORATION.NEEDLE_MOVEMENT_ANGLE, 0, this.progress);
         this.exitOpacity = lerp(255, 0, this.progress);
     }
@@ -274,8 +276,11 @@ function drawZodiacWheel() {
 }
 
 function calculateZodiacLayout(i) {
-    let startAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE - (CONFIG.WHEEL.ACTIVE_SLOT * CONFIG.WHEEL.SPACING_ANGLE);
-    let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + animator.scrollOffset;
+    let prevSlotAngle = getSlotAngle(i - 1);
+    let currentSlotAngle = getSlotAngle(i);
+
+    // Interpolate from previous slot position (start of anim) to current slot position (end of anim)
+    let angle = lerp(prevSlotAngle, currentSlotAngle, animator.progress);
 
     let zodiacIdx = (getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
@@ -374,6 +379,21 @@ function drawOuterFrame() {
 // Calculation helpers
 function getZodiacIndex(year) {
     return ((year - 4) % 12 + 12) % 12;
+}
+
+function getSlotAngle(i) {
+    // Determine base angle for slot i
+    let baseAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + (i - CONFIG.WHEEL.ACTIVE_SLOT) * CONFIG.WHEEL.SPACING_ANGLE;
+
+    // Apply custom adjustment if available
+    // Map logic index i (-1 to 12) to array index (0 to 13)
+    let adjIndex = i + 1;
+    let adjustment = 0;
+    if (adjIndex >= 0 && adjIndex < CONFIG.WHEEL.ANGLE_ADJUSTMENTS.length) {
+        adjustment = CONFIG.WHEEL.ANGLE_ADJUSTMENTS[adjIndex];
+    }
+
+    return baseAngle + adjustment;
 }
 
 function drawTextContent() {
