@@ -28,7 +28,8 @@ const CONFIG = {
         DOT_START_ANGLE: 120,     // 装飾ドットの開始角度
         DOT_SPACING_ANGLE: 35,    // 装飾ドットの間隔
         DOT_COUNT: 4,             // 装飾ドットの個数
-        NEEDLE_LENGTH_RATIO: 0.65 // 針の長さ比率
+        NEEDLE_LENGTH_RATIO: 0.65, // 針の長さ比率
+        NEEDLE_MOVEMENT_ANGLE: 25.0 // 針のアニメーション移動角度 (開始オフセット)
     },
     ANIMATION: {
         LERP_SPEED: 0.1,          // アニメーションの滑らかさ
@@ -296,7 +297,14 @@ function drawDecoration() {
     stroke(CONFIG.COLORS.NEEDLE);
     strokeWeight(15);
     let start = layout.needleStart;
-    let target = layout.getWheelPosition(CONFIG.WHEEL.HIGHLIGHT_ANGLE);
+
+    // Calculate dynamic target angle based on animation progress
+    // Progress 0.0 -> Offset -NEEDLE_MOVEMENT_ANGLE (Counter-Clockwise)
+    // Progress 1.0 -> Offset 0 (Center)
+    let needleOffset = lerp(-CONFIG.DECORATION.NEEDLE_MOVEMENT_ANGLE, 0, animationProgress);
+    let targetAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + needleOffset;
+
+    let target = layout.getWheelPosition(targetAngle);
 
     // Vector from Start to Target
     let dx = target.x - start.x;
