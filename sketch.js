@@ -260,9 +260,6 @@ function drawZodiacWheel() {
     let startAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE - (CONFIG.WHEEL.ACTIVE_SLOT * CONFIG.WHEEL.SPACING_ANGLE);
     let highlightRange = CONFIG.WHEEL.SPACING_ANGLE;
 
-
-
-
     for (let i = 12; i >= 0; i--) {
         let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + animator.scrollOffset;
         let zodiacIdx = (getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
@@ -273,30 +270,35 @@ function drawZodiacWheel() {
         // Calculate highlight factor
         let hFactor = map(angleDist, 0, highlightRange, 1.0, 0.0, true);
 
-        push();
-        translate(layout.wheelRadius.x * cos(angle), layout.wheelRadius.y * sin(angle));
+        let data = {
+            x: layout.wheelRadius.x * cos(angle),
+            y: layout.wheelRadius.y * sin(angle),
+            boxSize: lerp(viewport.scale(0.30), viewport.scale(0.60), hFactor),
+            textSize: lerp(viewport.scale(0.24), viewport.scale(0.48), hFactor),
+            textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
+            character: zodiacs[zodiacIdx]
+        };
 
-        noStroke();
-
-        // Interpolate size
-        let boxSize = lerp(viewport.scale(0.30), viewport.scale(0.60), hFactor);
-        let textSizeVal = lerp(viewport.scale(0.24), viewport.scale(0.48), hFactor);
-
-        // Interpolate color (Gray to Black)
-        let textColor = lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor);
-
-        fill(textColor);
-        stroke(1);
-        rect(0, 0, boxSize, boxSize);
-
-        fill(255);
-        noStroke();
-        textAlign(CENTER, CENTER);
-        textStyle(BOLD);
-        textSize(textSizeVal);
-        text(zodiacs[zodiacIdx], 0, 0);
-        pop();
+        drawZodiacItem(data);
     }
+    pop();
+}
+
+function drawZodiacItem(data) {
+    push();
+    translate(data.x, data.y);
+
+    noStroke();
+    fill(data.textColor);
+    stroke(1);
+    rect(0, 0, data.boxSize, data.boxSize);
+
+    fill(255);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    textStyle(BOLD);
+    textSize(data.textSize);
+    text(data.character, 0, 0);
     pop();
 }
 
