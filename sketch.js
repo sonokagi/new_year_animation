@@ -144,22 +144,55 @@ class Layout {
     }
 }
 
+class Animator {
+    constructor() {
+        this.displayYear = 0;
+        this.targetYear = 0;
+
+        // Animation State
+        this.progress = 1.0;
+        this.running = false;
+
+        // Derived Values (Cached for rendering)
+        this.scrollOffset = 0;
+        this.needleAngle = 0;
+    }
+
+    play(targetYear) {
+        this.targetYear = targetYear;
+        this.displayYear = targetYear - 1;
+        this.progress = 0.0;
+        this.running = true;
+    }
+
+    update() {
+        if (!this.running) return;
+
+        this.progress = lerp(this.progress, 1.0, CONFIG.ANIMATION.LERP_SPEED);
+
+        if ((1.0 - this.progress) < CONFIG.ANIMATION.THRESHOLD) {
+            this.progress = 1.0;
+            this.running = false;
+            this.displayYear = this.targetYear;
+        }
+
+        // Calculate derived values based on new progress
+        this.scrollOffset = lerp(-CONFIG.WHEEL.SPACING_ANGLE, 0, this.progress);
+        this.needleAngle = lerp(-CONFIG.DECORATION.NEEDLE_MOVEMENT_ANGLE, 0, this.progress);
+    }
+}
+
 let zodiacs = [
     "子", "丑", "寅", "卯", "辰", "巳",
     "午", "未", "申", "酉", "戌", "亥"
 ];
 
+// Domain State
 let currentYear = new Date().getFullYear();
-
-// Animation Variables
-let animationProgress = 1.0;
-let isAnimating = false;
-let displayYear = currentYear - 1; // Initialize to previous year for transition effect
 let activeIndex = getZodiacIndex(currentYear);
 
-// Derived Animation State (Frame-calculated)
-let currentScrollOffset = 0;
-let currentNeedleAngle = 0;
+// Animation State
+let animator;
 
 // Layout State
 let viewport;
@@ -172,8 +205,10 @@ function setup() {
     rectMode(CENTER);
     angleMode(DEGREES);
 
+    animator = new Animator();
+
     // Trigger initial animation
-    triggerZodiacAnimation();
+    animator.play(currentYear);
 }
 
 function windowResized() {
@@ -199,27 +234,11 @@ function updateLayout() {
     layout = new Layout(viewport);
 }
 
-/**
- * Handles the smooth scrolling animation and state updates.
- */
-function updateAnimation() {
-    animationProgress = lerp(animationProgress, 1.0, CONFIG.ANIMATION.LERP_SPEED);
 
-    if (isAnimating && (1.0 - animationProgress) < CONFIG.ANIMATION.THRESHOLD) {
-        animationProgress = 1.0;
-        isAnimating = false;
-        // Update displayYear only when animation finishes
-        displayYear = currentYear;
-    }
-
-    // Centralize animation value calculations
-    currentScrollOffset = lerp(-CONFIG.WHEEL.SPACING_ANGLE, 0, animationProgress);
-    currentNeedleAngle = lerp(-CONFIG.DECORATION.NEEDLE_MOVEMENT_ANGLE, 0, animationProgress);
-}
 
 function draw() {
     updateLayout();
-    updateAnimation();
+    animator.update();
 
     background(CONFIG.COLORS.BG);
 
@@ -230,10 +249,10 @@ function draw() {
 }
 
 function mousePressed() {
-    if (isAnimating) return;
+    if (animator.running) return;
     currentYear++;
     activeIndex = getZodiacIndex(currentYear);
-    triggerZodiacAnimation();
+    animator.play(currentYear);
 }
 
 function drawZodiacWheel() {
@@ -245,11 +264,9 @@ function drawZodiacWheel() {
 
 
 
-    // Use centralized offset
-    // let currentScrollOffset = lerp(-CONFIG.WHEEL.SPACING_ANGLE, 0, animationProgress); // Removed local calc
 
     for (let i = 12; i >= 0; i--) {
-        let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + currentScrollOffset;
+        let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + animator.scrollOffset;
         let zodiacIdx = (activeIndex - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
         // Calculate distance to HIGHLIGHT center
@@ -306,7 +323,7 @@ function drawDecoration() {
     let start = layout.needleStart;
 
     // Use centralized angle
-    let targetAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + currentNeedleAngle;
+    let targetAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + animator.needleAngle;
 
     let target = layout.getWheelPosition(targetAngle);
 
@@ -327,10 +344,7 @@ function drawOuterFrame() {
 }
 
 // Calculation helpers
-function triggerZodiacAnimation() {
-    animationProgress = 0.0;
-    isAnimating = true;
-}
+
 
 function getZodiacIndex(year) {
     return ((year - 4) % 12 + 12) % 12;
@@ -357,12 +371,12 @@ function drawTextContent() {
     // Previous Year (Gray)
     fill(CONFIG.COLORS.TEXT_SUB);
     textSize(sizes.yearSub);
-    text((displayYear - 1) + ":", pos.yearSub.x, pos.yearSub.y);
+    text((animator.displayYear - 1) + ":", pos.yearSub.x, pos.yearSub.y);
 
     // Current Year (Black)
     fill(CONFIG.COLORS.TEXT_MAIN);
     textSize(sizes.yearMain);
-    text(displayYear + ":", pos.yearMain.x, pos.yearMain.y);
+    text(animator.displayYear + ":", pos.yearMain.x, pos.yearMain.y);
 
     // 3. Footer
     textAlign(LEFT, BOTTOM);
