@@ -13,9 +13,9 @@ const CONFIG = {
         MARGIN: 0.02              // 基本マージン（2%）
     },
     WHEEL: {
-        SPACING_ANGLE: 12.5,      // 干支どうしの間隔（度数）
-        ACTIVE_SLOT: 4,           // アクティブな干支が配置の何番目に来るか
-        HIGHLIGHT_ANGLE: 137.5,   // アクティブな干支を表示する基準角度
+        SPACING_ANGLE: 11,      // 干支どうしの間隔（度数）
+        ACTIVE_SLOT: 3,           // アクティブな干支が配置の何番目に来るか
+        HIGHLIGHT_ANGLE: 132,   // アクティブな干支を表示する基準角度
         CENTER_X_RATIO: 1.2,      // ホイールの中心X座標のオフセット比率
         RADIUS_RATIO_X: 0.82 * 1.25, // 干支ホイールの横半径比率
         RADIUS_RATIO_Y: 0.82 * 0.9   // 干支ホイールの縦半径比率
