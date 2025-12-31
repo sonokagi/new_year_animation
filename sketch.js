@@ -9,9 +9,9 @@ const CONFIG = {
     },
     SCREEN: {
         OCCUPANCY_W: 0.95,        // 横方向の画面占有率
-        OCCUPANCY_H: 0.65,        // 縦方向の画面占有率
+        OCCUPANCY_H: 0.75,        // 縦方向の画面占有率
         MARGIN: 0.02,             // 基本マージン（2%）
-        OFFSET_Y: -0.15            // 画面全体の上方へのオフセット (Viewport高さに対する比率)
+        OFFSET_Y: -0.12            // 画面全体の上方へのオフセット (Viewport高さに対する比率)
     },
     WHEEL: {
         SPACING_ANGLE: 11,      // 干支どうしの間隔（度数）
@@ -23,7 +23,7 @@ const CONFIG = {
         // 各スロットの角度微調整 (基準間隔からのオフセット)
         // Index: -1(Entrance Source), 0(Active), 1..12
         // Default: All 0
-        ANGLE_ADJUSTMENTS: [0, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ANGLE_ADJUSTMENTS: [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     },
     DECORATION: {
         ARC_START_ANGLE: 101.5,     // 赤い円弧の開始角度
