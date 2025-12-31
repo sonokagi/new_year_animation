@@ -156,6 +156,7 @@ class Animator {
         // Derived Values (Cached for rendering)
         this.scrollOffset = 0;
         this.needleAngle = 0;
+        this.exitOpacity = 255;
     }
 
     play(targetYear) {
@@ -163,6 +164,7 @@ class Animator {
         this.displayYear = targetYear - 1;
         this.progress = 0.0;
         this.running = true;
+        this.exitOpacity = 255;
     }
 
     update() {
@@ -179,6 +181,7 @@ class Animator {
         // Calculate derived values based on new progress
         this.scrollOffset = lerp(-CONFIG.WHEEL.SPACING_ANGLE, 0, this.progress);
         this.needleAngle = lerp(-CONFIG.DECORATION.NEEDLE_MOVEMENT_ANGLE, 0, this.progress);
+        this.exitOpacity = lerp(255, 0, this.progress);
     }
 }
 
@@ -256,21 +259,35 @@ function drawZodiacWheel() {
     translate(layout.wheelCenter.x, layout.wheelCenter.y);
 
     for (let i = 12; i >= 0; i--) {
-        let data = calculateZodiacLayout(i, animator.scrollOffset);
+        let data = calculateZodiacLayout(i);
         drawZodiacItem(data);
     }
 
     pop();
 }
 
-function calculateZodiacLayout(i, scrollOffset) {
+function calculateZodiacLayout(i) {
     let startAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE - (CONFIG.WHEEL.ACTIVE_SLOT * CONFIG.WHEEL.SPACING_ANGLE);
-    let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + scrollOffset;
+    let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + animator.scrollOffset;
 
     let zodiacIdx = (getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
     let angleDist = abs(angle - CONFIG.WHEEL.HIGHLIGHT_ANGLE);
     let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
+
+    let opacity;
+    // Fade out the exit item
+    if (i === 12) {
+        opacity = animator.exitOpacity;
+    }
+    // Fade in the entry item
+    else if (i === 0) {
+        opacity = 255 - animator.exitOpacity;
+    }
+    // Otherwise, keep it fully visible
+    else {
+        opacity = 255;
+    }
 
     return {
         x: layout.wheelRadius.x * cos(angle),
@@ -278,7 +295,8 @@ function calculateZodiacLayout(i, scrollOffset) {
         boxSize: lerp(viewport.scale(0.30), viewport.scale(0.60), hFactor),
         textSize: lerp(viewport.scale(0.24), viewport.scale(0.48), hFactor),
         textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
-        character: zodiacs[zodiacIdx]
+        character: zodiacs[zodiacIdx],
+        opacity: opacity
     };
 }
 
@@ -286,8 +304,12 @@ function drawZodiacItem(data) {
     push();
     translate(data.x, data.y);
 
-    fill(data.textColor);
-    stroke(1);
+    noStroke();
+    let c = color(data.textColor);
+    c.setAlpha(data.opacity);
+    fill(c);
+
+    stroke(1, data.opacity);
     rect(0, 0, data.boxSize, data.boxSize);
 
     fill(255);
