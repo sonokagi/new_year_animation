@@ -233,8 +233,6 @@ function updateLayout() {
     layout = new Layout(viewport);
 }
 
-
-
 function draw() {
     updateLayout();
     animator.update();
@@ -257,38 +255,37 @@ function drawZodiacWheel() {
     push();
     translate(layout.wheelCenter.x, layout.wheelCenter.y);
 
-    let startAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE - (CONFIG.WHEEL.ACTIVE_SLOT * CONFIG.WHEEL.SPACING_ANGLE);
-    let highlightRange = CONFIG.WHEEL.SPACING_ANGLE;
-
     for (let i = 12; i >= 0; i--) {
-        let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + animator.scrollOffset;
-        let zodiacIdx = (getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
-
-        // Calculate distance to HIGHLIGHT center
-        let angleDist = abs(angle - CONFIG.WHEEL.HIGHLIGHT_ANGLE);
-
-        // Calculate highlight factor
-        let hFactor = map(angleDist, 0, highlightRange, 1.0, 0.0, true);
-
-        let data = {
-            x: layout.wheelRadius.x * cos(angle),
-            y: layout.wheelRadius.y * sin(angle),
-            boxSize: lerp(viewport.scale(0.30), viewport.scale(0.60), hFactor),
-            textSize: lerp(viewport.scale(0.24), viewport.scale(0.48), hFactor),
-            textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
-            character: zodiacs[zodiacIdx]
-        };
-
+        let data = calculateZodiacLayout(i, animator.scrollOffset);
         drawZodiacItem(data);
     }
+
     pop();
+}
+
+function calculateZodiacLayout(i, scrollOffset) {
+    let startAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE - (CONFIG.WHEEL.ACTIVE_SLOT * CONFIG.WHEEL.SPACING_ANGLE);
+    let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + scrollOffset;
+
+    let zodiacIdx = (getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
+
+    let angleDist = abs(angle - CONFIG.WHEEL.HIGHLIGHT_ANGLE);
+    let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
+
+    return {
+        x: layout.wheelRadius.x * cos(angle),
+        y: layout.wheelRadius.y * sin(angle),
+        boxSize: lerp(viewport.scale(0.30), viewport.scale(0.60), hFactor),
+        textSize: lerp(viewport.scale(0.24), viewport.scale(0.48), hFactor),
+        textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
+        character: zodiacs[zodiacIdx]
+    };
 }
 
 function drawZodiacItem(data) {
     push();
     translate(data.x, data.y);
 
-    noStroke();
     fill(data.textColor);
     stroke(1);
     rect(0, 0, data.boxSize, data.boxSize);
@@ -299,6 +296,7 @@ function drawZodiacItem(data) {
     textStyle(BOLD);
     textSize(data.textSize);
     text(data.character, 0, 0);
+
     pop();
 }
 
@@ -324,7 +322,6 @@ function drawDecoration() {
 
     // Use centralized angle
     let targetAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + animator.needleAngle;
-
     let target = layout.getWheelPosition(targetAngle);
 
     // Vector from Start to Target
@@ -344,12 +341,9 @@ function drawOuterFrame() {
 }
 
 // Calculation helpers
-
-
 function getZodiacIndex(year) {
     return ((year - 4) % 12 + 12) % 12;
 }
-
 
 function drawTextContent() {
     const pos = layout.text.pos;
@@ -381,8 +375,6 @@ function drawTextContent() {
     // 3. Footer
     textAlign(LEFT, BOTTOM);
     textSize(sizes.footer);
-    fill(50);
+    fill(CONFIG.COLORS.TEXT_MAIN);
     text("今年もよろしくお願いします。", pos.footer.x, pos.footer.y);
 }
-
-
