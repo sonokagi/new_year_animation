@@ -151,8 +151,7 @@ let zodiacs = [
 let currentYear = new Date().getFullYear();
 
 // Animation Variables
-let scrollOffset = 0;
-let targetScroll = 0;
+let animationProgress = 1.0;
 let isAnimating = false;
 let displayYear = currentYear - 1; // Initialize to previous year for transition effect
 let activeIndex = getZodiacIndex(currentYear);
@@ -199,11 +198,10 @@ function updateLayout() {
  * Handles the smooth scrolling animation and state updates.
  */
 function updateAnimation() {
-    scrollOffset = lerp(scrollOffset, targetScroll, CONFIG.ANIMATION.LERP_SPEED);
+    animationProgress = lerp(animationProgress, 1.0, CONFIG.ANIMATION.LERP_SPEED);
 
-    if (isAnimating && abs(scrollOffset - targetScroll) < CONFIG.ANIMATION.THRESHOLD) {
-        scrollOffset = 0;
-        targetScroll = 0;
+    if (isAnimating && (1.0 - animationProgress) < CONFIG.ANIMATION.THRESHOLD) {
+        animationProgress = 1.0;
         isAnimating = false;
         // Update displayYear only when animation finishes
         displayYear = currentYear;
@@ -236,8 +234,14 @@ function drawZodiacWheel() {
     let startAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE - (CONFIG.WHEEL.ACTIVE_SLOT * CONFIG.WHEEL.SPACING_ANGLE);
     let highlightRange = CONFIG.WHEEL.SPACING_ANGLE;
 
+
+    // Derive offset from progress
+    // Progress 0.0 -> Offset -SPACING
+    // Progress 1.0 -> Offset 0
+    let currentScrollOffset = lerp(-CONFIG.WHEEL.SPACING_ANGLE, 0, animationProgress);
+
     for (let i = 12; i >= 0; i--) {
-        let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + scrollOffset;
+        let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + currentScrollOffset;
         let zodiacIdx = (activeIndex - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
         // Calculate distance to HIGHLIGHT center
@@ -312,8 +316,7 @@ function drawOuterFrame() {
 
 // Calculation helpers
 function triggerZodiacAnimation() {
-    scrollOffset = -CONFIG.WHEEL.SPACING_ANGLE;
-    targetScroll = 0;
+    animationProgress = 0.0;
     isAnimating = true;
 }
 
