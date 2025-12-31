@@ -157,6 +157,10 @@ let isAnimating = false;
 let displayYear = currentYear - 1; // Initialize to previous year for transition effect
 let activeIndex = getZodiacIndex(currentYear);
 
+// Derived Animation State (Frame-calculated)
+let currentScrollOffset = 0;
+let currentNeedleAngle = 0;
+
 // Layout State
 let viewport;
 let layout;
@@ -207,6 +211,10 @@ function updateAnimation() {
         // Update displayYear only when animation finishes
         displayYear = currentYear;
     }
+
+    // Centralize animation value calculations
+    currentScrollOffset = lerp(-CONFIG.WHEEL.SPACING_ANGLE, 0, animationProgress);
+    currentNeedleAngle = lerp(-CONFIG.DECORATION.NEEDLE_MOVEMENT_ANGLE, 0, animationProgress);
 }
 
 function draw() {
@@ -236,10 +244,9 @@ function drawZodiacWheel() {
     let highlightRange = CONFIG.WHEEL.SPACING_ANGLE;
 
 
-    // Derive offset from progress
-    // Progress 0.0 -> Offset -SPACING
-    // Progress 1.0 -> Offset 0
-    let currentScrollOffset = lerp(-CONFIG.WHEEL.SPACING_ANGLE, 0, animationProgress);
+
+    // Use centralized offset
+    // let currentScrollOffset = lerp(-CONFIG.WHEEL.SPACING_ANGLE, 0, animationProgress); // Removed local calc
 
     for (let i = 12; i >= 0; i--) {
         let angle = startAngle + i * CONFIG.WHEEL.SPACING_ANGLE + currentScrollOffset;
@@ -298,11 +305,8 @@ function drawDecoration() {
     strokeWeight(15);
     let start = layout.needleStart;
 
-    // Calculate dynamic target angle based on animation progress
-    // Progress 0.0 -> Offset -NEEDLE_MOVEMENT_ANGLE (Counter-Clockwise)
-    // Progress 1.0 -> Offset 0 (Center)
-    let needleOffset = lerp(-CONFIG.DECORATION.NEEDLE_MOVEMENT_ANGLE, 0, animationProgress);
-    let targetAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + needleOffset;
+    // Use centralized angle
+    let targetAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + currentNeedleAngle;
 
     let target = layout.getWheelPosition(targetAngle);
 
