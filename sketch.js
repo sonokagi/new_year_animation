@@ -21,14 +21,14 @@ const CONFIG = {
         RADIUS_RATIO_Y: 0.82 * 0.9   // 干支ホイールの縦半径比率
     },
     DECORATION: {
-        ARC_START_ANGLE: 110,     // 赤い円弧の開始角度
+        ARC_START_ANGLE: 100,     // 赤い円弧の開始角度
         ARC_END_ANGLE: 250,       // 赤い円弧の終了角度
         ARC_RADIUS_RATIO_X: 0.68 * 1.25, // 赤い円弧の横半径比率
         ARC_RADIUS_RATIO_Y: 0.68 * 0.9,  // 赤い円弧の縦半径比率
         DOT_START_ANGLE: 120,     // 装飾ドットの開始角度
         DOT_SPACING_ANGLE: 35,    // 装飾ドットの間隔
         DOT_COUNT: 4,             // 装飾ドットの個数
-        NEEDLE_LENGTH_RATIO: 0.55 // 針の長さ比率（1:8の隙間用）
+        NEEDLE_LENGTH_RATIO: 0.65 // 針の長さ比率
     },
     ANIMATION: {
         LERP_SPEED: 0.1,          // アニメーションの滑らかさ
@@ -96,7 +96,7 @@ class Layout {
         // Pre-calculated Text Positions (The "View Model")
         this.text.pos = {
             header: {
-                x: this.vp.x(1.0 - CONFIG.SCREEN.MARGIN * 2),
+                x: this.vp.x(1.0 - CONFIG.SCREEN.MARGIN * 3),
                 yHappy: this.vp.y(-0.2),
                 yNewYear: this.vp.y(0)
             },
@@ -109,8 +109,8 @@ class Layout {
                 y: subEdges.bottom
             },
             footer: {
-                x: this.vp.x(-1.0 + CONFIG.SCREEN.MARGIN * 2),
-                y: this.vp.y(1.0 - CONFIG.SCREEN.MARGIN * 2)
+                x: this.vp.x(-1.0 + CONFIG.SCREEN.MARGIN),
+                y: this.vp.y(1.0 - CONFIG.SCREEN.MARGIN)
             }
         };
     }
@@ -118,7 +118,7 @@ class Layout {
     // Semantic helper for needle start position
     get needleStart() {
         return {
-            x: this.vp.x(1.0 - CONFIG.SCREEN.MARGIN * 2),
+            x: this.vp.x(1.0 - CONFIG.SCREEN.MARGIN * 4),
             y: this.wheelCenter.y
         };
     }
