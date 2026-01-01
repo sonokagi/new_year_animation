@@ -295,7 +295,7 @@ function calculateZodiacLayout(i) {
 
     let zodiacIdx = (getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
-    let angleDist = abs(angle - CONFIG.WHEEL.HIGHLIGHT_ANGLE);
+    let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
     let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
 
     let opacity;
