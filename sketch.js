@@ -33,8 +33,7 @@ const CONFIG = {
         DOT_START_ANGLE: 120,     // 装飾ドットの開始角度
         DOT_SPACING_ANGLE: 35,    // 装飾ドットの間隔
         DOT_COUNT: 4,             // 装飾ドットの個数
-        NEEDLE_LENGTH_RATIO: 0.65, // 針の長さ比率
-        NEEDLE_MOVEMENT_ANGLE: 25.0 // 針のアニメーション移動角度 (開始オフセット)
+        NEEDLE_LENGTH_RATIO: 0.65 // 針の長さ比率
     },
     ANIMATION: {
         LERP_SPEED: 0.1,          // アニメーションの滑らかさ
@@ -201,7 +200,12 @@ class Animator {
         }
 
         // Calculate derived values based on new progress
-        this.needleAngle = lerp(-CONFIG.DECORATION.NEEDLE_MOVEMENT_ANGLE, 0, this.progress);
+        // Exact Tracking: Needle follows the item arriving at ACTIVE_SLOT
+        let activeSlot = CONFIG.WHEEL.ACTIVE_SLOT;
+        let startSlotAngle = getSlotAngle(activeSlot - 1);
+        let endSlotAngle = getSlotAngle(activeSlot);
+        this.needleAngle = lerp(startSlotAngle, endSlotAngle, this.progress);
+
         this.exitOpacity = lerp(255, 0, this.progress);
     }
 }
@@ -361,8 +365,7 @@ function drawDecoration() {
     let start = layout.needleStart;
 
     // Use centralized angle
-    let targetAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + animator.needleAngle;
-    let target = layout.getWheelPosition(targetAngle);
+    let target = layout.getWheelPosition(animator.needleAngle);
 
     // Vector from Start to Target
     let dx = target.x - start.x;
