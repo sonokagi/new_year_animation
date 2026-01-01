@@ -179,6 +179,7 @@ class Animator {
 
         // Derived Values (Cached for rendering)
         this.needleAngle = 0;
+        this.zodiacAngles = new Array(13).fill(0); // Store angles for slots 0 to 12
         this.exitOpacity = 255;
     }
 
@@ -207,6 +208,13 @@ class Animator {
         let startSlotAngle = getSlotAngle(activeSlot - 1);
         let endSlotAngle = getSlotAngle(activeSlot);
         this.needleAngle = lerp(startSlotAngle, endSlotAngle, this.progress);
+
+        // Pre-calculate Zodiac angles
+        for (let i = 0; i <= 12; i++) {
+            let prev = getSlotAngle(i - 1);
+            let curr = getSlotAngle(i);
+            this.zodiacAngles[i] = lerp(prev, curr, this.progress);
+        }
 
         this.exitOpacity = lerp(255, 0, this.progress);
     }
@@ -287,11 +295,7 @@ function drawZodiacWheel() {
 }
 
 function calculateZodiacLayout(i) {
-    let prevSlotAngle = getSlotAngle(i - 1);
-    let currentSlotAngle = getSlotAngle(i);
-
-    // Interpolate from previous slot position (start of anim) to current slot position (end of anim)
-    let angle = lerp(prevSlotAngle, currentSlotAngle, animator.progress);
+    let angle = animator.zodiacAngles[i];
 
     let zodiacIdx = (getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
