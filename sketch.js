@@ -180,7 +180,7 @@ class Animator {
         // Derived Values (Cached for rendering)
         this.needleAngle = 0;
         this.zodiacAngles = new Array(13).fill(0); // Store angles for slots 0 to 12
-        this.exitOpacity = 255;
+        this.zodiacOpacities = new Array(13).fill(255); // Store opacities
     }
 
     play(targetYear) {
@@ -209,14 +209,20 @@ class Animator {
         let endSlotAngle = getSlotAngle(activeSlot);
         this.needleAngle = lerp(startSlotAngle, endSlotAngle, this.progress);
 
-        // Pre-calculate Zodiac angles
+        // Pre-calculate Zodiac parameters
         for (let i = 0; i <= 12; i++) {
             let prev = getSlotAngle(i - 1);
             let curr = getSlotAngle(i);
             this.zodiacAngles[i] = lerp(prev, curr, this.progress);
-        }
 
-        this.exitOpacity = lerp(255, 0, this.progress);
+            if (i === 12) {
+                this.zodiacOpacities[i] = lerp(255, 0, this.progress); // Fade out exit item
+            } else if (i === 0) {
+                this.zodiacOpacities[i] = lerp(0, 255, this.progress); // Fade in entry item
+            } else {
+                this.zodiacOpacities[i] = 255;
+            }
+        }
     }
 }
 
@@ -302,20 +308,6 @@ function calculateZodiacLayout(i) {
     let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
     let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
 
-    let opacity;
-    // Fade out the exit item
-    if (i === 12) {
-        opacity = animator.exitOpacity;
-    }
-    // Fade in the entry item
-    else if (i === 0) {
-        opacity = 255 - animator.exitOpacity;
-    }
-    // Otherwise, keep it fully visible
-    else {
-        opacity = 255;
-    }
-
     return {
         x: layout.wheelRadius.x * cos(angle),
         y: layout.wheelRadius.y * sin(angle),
@@ -323,7 +315,7 @@ function calculateZodiacLayout(i) {
         textSize: lerp(viewport.length(0.24), viewport.length(0.48), hFactor),
         textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
         character: zodiacs[zodiacIdx],
-        opacity: opacity
+        opacity: animator.zodiacOpacities[i]
     };
 }
 
