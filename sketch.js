@@ -102,8 +102,10 @@ class Layout {
         };
 
         // Calculate independent anchor points for labels
-        const mainEdges = this.getLabelEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE, this.text.sizes.boxMain);
-        const subEdges = this.getLabelEdges(CONFIG.WHEEL.HIGHLIGHT_ANGLE + CONFIG.WHEEL.SPACING_ANGLE, this.text.sizes.boxSub);
+        const activeSlot = CONFIG.WHEEL.ACTIVE_SLOT;
+        // Use Exact Tracking for labels to match visual slot positions
+        const mainEdges = this.getLabelEdges(getSlotAngle(activeSlot), this.text.sizes.boxMain);
+        const subEdges = this.getLabelEdges(getSlotAngle(activeSlot + 1), this.text.sizes.boxSub);
 
         // Pre-calculated Text Positions (The "View Model")
         this.text.pos = {
