@@ -43,10 +43,17 @@ const CONFIG = {
 };
 
 class Viewport {
-    constructor(centerX, centerY, frameW, frameH) {
-        this._center = { x: centerX, y: centerY };
-        this._width = frameW;
-        this._height = frameH;
+    constructor(screenW, screenH) {
+        // Encapsulate sizing logic
+        // Fixed 1:1 Aspect Ratio (Square)
+        // Always fit within the smaller dimension of the screen, considering separate occupancy rules
+        let constrainedWidth = screenW * CONFIG.SCREEN.OCCUPANCY_W;
+        let constrainedHeight = screenH * CONFIG.SCREEN.OCCUPANCY_H;
+        let size = min(constrainedWidth, constrainedHeight);
+
+        this._center = { x: screenW / 2, y: screenH / 2 };
+        this._width = size;
+        this._height = size;
     }
 
     x(lx) { return this._center.x + lx * (this._width / 2); }
@@ -234,18 +241,7 @@ function windowResized() {
  * Recalculates layout parameters based on current window size.
  */
 function updateLayout() {
-    let centerX = width / 2;
-    let centerY = height / 2;
-
-    // Fixed 1:1 Aspect Ratio (Square)
-    // Always fit within the smaller dimension of the screen
-    // Fixed 1:1 Aspect Ratio (Square)
-    // Always fit within the smaller dimension of the screen, considering separate occupancy rules
-    let constrainedWidth = width * CONFIG.SCREEN.OCCUPANCY_W;
-    let constrainedHeight = height * CONFIG.SCREEN.OCCUPANCY_H;
-    let frameSize = min(constrainedWidth, constrainedHeight);
-
-    viewport = new Viewport(centerX, centerY, frameSize, frameSize);
+    viewport = new Viewport(width, height);
     layout = new Layout(viewport);
 }
 
