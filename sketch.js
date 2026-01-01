@@ -11,15 +11,15 @@ const CONFIG = {
         OCCUPANCY_W: 0.95,        // 横方向の画面占有率
         OCCUPANCY_H: 0.75,        // 縦方向の画面占有率
         MARGIN: 0.02,             // 基本マージン（2%）
-        OFFSET_Y: -0.12            // 画面全体の上方へのオフセット (Viewport高さに対する比率)
+        OFFSET_Y: -0.24            // 画面全体の上方へのオフセット (Viewport半径に対する比率 -0.12 * 2)
     },
     WHEEL: {
         SPACING_ANGLE: 11,      // 干支どうしの間隔（度数）
         ACTIVE_SLOT: 3,           // アクティブな干支が配置の何番目に来るか
         HIGHLIGHT_ANGLE: 133,   // アクティブな干支を表示する基準角度
         CENTER_X_RATIO: 1.2,      // ホイールの中心X座標のオフセット比率
-        RADIUS_RATIO_X: 0.82 * 1.25, // 干支ホイールの横半径比率
-        RADIUS_RATIO_Y: 0.82 * 0.8,  // 干支ホイールの縦半径比率
+        RADIUS_RATIO_X: 1.64 * 1.25, // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
+        RADIUS_RATIO_Y: 1.64 * 0.8,  // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
         // 各スロットの角度微調整 (基準間隔からのオフセット)
         // Index: -1(Entrance Source), 0(Active), 1..12
         // Default: All 0
@@ -28,8 +28,8 @@ const CONFIG = {
     DECORATION: {
         ARC_START_ANGLE: 101.5,     // 赤い円弧の開始角度
         ARC_END_ANGLE: 228,       // 赤い円弧の終了角度
-        ARC_RADIUS_RATIO_X: 0.68 * 1.25, // 赤い円弧の横半径比率
-        ARC_RADIUS_RATIO_Y: 0.68 * 0.75,  // 赤い円弧の縦半径比率
+        ARC_RADIUS_RATIO_X: 1.36 * 1.25, // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
+        ARC_RADIUS_RATIO_Y: 1.36 * 0.75,  // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
         DOT_START_ANGLE: 120,     // 装飾ドットの開始角度
         DOT_SPACING_ANGLE: 35,    // 装飾ドットの間隔
         DOT_COUNT: 4,             // 装飾ドットの個数
@@ -52,16 +52,16 @@ class Viewport {
         let size = min(constrainedWidth, constrainedHeight);
 
         this._center = { x: screenW / 2, y: screenH / 2 };
-        this._width = size;
-        this._height = size;
+        this._unit = size / 2; // Fundamental Unit: Radius
     }
 
-    x(lx) { return this._center.x + lx * (this._width / 2); }
-    y(ly) { return this._center.y + ly * (this._height / 2); }
-    scale(ls) { return ls * (this._width / 2); }
+    x(ratio) { return this._center.x + ratio * this._unit; }
+    y(ratio) { return this._center.y + ratio * this._unit; }
 
-    get width() { return this._width; }
-    get height() { return this._height; }
+    // Returns a length scaled by the unit (Radius)
+    // length(1.0) = Radius (Distance from center to edge)
+    // length(2.0) = Diameter (Full Size)
+    length(ratio) { return ratio * this._unit; }
 }
 
 class Layout {
@@ -77,28 +77,28 @@ class Layout {
             y: this.vp.y(0)
         };
         this.wheelRadius = {
-            x: this.vp.height * CONFIG.WHEEL.RADIUS_RATIO_X,
-            y: this.vp.height * CONFIG.WHEEL.RADIUS_RATIO_Y
+            x: this.vp.length(CONFIG.WHEEL.RADIUS_RATIO_X),
+            y: this.vp.length(CONFIG.WHEEL.RADIUS_RATIO_Y)
         };
 
         // 2. Decoration Geometry
         this.arcRadius = {
-            x: this.vp.height * CONFIG.DECORATION.ARC_RADIUS_RATIO_X,
-            y: this.vp.height * CONFIG.DECORATION.ARC_RADIUS_RATIO_Y
+            x: this.vp.length(CONFIG.DECORATION.ARC_RADIUS_RATIO_X),
+            y: this.vp.length(CONFIG.DECORATION.ARC_RADIUS_RATIO_Y)
         };
 
         // 3. Spacing & Margins
-        this.margin = this.vp.scale(CONFIG.SCREEN.MARGIN);
+        this.margin = this.vp.length(CONFIG.SCREEN.MARGIN); // scale() was radius-based
 
         // 4. Text Layout Metrics
         this.text = {
             sizes: {
-                header: this.vp.scale(0.24),
-                yearMain: this.vp.scale(0.17),
-                yearSub: this.vp.scale(0.1),
-                footer: this.vp.scale(0.07),
-                boxMain: this.vp.scale(0.60),
-                boxSub: this.vp.scale(0.30)
+                header: this.vp.length(0.24),
+                yearMain: this.vp.length(0.17),
+                yearSub: this.vp.length(0.1),
+                footer: this.vp.length(0.07),
+                boxMain: this.vp.length(0.60),
+                boxSub: this.vp.length(0.30)
             }
         };
 
@@ -136,7 +136,7 @@ class Layout {
         };
 
         // 6. Global Render Offset
-        this.renderOffset = this.vp.height * CONFIG.SCREEN.OFFSET_Y;
+        this.renderOffset = this.vp.length(CONFIG.SCREEN.OFFSET_Y);
     }
 
     // Semantic helper for needle start position
@@ -309,8 +309,8 @@ function calculateZodiacLayout(i) {
     return {
         x: layout.wheelRadius.x * cos(angle),
         y: layout.wheelRadius.y * sin(angle),
-        boxSize: lerp(viewport.scale(0.30), viewport.scale(0.60), hFactor),
-        textSize: lerp(viewport.scale(0.24), viewport.scale(0.48), hFactor),
+        boxSize: lerp(viewport.length(0.30), viewport.length(0.60), hFactor),
+        textSize: lerp(viewport.length(0.24), viewport.length(0.48), hFactor),
         textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
         character: zodiacs[zodiacIdx],
         opacity: opacity
@@ -352,7 +352,7 @@ function drawDecoration() {
     noStroke();
     for (let i = 0; i < CONFIG.DECORATION.DOT_COUNT; i++) {
         let a = CONFIG.DECORATION.DOT_START_ANGLE + i * CONFIG.DECORATION.DOT_SPACING_ANGLE;
-        circle(layout.wheelCenter.x + cos(a) * layout.arcRadius.x, layout.wheelCenter.y + sin(a) * layout.arcRadius.y, viewport.scale(0.06));
+        circle(layout.wheelCenter.x + cos(a) * layout.arcRadius.x, layout.wheelCenter.y + sin(a) * layout.arcRadius.y, viewport.length(0.06));
     }
 
     // Red Needle
