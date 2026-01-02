@@ -138,6 +138,17 @@ class Layout {
 
         // 6. Global Render Offset
         this.renderOffset = this.vp.length(CONFIG.SCREEN.OFFSET_Y);
+
+        // 7. Component Sizes (Centralized Sizing from Viewport)
+        this.zodiacSizes = {
+            boxMin: this.vp.length(0.30),
+            boxMax: this.vp.length(0.60),
+            textMin: this.vp.length(0.24),
+            textMax: this.vp.length(0.48)
+        };
+        this.decorationSizes = {
+            dotRadius: this.vp.length(0.06)
+        };
     }
 
     // Semantic helper for needle start position
@@ -311,8 +322,8 @@ function calculateZodiacLayout(i) {
     return {
         x: layout.wheelRadius.x * cos(angle),
         y: layout.wheelRadius.y * sin(angle),
-        boxSize: lerp(viewport.length(0.30), viewport.length(0.60), hFactor),
-        textSize: lerp(viewport.length(0.24), viewport.length(0.48), hFactor),
+        boxSize: lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor),
+        textSize: lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor),
         textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
         character: zodiacs[zodiacIdx],
         opacity: animator.zodiacOpacities[i]
@@ -354,7 +365,7 @@ function drawDecoration() {
     noStroke();
     for (let i = 0; i < CONFIG.DECORATION.DOT_COUNT; i++) {
         let a = CONFIG.DECORATION.DOT_START_ANGLE + i * CONFIG.DECORATION.DOT_SPACING_ANGLE;
-        circle(layout.wheelCenter.x + cos(a) * layout.arcRadius.x, layout.wheelCenter.y + sin(a) * layout.arcRadius.y, viewport.length(0.06));
+        circle(layout.wheelCenter.x + cos(a) * layout.arcRadius.x, layout.wheelCenter.y + sin(a) * layout.arcRadius.y, layout.decorationSizes.dotRadius);
     }
 
     // Red Needle
