@@ -260,12 +260,16 @@ function setup() {
 
     animator = new Animator();
 
+    // Initial Layout Calculation
+    updateLayout();
+
     // Trigger initial animation
     animator.play(currentYear);
 }
 
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
+    updateLayout();
 }
 
 /**
@@ -277,7 +281,6 @@ function updateLayout() {
 }
 
 function draw() {
-    updateLayout();
     animator.update();
 
     background(CONFIG.COLORS.BG);
