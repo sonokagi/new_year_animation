@@ -66,10 +66,7 @@ class Viewport {
 class Layout {
     constructor(vp) {
         this.vp = vp;
-        this._update();
-    }
 
-    _update() {
         // 1. Wheel Geometry
         this.wheelCenter = {
             x: this.vp.x(CONFIG.WHEEL.CENTER_X_RATIO),
@@ -149,15 +146,15 @@ class Layout {
         this.decorationSizes = {
             dotRadius: this.vp.length(0.06)
         };
-    }
 
-    // Semantic helper for needle start position
-    get needleStart() {
-        return {
+        // 8. Decoration Positions
+        this.needleStart = {
             x: this.vp.x(1.0 - CONFIG.SCREEN.MARGIN * 4),
             y: this.wheelCenter.y
         };
     }
+
+
 
     // POSITION HELPERS
 
