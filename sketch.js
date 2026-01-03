@@ -271,9 +271,6 @@ class Animator {
         // Animation State
         this.progress = 1.0;
         this.running = false;
-
-        // Derived Values (Cached for rendering)
-        this.needleAngle = 0;
     }
 
     play(targetYear) {
@@ -294,13 +291,6 @@ class Animator {
             this.running = false;
             this.displayYear = this.targetYear;
         }
-
-        // Calculate derived values based on new progress
-        // Exact Tracking: Needle follows the item arriving at ACTIVE_SLOT
-        let activeSlot = CONFIG.WHEEL.ACTIVE_SLOT;
-        let startSlotAngle = layout.getSlotAngle(activeSlot - 1);
-        let endSlotAngle = layout.getSlotAngle(activeSlot);
-        this.needleAngle = lerp(startSlotAngle, endSlotAngle, this.progress);
     }
 }
 
@@ -392,8 +382,13 @@ function drawNeedle() {
     strokeWeight(15);
     let start = layout.needleStart;
 
-    // Use centralized angle
-    let target = layout.getWheelPosition(animator.needleAngle);
+    // Localized Angle Interpolation
+    let activeSlot = CONFIG.WHEEL.ACTIVE_SLOT;
+    let startSlotAngle = layout.getSlotAngle(activeSlot - 1);
+    let endSlotAngle = layout.getSlotAngle(activeSlot);
+    let needleAngle = lerp(startSlotAngle, endSlotAngle, animator.progress);
+
+    let target = layout.getWheelPosition(needleAngle);
 
     // Vector from Start to Target
     let dx = target.x - start.x;
