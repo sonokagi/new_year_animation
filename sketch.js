@@ -185,7 +185,7 @@ class ZodiacWheel {
         ];
     }
 
-    render(animator, layout, currentYear) {
+    render(currentYear) {
         push();
         translate(layout.wheelCenter.x, layout.wheelCenter.y);
 
@@ -343,7 +343,7 @@ function draw() {
     drawDecoration();
     drawOuterFrame();
     drawTextContent();
-    wheel.render(animator, layout, currentYear);
+    wheel.render(currentYear);
 
     pop();
 }
