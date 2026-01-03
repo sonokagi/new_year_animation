@@ -1,11 +1,10 @@
 /* --- CONFIGURATION --- */
 const CONFIG = {
     COLORS: {
-        BG: 255,                  // 背景色
-        TEXT_MAIN: 0,             // メインテキスト色（黒）
-        TEXT_SUB: 120,            // サブテキスト色（グレー）
-        ACCENT: [255, 0, 0],      // アクセント色（赤）
-        NEEDLE: [255, 0, 0]       // 針の色
+        BACK_GROUND: 255,         // 背景色 (白)
+        MAIN: 0,                  // メイン色（黒）
+        SUB: 120,                 // サブ色（グレー）
+        ACCENT: [255, 0, 0]       // アクセント色（赤）
     },
     SCREEN: {
         OCCUPANCY_W: 0.95,        // 横方向の画面占有率
@@ -239,18 +238,22 @@ class ZodiacWheel {
     _renderItem(character, hFactor, opacity) {
         let currentBoxSize = lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor);
         let currentTextSize = lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor);
-        let currentTextColor = lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor);
+        let currentTextColor = lerp(CONFIG.COLORS.SUB, CONFIG.COLORS.MAIN, hFactor);
 
         noStroke();
         let c = color(currentTextColor);
         c.setAlpha(opacity);
         fill(c);
 
-        stroke(1, opacity);
+        let s = color(CONFIG.COLORS.MAIN);
+        s.setAlpha(opacity);
+        stroke(s);
         rectMode(CENTER);
         rect(0, 0, currentBoxSize, currentBoxSize);
 
-        fill(255, opacity); // Ensure text is also affected by opacity
+        let f = color(CONFIG.COLORS.BACK_GROUND);
+        f.setAlpha(opacity);
+        fill(f); // Ensure text is also affected by opacity
         noStroke();
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
@@ -278,7 +281,6 @@ class Animator {
         this.displayYear = targetYear - 1;
         this.progress = 0.0;
         this.running = true;
-        this.exitOpacity = 255;
     }
 
     update() {
@@ -338,7 +340,7 @@ function updateLayout() {
 function draw() {
     animator.update();
 
-    background(CONFIG.COLORS.BG);
+    background(CONFIG.COLORS.BACK_GROUND);
 
     push();
     translate(0, layout.renderOffset);
@@ -378,7 +380,7 @@ function drawDecoration() {
 
 function drawNeedle() {
     // Red Needle
-    stroke(CONFIG.COLORS.NEEDLE);
+    stroke(CONFIG.COLORS.ACCENT);
     strokeWeight(15);
     let start = layout.needleStart;
 
@@ -401,7 +403,7 @@ function drawNeedle() {
 
 function drawOuterFrame() {
     noFill();
-    stroke(0);
+    stroke(CONFIG.COLORS.MAIN);
     strokeWeight(2);
     rectMode(CORNERS);
     rect(layout.outerFrame.x1, layout.outerFrame.y1, layout.outerFrame.x2, layout.outerFrame.y2);
@@ -414,7 +416,7 @@ function drawTextContent() {
 
     // 1. HAPPY NEW YEAR!
     textAlign(RIGHT, CENTER);
-    fill(CONFIG.COLORS.TEXT_MAIN);
+    fill(CONFIG.COLORS.MAIN);
     noStroke();
     textSize(sizes.header);
     textStyle(BOLDITALIC);
@@ -426,18 +428,18 @@ function drawTextContent() {
     textStyle(NORMAL);
 
     // Previous Year (Gray)
-    fill(CONFIG.COLORS.TEXT_SUB);
+    fill(CONFIG.COLORS.SUB);
     textSize(sizes.yearSub);
     text((animator.displayYear - 1) + ":", pos.yearSub.x, pos.yearSub.y);
 
     // Current Year (Black)
-    fill(CONFIG.COLORS.TEXT_MAIN);
+    fill(CONFIG.COLORS.MAIN);
     textSize(sizes.yearMain);
     text(animator.displayYear + ":", pos.yearMain.x, pos.yearMain.y);
 
     // 3. Footer
     textAlign(LEFT, BOTTOM);
     textSize(sizes.footer);
-    fill(CONFIG.COLORS.TEXT_MAIN);
+    fill(CONFIG.COLORS.MAIN);
     text("今年もよろしくお願いします。", pos.footer.x, pos.footer.y);
 }
