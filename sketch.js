@@ -177,33 +177,26 @@ class Layout {
 }
 
 class ZodiacItem {
-    constructor(character, hFactor, opacity) {
-        this.character = character;
-        this.hFactor = hFactor;
-        this.opacity = opacity;
+    render(character, hFactor, opacity) {
+        let currentBoxSize = lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor);
+        let currentTextSize = lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor);
+        let currentTextColor = lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor);
 
-        // Temporarily pre-calculating in constructor to keep render() minimal for Step 3.2
-        this.boxSize = lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor);
-        this.textSize = lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor);
-        this.textColor = lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor);
-    }
-
-    render() {
         noStroke();
-        let c = color(this.textColor);
-        c.setAlpha(this.opacity);
+        let c = color(currentTextColor);
+        c.setAlpha(opacity);
         fill(c);
 
-        stroke(1, this.opacity);
+        stroke(1, opacity);
         rectMode(CENTER);
-        rect(0, 0, this.boxSize, this.boxSize);
+        rect(0, 0, currentBoxSize, currentBoxSize);
 
-        fill(255, this.opacity); // Ensure text is also affected by opacity
+        fill(255, opacity); // Ensure text is also affected by opacity
         noStroke();
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
-        textSize(this.textSize);
-        text(this.character, 0, 0);
+        textSize(currentTextSize);
+        text(character, 0, 0);
     }
 }
 
@@ -223,11 +216,11 @@ class ZodiacWheel {
             let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
             let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
 
-            let item = new ZodiacItem(this.zodiacs[zodiacIdx], hFactor, animator.zodiacOpacities[i]);
+            let item = new ZodiacItem();
 
             push();
             translate(layout.wheelRadius.x * cos(angle), layout.wheelRadius.y * sin(angle));
-            item.render();
+            item.render(this.zodiacs[zodiacIdx], hFactor, animator.zodiacOpacities[i]);
             pop();
         }
 
