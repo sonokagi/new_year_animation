@@ -236,25 +236,30 @@ class ZodiacWheel {
     }
 
     _renderItem(character, hFactor, opacity) {
+        // 1. Geometry & Interpolation
         let currentBoxSize = lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor);
         let currentTextSize = lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor);
-        let currentTextColor = lerp(CONFIG.COLORS.SUB, CONFIG.COLORS.MAIN, hFactor);
+        let baseFillColor = lerp(CONFIG.COLORS.SUB, CONFIG.COLORS.MAIN, hFactor);
 
-        noStroke();
-        let c = color(currentTextColor);
-        c.setAlpha(opacity);
-        fill(c);
+        // 2. Color Definitions (Consolidated Alpha Management)
+        let fillColor = color(baseFillColor);
+        fillColor.setAlpha(opacity);
 
+        let strokeColor = color(CONFIG.COLORS.MAIN);
+        strokeColor.setAlpha(opacity);
+
+        let textColor = color(CONFIG.COLORS.BACK_GROUND);
+        textColor.setAlpha(opacity);
+
+        // 3. Render Box
+        fill(fillColor);
+        stroke(strokeColor);
         strokeWeight(2);
-        let s = color(CONFIG.COLORS.MAIN);
-        s.setAlpha(opacity);
-        stroke(s);
         rectMode(CENTER);
         rect(0, 0, currentBoxSize, currentBoxSize);
 
-        let f = color(CONFIG.COLORS.BACK_GROUND);
-        f.setAlpha(opacity);
-        fill(f); // Ensure text is also affected by opacity
+        // 4. Render Character Text
+        fill(textColor);
         noStroke();
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
