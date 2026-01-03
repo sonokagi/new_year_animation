@@ -101,8 +101,8 @@ class Layout {
         // Calculate independent anchor points for labels
         const activeSlot = CONFIG.WHEEL.ACTIVE_SLOT;
         // Use Exact Tracking for labels to match visual slot positions
-        const mainEdges = this.getLabelEdges(getSlotAngle(activeSlot), this.text.sizes.boxMain);
-        const subEdges = this.getLabelEdges(getSlotAngle(activeSlot + 1), this.text.sizes.boxSub);
+        const mainEdges = this.getLabelEdges(this.getSlotAngle(activeSlot), this.text.sizes.boxMain);
+        const subEdges = this.getLabelEdges(this.getSlotAngle(activeSlot + 1), this.text.sizes.boxSub);
 
         // Pre-calculated Text Positions (The "View Model")
         this.text.pos = {
@@ -174,6 +174,21 @@ class Layout {
             left: pos.x - size / 2
         };
     }
+
+    getSlotAngle(i) {
+        // Determine base angle for slot i
+        let baseAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + (i - CONFIG.WHEEL.ACTIVE_SLOT) * CONFIG.WHEEL.SPACING_ANGLE;
+
+        // Apply custom adjustment if available
+        // Map logic index i (-1 to 12) to array index (0 to 13)
+        let adjIndex = i + 1;
+        let adjustment = 0;
+        if (adjIndex >= 0 && adjIndex < CONFIG.WHEEL.ANGLE_ADJUSTMENTS.length) {
+            adjustment = CONFIG.WHEEL.ANGLE_ADJUSTMENTS[adjIndex];
+        }
+
+        return baseAngle + adjustment;
+    }
 }
 
 
@@ -193,7 +208,7 @@ class ZodiacWheel {
             let angle = animator.zodiacAngles[i];
             let zodiacIdx = (this._getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
-            let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
+            let angleDist = abs(angle - layout.getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
             let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
 
             push();
@@ -269,14 +284,14 @@ class Animator {
         // Calculate derived values based on new progress
         // Exact Tracking: Needle follows the item arriving at ACTIVE_SLOT
         let activeSlot = CONFIG.WHEEL.ACTIVE_SLOT;
-        let startSlotAngle = getSlotAngle(activeSlot - 1);
-        let endSlotAngle = getSlotAngle(activeSlot);
+        let startSlotAngle = layout.getSlotAngle(activeSlot - 1);
+        let endSlotAngle = layout.getSlotAngle(activeSlot);
         this.needleAngle = lerp(startSlotAngle, endSlotAngle, this.progress);
 
         // Pre-calculate Zodiac parameters
         for (let i = 0; i <= 12; i++) {
-            let prev = getSlotAngle(i - 1);
-            let curr = getSlotAngle(i);
+            let prev = layout.getSlotAngle(i - 1);
+            let curr = layout.getSlotAngle(i);
             this.zodiacAngles[i] = lerp(prev, curr, this.progress);
 
             if (i === 12) {
@@ -395,21 +410,6 @@ function drawOuterFrame() {
     rect(layout.outerFrame.x1, layout.outerFrame.y1, layout.outerFrame.x2, layout.outerFrame.y2);
 }
 
-// Calculation helpers
-function getSlotAngle(i) {
-    // Determine base angle for slot i
-    let baseAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + (i - CONFIG.WHEEL.ACTIVE_SLOT) * CONFIG.WHEEL.SPACING_ANGLE;
-
-    // Apply custom adjustment if available
-    // Map logic index i (-1 to 12) to array index (0 to 13)
-    let adjIndex = i + 1;
-    let adjustment = 0;
-    if (adjIndex >= 0 && adjIndex < CONFIG.WHEEL.ANGLE_ADJUSTMENTS.length) {
-        adjustment = CONFIG.WHEEL.ANGLE_ADJUSTMENTS[adjIndex];
-    }
-
-    return baseAngle + adjustment;
-}
 
 function drawTextContent() {
     const pos = layout.text.pos;
