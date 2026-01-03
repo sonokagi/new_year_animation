@@ -176,29 +176,6 @@ class Layout {
     }
 }
 
-class ZodiacItem {
-    render(character, hFactor, opacity) {
-        let currentBoxSize = lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor);
-        let currentTextSize = lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor);
-        let currentTextColor = lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor);
-
-        noStroke();
-        let c = color(currentTextColor);
-        c.setAlpha(opacity);
-        fill(c);
-
-        stroke(1, opacity);
-        rectMode(CENTER);
-        rect(0, 0, currentBoxSize, currentBoxSize);
-
-        fill(255, opacity); // Ensure text is also affected by opacity
-        noStroke();
-        textAlign(CENTER, CENTER);
-        textStyle(BOLD);
-        textSize(currentTextSize);
-        text(character, 0, 0);
-    }
-}
 
 class ZodiacWheel {
     constructor() {
@@ -219,15 +196,35 @@ class ZodiacWheel {
             let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
             let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
 
-            let item = new ZodiacItem();
-
             push();
             translate(layout.wheelRadius.x * cos(angle), layout.wheelRadius.y * sin(angle));
-            item.render(this.zodiacs[zodiacIdx], hFactor, animator.zodiacOpacities[i]);
+            this._renderItem(this.zodiacs[zodiacIdx], hFactor, animator.zodiacOpacities[i]);
             pop();
         }
 
         pop();
+    }
+
+    _renderItem(character, hFactor, opacity) {
+        let currentBoxSize = lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor);
+        let currentTextSize = lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor);
+        let currentTextColor = lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor);
+
+        noStroke();
+        let c = color(currentTextColor);
+        c.setAlpha(opacity);
+        fill(c);
+
+        stroke(1, opacity);
+        rectMode(CENTER);
+        rect(0, 0, currentBoxSize, currentBoxSize);
+
+        fill(255, opacity); // Ensure text is also affected by opacity
+        noStroke();
+        textAlign(CENTER, CENTER);
+        textStyle(BOLD);
+        textSize(currentTextSize);
+        text(character, 0, 0);
     }
 
     _getZodiacIndex(year) {
