@@ -205,15 +205,29 @@ class ZodiacWheel {
         translate(layout.wheelCenter.x, layout.wheelCenter.y);
 
         for (let i = 12; i >= 0; i--) {
-            let angle = animator.zodiacAngles[i];
+            // Localized Angle Interpolation
+            let angle = lerp(layout.getSlotAngle(i - 1), layout.getSlotAngle(i), animator.progress);
             let zodiacIdx = (this._getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
             let angleDist = abs(angle - layout.getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
             let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
 
+            // Localized Opacity Interpolation
+            let opacity;
+            if (i === 0) {
+                // Fade-in: Entering slot
+                opacity = lerp(0, 255, animator.progress);
+            } else if (i === 12) {
+                // Fade-out: Exiting slot
+                opacity = lerp(255, 0, animator.progress);
+            } else {
+                // Regular display
+                opacity = 255;
+            }
+
             push();
             translate(layout.wheelRadius.x * cos(angle), layout.wheelRadius.y * sin(angle));
-            this._renderItem(this.zodiacs[zodiacIdx], hFactor, animator.zodiacOpacities[i]);
+            this._renderItem(this.zodiacs[zodiacIdx], hFactor, opacity);
             pop();
         }
 
@@ -258,8 +272,6 @@ class Animator {
 
         // Derived Values (Cached for rendering)
         this.needleAngle = 0;
-        this.zodiacAngles = new Array(13).fill(0); // Store angles for slots 0 to 12
-        this.zodiacOpacities = new Array(13).fill(255); // Store opacities
     }
 
     play(targetYear) {
@@ -287,21 +299,6 @@ class Animator {
         let startSlotAngle = layout.getSlotAngle(activeSlot - 1);
         let endSlotAngle = layout.getSlotAngle(activeSlot);
         this.needleAngle = lerp(startSlotAngle, endSlotAngle, this.progress);
-
-        // Pre-calculate Zodiac parameters
-        for (let i = 0; i <= 12; i++) {
-            let prev = layout.getSlotAngle(i - 1);
-            let curr = layout.getSlotAngle(i);
-            this.zodiacAngles[i] = lerp(prev, curr, this.progress);
-
-            if (i === 12) {
-                this.zodiacOpacities[i] = lerp(255, 0, this.progress); // Fade out exit item
-            } else if (i === 0) {
-                this.zodiacOpacities[i] = lerp(0, 255, this.progress); // Fade in entry item
-            } else {
-                this.zodiacOpacities[i] = 255;
-            }
-        }
     }
 }
 
