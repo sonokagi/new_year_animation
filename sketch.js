@@ -211,6 +211,45 @@ class ZodiacItem {
     }
 }
 
+class ZodiacWheel {
+    constructor(zodiacs) {
+        this.zodiacs = zodiacs;
+    }
+
+    render(animator, layout, currentYear) {
+        push();
+        translate(layout.wheelCenter.x, layout.wheelCenter.y);
+
+        for (let i = 12; i >= 0; i--) {
+            let item = this._createItem(i, animator, layout, currentYear);
+            item.render();
+        }
+
+        pop();
+    }
+
+    _createItem(i, animator, layout, currentYear) {
+        let angle = animator.zodiacAngles[i];
+        let zodiacIdx = (this._getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
+
+        let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
+        let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
+
+        return new ZodiacItem(this.zodiacs[zodiacIdx], {
+            x: layout.wheelRadius.x * cos(angle),
+            y: layout.wheelRadius.y * sin(angle),
+            boxSize: lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor),
+            textSize: lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor),
+            textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
+            opacity: animator.zodiacOpacities[i]
+        });
+    }
+
+    _getZodiacIndex(year) {
+        return ((year - 4) % 12 + 12) % 12;
+    }
+}
+
 class Animator {
     constructor() {
         this.displayYear = 0;
@@ -284,6 +323,9 @@ let animator;
 let viewport;
 let layout;
 
+// Wheel State
+let wheel;
+
 function setup() {
     createCanvas(windowWidth, windowHeight);
     textFont("Noto Sans JP");
@@ -291,6 +333,7 @@ function setup() {
     angleMode(DEGREES);
 
     animator = new Animator();
+    wheel = new ZodiacWheel(zodiacs);
 
     // Initial Layout Calculation
     updateLayout();
@@ -323,7 +366,7 @@ function draw() {
     drawDecoration();
     drawOuterFrame();
     drawTextContent();
-    drawZodiacWheel();
+    wheel.render(animator, layout, currentYear);
 
     pop();
 }
@@ -334,34 +377,6 @@ function mousePressed() {
     animator.play(currentYear);
 }
 
-function drawZodiacWheel() {
-    push();
-    translate(layout.wheelCenter.x, layout.wheelCenter.y);
-
-    for (let i = 12; i >= 0; i--) {
-        let item = createZodiacItem(i);
-        item.render();
-    }
-
-    pop();
-}
-
-function createZodiacItem(i) {
-    let angle = animator.zodiacAngles[i];
-    let zodiacIdx = (getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
-
-    let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
-    let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
-
-    return new ZodiacItem(zodiacs[zodiacIdx], {
-        x: layout.wheelRadius.x * cos(angle),
-        y: layout.wheelRadius.y * sin(angle),
-        boxSize: lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor),
-        textSize: lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor),
-        textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
-        opacity: animator.zodiacOpacities[i]
-    });
-}
 
 
 function drawDecoration() {
@@ -405,10 +420,6 @@ function drawOuterFrame() {
 }
 
 // Calculation helpers
-function getZodiacIndex(year) {
-    return ((year - 4) % 12 + 12) % 12;
-}
-
 function getSlotAngle(i) {
     // Determine base angle for slot i
     let baseAngle = CONFIG.WHEEL.HIGHLIGHT_ANGLE + (i - CONFIG.WHEEL.ACTIVE_SLOT) * CONFIG.WHEEL.SPACING_ANGLE;
