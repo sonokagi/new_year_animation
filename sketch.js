@@ -179,8 +179,6 @@ class Layout {
 class ZodiacItem {
     constructor(character, options) {
         this.character = character;
-        this.x = options.x;
-        this.y = options.y;
         this.boxSize = options.boxSize;
         this.textSize = options.textSize;
         this.textColor = options.textColor;
@@ -188,9 +186,6 @@ class ZodiacItem {
     }
 
     render() {
-        push();
-        translate(this.x, this.y);
-
         noStroke();
         let c = color(this.textColor);
         c.setAlpha(this.opacity);
@@ -206,8 +201,6 @@ class ZodiacItem {
         textStyle(BOLD);
         textSize(this.textSize);
         text(this.character, 0, 0);
-
-        pop();
     }
 }
 
@@ -222,7 +215,11 @@ class ZodiacWheel {
 
         for (let i = 12; i >= 0; i--) {
             let item = this._createItem(i, animator, layout, currentYear);
+            let angle = animator.zodiacAngles[i];
+            push();
+            translate(layout.wheelRadius.x * cos(angle), layout.wheelRadius.y * sin(angle));
             item.render();
+            pop();
         }
 
         pop();
@@ -236,8 +233,6 @@ class ZodiacWheel {
         let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
 
         return new ZodiacItem(this.zodiacs[zodiacIdx], {
-            x: layout.wheelRadius.x * cos(angle),
-            y: layout.wheelRadius.y * sin(angle),
             boxSize: lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor),
             textSize: lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor),
             textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
