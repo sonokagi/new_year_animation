@@ -155,10 +155,7 @@ class Layout {
         };
     }
 
-
-
     // POSITION HELPERS
-
     // Absolute position for a specific angle on the wheel
     getWheelPosition(angle) {
         return {
@@ -191,7 +188,6 @@ class Layout {
         return baseAngle + adjustment;
     }
 }
-
 
 class ZodiacWheel {
     constructor() {
@@ -365,8 +361,6 @@ function mousePressed() {
     animator.play(currentYear);
 }
 
-
-
 function drawDecoration() {
     // Red Arc
     noFill();
@@ -394,6 +388,7 @@ function drawNeedle() {
     // Red Needle
     stroke(CONFIG.COLORS.ACCENT);
     strokeWeight(15);
+
     let start = layout.needleStart;
 
     // Localized Angle Interpolation
@@ -401,7 +396,6 @@ function drawNeedle() {
     let startSlotAngle = layout.getSlotAngle(activeSlot - 1);
     let endSlotAngle = layout.getSlotAngle(activeSlot);
     let needleAngle = lerp(startSlotAngle, endSlotAngle, animator.progress);
-
     let target = layout.getWheelPosition(needleAngle);
 
     // Vector from Start to Target
@@ -412,8 +406,6 @@ function drawNeedle() {
     let ratio = CONFIG.NEEDLE.LENGTH_RATIO;
     line(start.x, start.y, start.x + dx * ratio, start.y + dy * ratio);
 }
-
-
 
 function drawTextContent() {
     const pos = layout.text.pos;
@@ -431,12 +423,10 @@ function drawTextContent() {
     // 2. Year Labels (Aligned to tiles)
     textAlign(RIGHT, BOTTOM);
     textStyle(NORMAL);
-
     // Previous Year (Gray)
     fill(CONFIG.COLORS.SUB);
     textSize(sizes.yearSub);
     text((animator.displayYear - 1) + ":", pos.yearSub.x, pos.yearSub.y);
-
     // Current Year (Black)
     fill(CONFIG.COLORS.MAIN);
     textSize(sizes.yearMain);
