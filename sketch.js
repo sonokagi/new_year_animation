@@ -32,8 +32,10 @@ const CONFIG = {
         ARC_RADIUS_RATIO_Y: 1.36 * 0.75,  // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
         DOT_START_ANGLE: 120,     // 装飾ドットの開始角度
         DOT_SPACING_ANGLE: 35,    // 装飾ドットの間隔
-        DOT_COUNT: 4,             // 装飾ドットの個数
-        NEEDLE_LENGTH_RATIO: 0.65 // 針の長さ比率
+        DOT_COUNT: 4              // 装飾ドットの個数
+    },
+    NEEDLE: {
+        LENGTH_RATIO: 0.65        // 針の長さ比率
     },
     ANIMATION: {
         LERP_SPEED: 0.1,          // アニメーションの滑らかさ
@@ -352,6 +354,7 @@ function draw() {
     translate(0, layout.renderOffset);
 
     drawDecoration();
+    drawNeedle();
     drawOuterFrame();
     drawTextContent();
     wheel.render(currentYear);
@@ -381,7 +384,9 @@ function drawDecoration() {
         let a = CONFIG.DECORATION.DOT_START_ANGLE + i * CONFIG.DECORATION.DOT_SPACING_ANGLE;
         circle(layout.wheelCenter.x + cos(a) * layout.arcRadius.x, layout.wheelCenter.y + sin(a) * layout.arcRadius.y, layout.decorationSizes.dotRadius);
     }
+}
 
+function drawNeedle() {
     // Red Needle
     stroke(CONFIG.COLORS.NEEDLE);
     strokeWeight(15);
@@ -395,7 +400,7 @@ function drawDecoration() {
     let dy = target.y - start.y;
 
     // Draw needle using a fixed ratio for easy manual adjustment
-    let ratio = CONFIG.DECORATION.NEEDLE_LENGTH_RATIO;
+    let ratio = CONFIG.NEEDLE.LENGTH_RATIO;
     line(start.x, start.y, start.x + dx * ratio, start.y + dy * ratio);
 }
 
