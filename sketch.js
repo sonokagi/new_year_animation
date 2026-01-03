@@ -245,6 +245,7 @@ class ZodiacWheel {
         c.setAlpha(opacity);
         fill(c);
 
+        strokeWeight(2);
         let s = color(CONFIG.COLORS.MAIN);
         s.setAlpha(opacity);
         stroke(s);
@@ -347,7 +348,6 @@ function draw() {
 
     drawDecoration();
     drawNeedle();
-    drawOuterFrame();
     drawTextContent();
     wheel.render(currentYear);
 
@@ -376,6 +376,13 @@ function drawDecoration() {
         let a = CONFIG.DECORATION.DOT_START_ANGLE + i * CONFIG.DECORATION.DOT_SPACING_ANGLE;
         circle(layout.wheelCenter.x + cos(a) * layout.arcRadius.x, layout.wheelCenter.y + sin(a) * layout.arcRadius.y, layout.decorationSizes.dotRadius);
     }
+
+    // Outer Frame
+    noFill();
+    stroke(CONFIG.COLORS.MAIN);
+    strokeWeight(2);
+    rectMode(CORNERS);
+    rect(layout.outerFrame.x1, layout.outerFrame.y1, layout.outerFrame.x2, layout.outerFrame.y2);
 }
 
 function drawNeedle() {
@@ -401,13 +408,6 @@ function drawNeedle() {
     line(start.x, start.y, start.x + dx * ratio, start.y + dy * ratio);
 }
 
-function drawOuterFrame() {
-    noFill();
-    stroke(CONFIG.COLORS.MAIN);
-    strokeWeight(2);
-    rectMode(CORNERS);
-    rect(layout.outerFrame.x1, layout.outerFrame.y1, layout.outerFrame.x2, layout.outerFrame.y2);
-}
 
 
 function drawTextContent() {
