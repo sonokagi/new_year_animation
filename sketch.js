@@ -306,7 +306,6 @@ let wheel;
 function setup() {
     createCanvas(windowWidth, windowHeight);
     textFont("Noto Sans JP");
-    textAlign(CENTER, CENTER);
     angleMode(DEGREES);
 
     animator = new Animator();
