@@ -177,12 +177,15 @@ class Layout {
 }
 
 class ZodiacItem {
-    constructor(character, options) {
+    constructor(character, hFactor, opacity) {
         this.character = character;
-        this.boxSize = options.boxSize;
-        this.textSize = options.textSize;
-        this.textColor = options.textColor;
-        this.opacity = options.opacity;
+        this.hFactor = hFactor;
+        this.opacity = opacity;
+
+        // Temporarily pre-calculating in constructor to keep render() minimal for Step 3.2
+        this.boxSize = lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor);
+        this.textSize = lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor);
+        this.textColor = lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor);
     }
 
     render() {
@@ -232,12 +235,7 @@ class ZodiacWheel {
         let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
         let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
 
-        return new ZodiacItem(this.zodiacs[zodiacIdx], {
-            boxSize: lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor),
-            textSize: lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor),
-            textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
-            opacity: animator.zodiacOpacities[i]
-        });
+        return new ZodiacItem(this.zodiacs[zodiacIdx], hFactor, animator.zodiacOpacities[i]);
     }
 
     _getZodiacIndex(year) {
