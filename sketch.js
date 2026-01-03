@@ -201,8 +201,11 @@ class ZodiacItem {
 }
 
 class ZodiacWheel {
-    constructor(zodiacs) {
-        this.zodiacs = zodiacs;
+    constructor() {
+        this.zodiacs = [
+            "子", "丑", "寅", "卯", "辰", "巳",
+            "午", "未", "申", "酉", "戌", "亥"
+        ];
     }
 
     render(animator, layout, currentYear) {
@@ -290,11 +293,6 @@ class Animator {
     }
 }
 
-let zodiacs = [
-    "子", "丑", "寅", "卯", "辰", "巳",
-    "午", "未", "申", "酉", "戌", "亥"
-];
-
 // Domain State
 let currentYear = new Date().getFullYear();
 
@@ -315,7 +313,7 @@ function setup() {
     angleMode(DEGREES);
 
     animator = new Animator();
-    wheel = new ZodiacWheel(zodiacs);
+    wheel = new ZodiacWheel();
 
     // Initial Layout Calculation
     updateLayout();
