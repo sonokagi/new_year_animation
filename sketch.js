@@ -217,8 +217,14 @@ class ZodiacWheel {
         translate(layout.wheelCenter.x, layout.wheelCenter.y);
 
         for (let i = 12; i >= 0; i--) {
-            let item = this._createItem(i, animator, layout, currentYear);
             let angle = animator.zodiacAngles[i];
+            let zodiacIdx = (this._getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
+
+            let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
+            let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
+
+            let item = new ZodiacItem(this.zodiacs[zodiacIdx], hFactor, animator.zodiacOpacities[i]);
+
             push();
             translate(layout.wheelRadius.x * cos(angle), layout.wheelRadius.y * sin(angle));
             item.render();
@@ -226,16 +232,6 @@ class ZodiacWheel {
         }
 
         pop();
-    }
-
-    _createItem(i, animator, layout, currentYear) {
-        let angle = animator.zodiacAngles[i];
-        let zodiacIdx = (this._getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
-
-        let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
-        let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
-
-        return new ZodiacItem(this.zodiacs[zodiacIdx], hFactor, animator.zodiacOpacities[i]);
     }
 
     _getZodiacIndex(year) {
