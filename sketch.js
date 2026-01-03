@@ -176,6 +176,41 @@ class Layout {
     }
 }
 
+class ZodiacItem {
+    constructor(character, options) {
+        this.character = character;
+        this.x = options.x;
+        this.y = options.y;
+        this.boxSize = options.boxSize;
+        this.textSize = options.textSize;
+        this.textColor = options.textColor;
+        this.opacity = options.opacity;
+    }
+
+    render() {
+        push();
+        translate(this.x, this.y);
+
+        noStroke();
+        let c = color(this.textColor);
+        c.setAlpha(this.opacity);
+        fill(c);
+
+        stroke(1, this.opacity);
+        rectMode(CENTER);
+        rect(0, 0, this.boxSize, this.boxSize);
+
+        fill(255, this.opacity); // Ensure text is also affected by opacity
+        noStroke();
+        textAlign(CENTER, CENTER);
+        textStyle(BOLD);
+        textSize(this.textSize);
+        text(this.character, 0, 0);
+
+        pop();
+    }
+}
+
 class Animator {
     constructor() {
         this.displayYear = 0;
@@ -304,54 +339,30 @@ function drawZodiacWheel() {
     translate(layout.wheelCenter.x, layout.wheelCenter.y);
 
     for (let i = 12; i >= 0; i--) {
-        let data = calculateZodiacLayout(i);
-        drawZodiacItem(data);
+        let item = createZodiacItem(i);
+        item.render();
     }
 
     pop();
 }
 
-function calculateZodiacLayout(i) {
+function createZodiacItem(i) {
     let angle = animator.zodiacAngles[i];
-
     let zodiacIdx = (getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12;
 
     let angleDist = abs(angle - getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT));
     let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true);
 
-    return {
+    return new ZodiacItem(zodiacs[zodiacIdx], {
         x: layout.wheelRadius.x * cos(angle),
         y: layout.wheelRadius.y * sin(angle),
         boxSize: lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor),
         textSize: lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor),
         textColor: lerp(CONFIG.COLORS.TEXT_SUB, CONFIG.COLORS.TEXT_MAIN, hFactor),
-        character: zodiacs[zodiacIdx],
         opacity: animator.zodiacOpacities[i]
-    };
+    });
 }
 
-function drawZodiacItem(data) {
-    push();
-    translate(data.x, data.y);
-
-    noStroke();
-    let c = color(data.textColor);
-    c.setAlpha(data.opacity);
-    fill(c);
-
-    stroke(1, data.opacity);
-    rectMode(CENTER);
-    rect(0, 0, data.boxSize, data.boxSize);
-
-    fill(255);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    textStyle(BOLD);
-    textSize(data.textSize);
-    text(data.character, 0, 0);
-
-    pop();
-}
 
 function drawDecoration() {
     // Red Arc
