@@ -201,7 +201,7 @@ class ZodiacWheel {
     this.zodiacs = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
   }
 
-  render(currentYear) {
+  render() {
     push()
     translate(layout.wheelCenter.x, layout.wheelCenter.y)
 
@@ -348,7 +348,7 @@ function draw() {
   drawDecoration()
   drawNeedle()
   drawTextContent()
-  wheel.render(currentYear)
+  wheel.render()
 
   pop()
 }
