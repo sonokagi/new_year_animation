@@ -208,7 +208,8 @@ class ZodiacWheel {
     for (let i = 12; i >= 0; i--) {
       // Localized Angle Interpolation
       let angle = lerp(layout.getSlotAngle(i - 1), layout.getSlotAngle(i), animator.progress)
-      let zodiacIdx = (this._getZodiacIndex(currentYear) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12
+      let zodiacIdx =
+        (this._getZodiacIndex(year.current) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12
 
       let angleDist = abs(angle - layout.getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT))
       let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true)
@@ -267,8 +268,26 @@ class ZodiacWheel {
     text(character, 0, 0)
   }
 
-  _getZodiacIndex(year) {
-    return (((year - 4) % 12) + 12) % 12
+  _getZodiacIndex(yearValue) {
+    return (((yearValue - 4) % 12) + 12) % 12
+  }
+}
+
+class Year {
+  constructor() {
+    this.value = new Date().getFullYear()
+  }
+
+  advance() {
+    this.value++
+  }
+
+  get current() {
+    return this.value
+  }
+
+  get previous() {
+    return this.value - 1
   }
 }
 
@@ -297,7 +316,7 @@ class Animator {
 }
 
 // Domain State
-let currentYear = new Date().getFullYear()
+let year
 
 // Animation State
 let animator
@@ -314,6 +333,7 @@ function setup() {
   textFont("Noto Sans JP")
   angleMode(DEGREES)
 
+  year = new Year()
   animator = new Animator()
   wheel = new ZodiacWheel()
 
@@ -355,7 +375,7 @@ function draw() {
 
 function mousePressed() {
   if (animator.running) return
-  currentYear++
+  year.advance()
   animator.play()
 }
 
@@ -421,7 +441,7 @@ function drawTextContent() {
   const sizes = layout.text.sizes
 
   // Derived Display State
-  const displayYear = animator.running ? currentYear - 1 : currentYear
+  let displayYear = animator.running ? year.previous : year.current
 
   // 1. HAPPY NEW YEAR!
   textAlign(RIGHT, CENTER)
