@@ -274,17 +274,12 @@ class ZodiacWheel {
 
 class Animator {
   constructor() {
-    this.displayYear = 0
-    this.targetYear = 0
-
     // Animation State
     this.progress = 1.0
     this.running = false
   }
 
-  play(targetYear) {
-    this.targetYear = targetYear
-    this.displayYear = targetYear - 1
+  play() {
     this.progress = 0.0
     this.running = true
   }
@@ -297,7 +292,6 @@ class Animator {
     if (1.0 - this.progress < CONFIG.ANIMATION.THRESHOLD) {
       this.progress = 1.0
       this.running = false
-      this.displayYear = this.targetYear
     }
   }
 }
@@ -327,7 +321,7 @@ function setup() {
   updateLayout()
 
   // Trigger initial animation
-  animator.play(currentYear)
+  animator.play()
 }
 
 function windowResized() {
@@ -362,7 +356,7 @@ function draw() {
 function mousePressed() {
   if (animator.running) return
   currentYear++
-  animator.play(currentYear)
+  animator.play()
 }
 
 function drawDecoration() {
@@ -426,6 +420,9 @@ function drawTextContent() {
   const pos = layout.text.pos
   const sizes = layout.text.sizes
 
+  // Derived Display State
+  const displayYear = animator.running ? currentYear - 1 : currentYear
+
   // 1. HAPPY NEW YEAR!
   textAlign(RIGHT, CENTER)
   fill(CONFIG.COLORS.MAIN)
@@ -441,11 +438,11 @@ function drawTextContent() {
   // Previous Year (Gray)
   fill(CONFIG.COLORS.SUB)
   textSize(sizes.yearSub)
-  text(animator.displayYear - 1 + ":", pos.yearSub.x, pos.yearSub.y)
+  text(displayYear - 1 + ":", pos.yearSub.x, pos.yearSub.y)
   // Current Year (Black)
   fill(CONFIG.COLORS.MAIN)
   textSize(sizes.yearMain)
-  text(animator.displayYear + ":", pos.yearMain.x, pos.yearMain.y)
+  text(displayYear + ":", pos.yearMain.x, pos.yearMain.y)
 
   // 3. Footer
   textAlign(LEFT, BOTTOM)
