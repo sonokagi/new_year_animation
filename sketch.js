@@ -207,7 +207,7 @@ class ZodiacWheel {
 
     for (let i = 12; i >= 0; i--) {
       // Localized Angle Interpolation
-      let angle = lerp(layout.getSlotAngle(i - 1), layout.getSlotAngle(i), animator.progress)
+      let angle = animator.interpolate(layout.getSlotAngle(i - 1), layout.getSlotAngle(i))
       let zodiacIdx =
         (this._getZodiacIndex(year.current) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12
 
@@ -217,13 +217,10 @@ class ZodiacWheel {
       // Localized Opacity Interpolation
       let opacity
       if (i === 0) {
-        // Fade-in: Entering slot
-        opacity = lerp(0, 255, animator.progress)
+        opacity = animator.interpolate(0, 255) // Fade-in
       } else if (i === 12) {
-        // Fade-out: Exiting slot
-        opacity = lerp(255, 0, animator.progress)
+        opacity = animator.interpolate(255, 0) // Fade-out
       } else {
-        // Regular display
         opacity = 255
       }
 
@@ -312,6 +309,10 @@ class Animator {
       this.progress = 1.0
       this.running = false
     }
+  }
+
+  interpolate(a, b) {
+    return lerp(a, b, this.progress)
   }
 }
 
@@ -424,7 +425,7 @@ function drawNeedle() {
   let activeSlot = CONFIG.WHEEL.ACTIVE_SLOT
   let startSlotAngle = layout.getSlotAngle(activeSlot - 1)
   let endSlotAngle = layout.getSlotAngle(activeSlot)
-  let needleAngle = lerp(startSlotAngle, endSlotAngle, animator.progress)
+  let needleAngle = animator.interpolate(startSlotAngle, endSlotAngle)
   let target = layout.getWheelPosition(needleAngle)
 
   // Vector from Start to Target
