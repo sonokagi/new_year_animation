@@ -23,3 +23,4 @@ This project follows these core principles:
    - DO NOT output the full dialogue directly in the chat block.
    - Present only the summary or the final conclusion/proposal in the chat.
    - All expert discussions and their summaries MUST be provided in Japanese.
+   - Walkthroughs (`walkthrough.md`) MUST be provided in Japanese.
