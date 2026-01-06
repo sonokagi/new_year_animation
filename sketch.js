@@ -206,15 +206,16 @@ class ZodiacWheel {
     translate(layout.wheelCenter.x, layout.wheelCenter.y)
 
     for (let i = 12; i >= 0; i--) {
-      // Localized Angle Interpolation
-      let angle = animator.interpolate(layout.getSlotAngle(i - 1), layout.getSlotAngle(i))
-      let zodiacIdx =
-        (this._getZodiacIndex(year.current) - (i - CONFIG.WHEEL.ACTIVE_SLOT) + 12) % 12
+      // 1. Domain & Timing Logic
+      const slotYear = year.current + (CONFIG.WHEEL.ACTIVE_SLOT - i)
+      const zodiac = this._getZodiacByYear(slotYear)
+      const angle = animator.interpolate(layout.getSlotAngle(i - 1), layout.getSlotAngle(i))
 
-      let angleDist = abs(angle - layout.getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT))
-      let hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true)
+      // 2. Interpolation Factors
+      const angleDist = abs(angle - layout.getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT))
+      const hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true)
 
-      // Localized Opacity Interpolation
+      // 3. Localized Opacity Interpolation
       let opacity
       if (i === 0) {
         opacity = animator.interpolate(0, 255) // Fade-in
@@ -226,7 +227,7 @@ class ZodiacWheel {
 
       push()
       translate(layout.wheelRadius.x * cos(angle), layout.wheelRadius.y * sin(angle))
-      this._renderItem(this.zodiacs[zodiacIdx], hFactor, opacity)
+      this._renderItem(zodiac, hFactor, opacity)
       pop()
     }
 
@@ -263,6 +264,10 @@ class ZodiacWheel {
     textStyle(BOLD)
     textSize(currentTextSize)
     text(character, 0, 0)
+  }
+
+  _getZodiacByYear(yearValue) {
+    return this.zodiacs[this._getZodiacIndex(yearValue)]
   }
 
   _getZodiacIndex(yearValue) {
@@ -422,10 +427,11 @@ function drawNeedle() {
   let start = layout.needleStart
 
   // Localized Angle Interpolation
-  let activeSlot = CONFIG.WHEEL.ACTIVE_SLOT
-  let startSlotAngle = layout.getSlotAngle(activeSlot - 1)
-  let endSlotAngle = layout.getSlotAngle(activeSlot)
-  let needleAngle = animator.interpolate(startSlotAngle, endSlotAngle)
+  let active = CONFIG.WHEEL.ACTIVE_SLOT
+  let needleAngle = animator.interpolate(
+    layout.getSlotAngle(active - 1),
+    layout.getSlotAngle(active)
+  )
   let target = layout.getWheelPosition(needleAngle)
 
   // Vector from Start to Target
