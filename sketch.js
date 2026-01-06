@@ -197,10 +197,6 @@ class Layout {
 }
 
 class ZodiacWheel {
-  constructor() {
-    this.zodiacs = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
-  }
-
   render() {
     push()
     translate(layout.wheelCenter.x, layout.wheelCenter.y)
@@ -208,7 +204,7 @@ class ZodiacWheel {
     for (let i = 12; i >= 0; i--) {
       // 1. Domain & Timing Logic
       const slotYear = year.current + (CONFIG.WHEEL.ACTIVE_SLOT - i)
-      const zodiac = this._getZodiacByYear(slotYear)
+      const zodiac = Year.getZodiac(slotYear)
       const angle = animator.interpolate(layout.getSlotAngle(i - 1), layout.getSlotAngle(i))
 
       // 2. Interpolation Factors
@@ -265,19 +261,13 @@ class ZodiacWheel {
     textSize(currentTextSize)
     text(character, 0, 0)
   }
-
-  _getZodiacByYear(yearValue) {
-    return this.zodiacs[this._getZodiacIndex(yearValue)]
-  }
-
-  _getZodiacIndex(yearValue) {
-    return (((yearValue - 4) % 12) + 12) % 12
-  }
 }
 
 class Year {
-  constructor() {
-    this.value = new Date().getFullYear()
+  static ZODIACS = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+
+  constructor(value) {
+    this.value = value
   }
 
   advance() {
@@ -290,6 +280,11 @@ class Year {
 
   get previous() {
     return this.value - 1
+  }
+
+  static getZodiac(yearValue) {
+    const idx = (((yearValue - 4) % 12) + 12) % 12
+    return Year.ZODIACS[idx]
   }
 }
 
@@ -339,7 +334,7 @@ function setup() {
   textFont("Noto Sans JP")
   angleMode(DEGREES)
 
-  year = new Year()
+  year = new Year(new Date().getFullYear())
   animator = new Animator()
   wheel = new ZodiacWheel()
 
