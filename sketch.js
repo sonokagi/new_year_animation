@@ -10,7 +10,7 @@ const CONFIG = {
     OCCUPANCY_W: 0.95, // 横方向の画面占有率
     OCCUPANCY_H: 0.75, // 縦方向の画面占有率
     MARGIN: 0.02, // 基本マージン（2%）
-    OFFSET_Y: -0.24 // 画面全体の上方へのオフセット (Viewport半径に対する比率 -0.12 * 2)
+    OFFSET_Y: -0.24 // 画面全体の上方へのオフセット量(Viewport半径に対する比率で指定)
   },
   WHEEL: {
     SPACING_ANGLE: 11, // 干支どうしの間隔（度数）
@@ -67,6 +67,10 @@ class Viewport {
   // length(2.0) = Diameter (Full Size)
   length(ratio) {
     return ratio * this._unit
+  }
+
+  applyOffset() {
+    translate(0, this.length(CONFIG.SCREEN.OFFSET_Y))
   }
 }
 
@@ -140,10 +144,7 @@ class Layout {
       y2: this.vp.y(1.05)
     }
 
-    // 6. Global Render Offset
-    this.renderOffset = this.vp.length(CONFIG.SCREEN.OFFSET_Y)
-
-    // 7. Component Sizes (Centralized Sizing from Viewport)
+    // 6. Component Sizes (Centralized Sizing from Viewport)
     this.zodiacSizes = {
       boxMin: this.vp.length(0.3),
       boxMax: this.vp.length(0.6),
@@ -154,7 +155,7 @@ class Layout {
       dotRadius: this.vp.length(0.06)
     }
 
-    // 8. Decoration Positions
+    // 7. Decoration Positions
     this.needleStart = {
       x: this.vp.x(1.0 - CONFIG.SCREEN.MARGIN * 4),
       y: this.wheelCenter.y
@@ -364,15 +365,12 @@ function draw() {
 
   background(CONFIG.COLORS.BACK_GROUND)
 
-  push()
-  translate(0, layout.renderOffset)
+  viewport.applyOffset()
 
   drawDecoration()
   drawNeedle()
   drawTextContent()
   wheel.render()
-
-  pop()
 }
 
 function mousePressed() {
