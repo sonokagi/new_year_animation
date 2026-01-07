@@ -265,6 +265,7 @@ class ZodiacWheel {
 
 class Year {
   static ZODIACS = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+  static OFFSET_YEAR_0 = 8 // 西暦0年の干支は(8:申)である
 
   constructor(value) {
     this.value = value
@@ -283,7 +284,7 @@ class Year {
   }
 
   static getZodiac(yearValue) {
-    const idx = (((yearValue - 4) % 12) + 12) % 12
+    const idx = (Year.OFFSET_YEAR_0 + yearValue) % Year.ZODIACS.length
     return Year.ZODIACS[idx]
   }
 }
