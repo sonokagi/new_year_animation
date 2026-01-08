@@ -39,8 +39,7 @@ const CONFIG = {
     LENGTH_RATIO: 0.65 // 針の長さ比率
   },
   ANIMATION: {
-    LERP_SPEED: 0.1, // アニメーションの滑らかさ
-    THRESHOLD: 0.05 // アニメーション終了判定の閾値
+    SPEED: 0.1 // アニメーション速度（追従率: 0.05〜0.2程度で調整）
   }
 }
 
@@ -306,9 +305,14 @@ class Animator {
   update() {
     if (!this._running) return
 
-    this._progress = lerp(this._progress, 1.0, CONFIG.ANIMATION.LERP_SPEED)
+    // 目的地(1.0)に向かって、毎フレーム残りの距離の一定割合(SPEED)を詰める
+    // これにより、到着直前にゆっくりになる滑らかな動き（Ease-Out）になる
+    this._progress = lerp(this._progress, 1.0, CONFIG.ANIMATION.SPEED)
 
-    if (1.0 - this._progress < CONFIG.ANIMATION.THRESHOLD) {
+    // 目的地に十分近づいたら（誤差 5% 以内）完了とみなす
+    // これは lerp が目的地に論理的に到達しないための内部的な終了処理
+    const THRESHOLD = 0.05
+    if (1.0 - this._progress < THRESHOLD) {
       this._progress = 1.0
       this._running = false
     }
