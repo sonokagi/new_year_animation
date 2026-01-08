@@ -6,11 +6,13 @@ const CONFIG = {
     SUB: 120, // サブ色（グレー）
     ACCENT: [255, 0, 0] // アクセント色（赤）
   },
-  SCREEN: {
+  VIEWPORT: {
     OCCUPANCY_W: 0.95, // 横方向の画面占有率
     OCCUPANCY_H: 0.75, // 縦方向の画面占有率
-    MARGIN: 0.02, // 基本マージン（2%）
     OFFSET_Y: -0.24 // 画面全体の上方へのオフセット量(Viewport半径に対する比率で指定)
+  },
+  LAYOUT: {
+    MARGIN: 0.02 // 基本マージン（2%）
   },
   WHEEL: {
     SPACING_ANGLE: 11, // 干支どうしの間隔（度数）
@@ -47,8 +49,8 @@ class Viewport {
     // Encapsulate sizing logic
     // Fixed 1:1 Aspect Ratio (Square)
     // Always fit within the smaller dimension of the screen, considering separate occupancy rules
-    let constrainedWidth = screenW * CONFIG.SCREEN.OCCUPANCY_W
-    let constrainedHeight = screenH * CONFIG.SCREEN.OCCUPANCY_H
+    let constrainedWidth = screenW * CONFIG.VIEWPORT.OCCUPANCY_W
+    let constrainedHeight = screenH * CONFIG.VIEWPORT.OCCUPANCY_H
     let size = min(constrainedWidth, constrainedHeight)
 
     this._center = { x: screenW / 2, y: screenH / 2 }
@@ -70,7 +72,7 @@ class Viewport {
   }
 
   applyOffset() {
-    translate(0, this.length(CONFIG.SCREEN.OFFSET_Y))
+    translate(0, this.length(CONFIG.VIEWPORT.OFFSET_Y))
   }
 }
 
@@ -95,7 +97,7 @@ class Layout {
     }
 
     // 3. Spacing & Margins
-    this.margin = this.vp.length(CONFIG.SCREEN.MARGIN) // scale() was radius-based
+    this.margin = this.vp.length(CONFIG.LAYOUT.MARGIN) // scale() was radius-based
 
     // 4. Text Layout Metrics
     this.text = {
@@ -118,7 +120,7 @@ class Layout {
     // Pre-calculated Text Positions (The "View Model")
     this.text.pos = {
       header: {
-        x: this.vp.x(1.0 - CONFIG.SCREEN.MARGIN * 3),
+        x: this.vp.x(1.0 - CONFIG.LAYOUT.MARGIN * 3),
         yHappy: this.vp.y(-0.2),
         yNewYear: this.vp.y(0)
       },
@@ -131,7 +133,7 @@ class Layout {
         y: subEdges.bottom
       },
       footer: {
-        x: this.vp.x(-1.0 + CONFIG.SCREEN.MARGIN),
+        x: this.vp.x(-1.0 + CONFIG.LAYOUT.MARGIN),
         y: this.vp.y(1.45)
       }
     }
@@ -157,7 +159,7 @@ class Layout {
 
     // 7. Decoration Positions
     this.needleStart = {
-      x: this.vp.x(1.0 - CONFIG.SCREEN.MARGIN * 4),
+      x: this.vp.x(1.0 - CONFIG.LAYOUT.MARGIN * 4),
       y: this.wheelCenter.y
     }
   }
