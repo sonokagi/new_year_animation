@@ -294,29 +294,28 @@ class Year {
 
 class Animator {
   constructor() {
-    // Animation State
-    this.progress = 1.0
-    this.running = false
+    this._progress = 1.0
+    this._running = false
   }
 
   play() {
-    this.progress = 0.0
-    this.running = true
+    this._progress = 0.0
+    this._running = true
   }
 
   update() {
-    if (!this.running) return
+    if (!this._running) return
 
-    this.progress = lerp(this.progress, 1.0, CONFIG.ANIMATION.LERP_SPEED)
+    this._progress = lerp(this._progress, 1.0, CONFIG.ANIMATION.LERP_SPEED)
 
-    if (1.0 - this.progress < CONFIG.ANIMATION.THRESHOLD) {
-      this.progress = 1.0
-      this.running = false
+    if (1.0 - this._progress < CONFIG.ANIMATION.THRESHOLD) {
+      this._progress = 1.0
+      this._running = false
     }
   }
 
   interpolate(a, b) {
-    return lerp(a, b, this.progress)
+    return lerp(a, b, this._progress)
   }
 }
 
@@ -376,7 +375,7 @@ function draw() {
 }
 
 function mousePressed() {
-  if (animator.running) return
+  if (animator._running) return
   year.advance()
   animator.play()
 }
@@ -444,7 +443,7 @@ function drawTextContent() {
   const sizes = layout.text.sizes
 
   // Derived Display State
-  let displayYear = animator.running ? year.previous : year.current
+  let displayYear = animator._running ? year.previous : year.current
 
   // 1. HAPPY NEW YEAR!
   textAlign(RIGHT, CENTER)
