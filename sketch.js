@@ -52,23 +52,18 @@ class Layout {
   constructor(vp) {
     this.vp = vp
 
-    // --- 内部幾何学パラメータ (元 CONFIG) ---
+    // --- 内部幾何学パラメータ ---
     const MARGIN_RATIO = 0.02 // 基本マージン（2%）
     const WHEEL = {
       SPACING_ANGLE: 11, // 干支どうしの間隔（度数）
       ACTIVE_SLOT: 3, // アクティブな干支が配置の何番目に来るか
       HIGHLIGHT_ANGLE: 133, // アクティブな干支を表示する基準角度
-      CENTER_X_RATIO: 1.2, // ホイールの中心X座標のオフセット比率
-      RADIUS_RATIO_X: 1.64 * 1.25, // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
-      RADIUS_RATIO_Y: 1.64 * 0.8, // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
       // 各スロットの角度微調整 (基準間隔からのオフセット)
       ANGLE_ADJUSTMENTS: [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     }
     const DECORATION = {
       ARC_START_ANGLE: 101.5, // 赤い円弧の開始角度
       ARC_END_ANGLE: 228, // 赤い円弧の終了角度
-      RADIUS_X: 1.36 * 1.25, // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
-      RADIUS_Y: 1.36 * 0.75, // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
       DOT_START: 120, // 装飾ドットの開始角度
       DOT_SPACING: 35, // 装飾ドットの間隔
       DOT_COUNT: 4 // 装飾ドットの個数
@@ -87,18 +82,18 @@ class Layout {
 
     // 1. Wheel Geometry
     this.wheelCenter = {
-      x: this.vp.x(WHEEL.CENTER_X_RATIO),
+      x: this.vp.x(1.2), // ホイールの中心X座標のオフセット比率
       y: this.vp.y(0)
     }
     this.wheelRadius = {
-      x: this.vp.length(WHEEL.RADIUS_RATIO_X),
-      y: this.vp.length(WHEEL.RADIUS_RATIO_Y)
+      x: this.vp.length(1.64 * 1.25), // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
+      y: this.vp.length(1.64 * 0.8) // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
     }
 
     // 2. Decoration Geometry
     this.arcRadius = {
-      x: this.vp.length(DECORATION.RADIUS_X),
-      y: this.vp.length(DECORATION.RADIUS_Y)
+      x: this.vp.length(1.36 * 1.25), // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
+      y: this.vp.length(1.36 * 0.75) // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
     }
 
     // 3. Spacing & Margins
@@ -156,7 +151,7 @@ class Layout {
       y2: this.vp.y(1.05)
     }
 
-    // 6. Component Sizes (Centralized Sizing from Viewport)
+    // 6. Component Sizes
     this.zodiacSizes = {
       boxMin: this.vp.length(0.3),
       boxMax: this.vp.length(0.6),
