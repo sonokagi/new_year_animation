@@ -11,33 +11,6 @@ const CONFIG = {
     OCCUPANCY_H: 0.75, // 縦方向の画面占有率
     OFFSET_Y: -0.24 // 画面全体の上方へのオフセット量(Viewport半径に対する比率で指定)
   },
-  LAYOUT: {
-    MARGIN: 0.02 // 基本マージン（2%）
-  },
-  WHEEL: {
-    SPACING_ANGLE: 11, // 干支どうしの間隔（度数）
-    ACTIVE_SLOT: 3, // アクティブな干支が配置の何番目に来るか
-    HIGHLIGHT_ANGLE: 133, // アクティブな干支を表示する基準角度
-    CENTER_X_RATIO: 1.2, // ホイールの中心X座標のオフセット比率
-    RADIUS_RATIO_X: 1.64 * 1.25, // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
-    RADIUS_RATIO_Y: 1.64 * 0.8, // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
-    // 各スロットの角度微調整 (基準間隔からのオフセット)
-    // Index: -1(Entrance Source), 0(Active), 1..12
-    // Default: All 0
-    ANGLE_ADJUSTMENTS: [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  },
-  DECORATION: {
-    ARC_START_ANGLE: 101.5, // 赤い円弧の開始角度
-    ARC_END_ANGLE: 228, // 赤い円弧の終了角度
-    ARC_RADIUS_RATIO_X: 1.36 * 1.25, // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
-    ARC_RADIUS_RATIO_Y: 1.36 * 0.75, // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
-    DOT_START_ANGLE: 120, // 装飾ドットの開始角度
-    DOT_SPACING_ANGLE: 35, // 装飾ドットの間隔
-    DOT_COUNT: 4 // 装飾ドットの個数
-  },
-  NEEDLE: {
-    LENGTH_RATIO: 0.65 // 針の長さ比率
-  },
   ANIMATION: {
     SPEED: 0.1 // アニメーション速度（追従率: 0.05〜0.2程度で調整）
   }
@@ -79,24 +52,57 @@ class Layout {
   constructor(vp) {
     this.vp = vp
 
+    // --- 内部幾何学パラメータ (元 CONFIG) ---
+    const MARGIN_RATIO = 0.02 // 基本マージン（2%）
+    const WHEEL = {
+      SPACING_ANGLE: 11, // 干支どうしの間隔（度数）
+      ACTIVE_SLOT: 3, // アクティブな干支が配置の何番目に来るか
+      HIGHLIGHT_ANGLE: 133, // アクティブな干支を表示する基準角度
+      CENTER_X_RATIO: 1.2, // ホイールの中心X座標のオフセット比率
+      RADIUS_RATIO_X: 1.64 * 1.25, // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
+      RADIUS_RATIO_Y: 1.64 * 0.8, // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
+      // 各スロットの角度微調整 (基準間隔からのオフセット)
+      ANGLE_ADJUSTMENTS: [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    }
+    const DECORATION = {
+      ARC_START_ANGLE: 101.5, // 赤い円弧の開始角度
+      ARC_END_ANGLE: 228, // 赤い円弧の終了角度
+      RADIUS_X: 1.36 * 1.25, // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
+      RADIUS_Y: 1.36 * 0.75, // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
+      DOT_START: 120, // 装飾ドットの開始角度
+      DOT_SPACING: 35, // 装飾ドットの間隔
+      DOT_COUNT: 4 // 装飾ドットの個数
+    }
+    const NEEDLE = {
+      LENGTH_RATIO: 0.65 // 針の長さ比率
+    }
+
+    // 外部（ZodiacWheel等）から参照されるパラメータの公開
+    this.spacingAngle = WHEEL.SPACING_ANGLE
+    this.activeSlot = WHEEL.ACTIVE_SLOT
+    this.highlightAngle = WHEEL.HIGHLIGHT_ANGLE
+    this.angleAdjustments = WHEEL.ANGLE_ADJUSTMENTS
+    this.decoration = DECORATION
+    this.needle = NEEDLE
+
     // 1. Wheel Geometry
     this.wheelCenter = {
-      x: this.vp.x(CONFIG.WHEEL.CENTER_X_RATIO),
+      x: this.vp.x(WHEEL.CENTER_X_RATIO),
       y: this.vp.y(0)
     }
     this.wheelRadius = {
-      x: this.vp.length(CONFIG.WHEEL.RADIUS_RATIO_X),
-      y: this.vp.length(CONFIG.WHEEL.RADIUS_RATIO_Y)
+      x: this.vp.length(WHEEL.RADIUS_RATIO_X),
+      y: this.vp.length(WHEEL.RADIUS_RATIO_Y)
     }
 
     // 2. Decoration Geometry
     this.arcRadius = {
-      x: this.vp.length(CONFIG.DECORATION.ARC_RADIUS_RATIO_X),
-      y: this.vp.length(CONFIG.DECORATION.ARC_RADIUS_RATIO_Y)
+      x: this.vp.length(DECORATION.RADIUS_X),
+      y: this.vp.length(DECORATION.RADIUS_Y)
     }
 
     // 3. Spacing & Margins
-    this.margin = this.vp.length(CONFIG.LAYOUT.MARGIN) // scale() was radius-based
+    this.margin = this.vp.length(MARGIN_RATIO)
 
     // 4. Text Layout Metrics
     this.text = {
@@ -111,15 +117,20 @@ class Layout {
     }
 
     // Calculate independent anchor points for labels
-    const activeSlot = CONFIG.WHEEL.ACTIVE_SLOT
     // Use Exact Tracking for labels to match visual slot positions
-    const mainEdges = this.getLabelEdges(this.getSlotAngle(activeSlot), this.text.sizes.boxMain)
-    const subEdges = this.getLabelEdges(this.getSlotAngle(activeSlot + 1), this.text.sizes.boxSub)
+    const mainEdges = this.getLabelEdges(
+      this.getSlotAngle(this.activeSlot),
+      this.text.sizes.boxMain
+    )
+    const subEdges = this.getLabelEdges(
+      this.getSlotAngle(this.activeSlot + 1),
+      this.text.sizes.boxSub
+    )
 
     // Pre-calculated Text Positions (The "View Model")
     this.text.pos = {
       header: {
-        x: this.vp.x(1.0 - CONFIG.LAYOUT.MARGIN * 3),
+        x: this.vp.x(1.0 - MARGIN_RATIO * 3),
         yHappy: this.vp.y(-0.2),
         yNewYear: this.vp.y(0)
       },
@@ -132,7 +143,7 @@ class Layout {
         y: subEdges.bottom
       },
       footer: {
-        x: this.vp.x(-1.0 + CONFIG.LAYOUT.MARGIN),
+        x: this.vp.x(-1.0 + MARGIN_RATIO),
         y: this.vp.y(1.45)
       }
     }
@@ -158,7 +169,7 @@ class Layout {
 
     // 7. Decoration Positions
     this.needleStart = {
-      x: this.vp.x(1.0 - CONFIG.LAYOUT.MARGIN * 4),
+      x: this.vp.x(1.0 - MARGIN_RATIO * 4),
       y: this.wheelCenter.y
     }
   }
@@ -183,15 +194,14 @@ class Layout {
 
   getSlotAngle(i) {
     // Determine base angle for slot i
-    let baseAngle =
-      CONFIG.WHEEL.HIGHLIGHT_ANGLE + (i - CONFIG.WHEEL.ACTIVE_SLOT) * CONFIG.WHEEL.SPACING_ANGLE
+    let baseAngle = this.highlightAngle + (i - this.activeSlot) * this.spacingAngle
 
     // Apply custom adjustment if available
     // Map logic index i (-1 to 12) to array index (0 to 13)
     let adjIndex = i + 1
     let adjustment = 0
-    if (adjIndex >= 0 && adjIndex < CONFIG.WHEEL.ANGLE_ADJUSTMENTS.length) {
-      adjustment = CONFIG.WHEEL.ANGLE_ADJUSTMENTS[adjIndex]
+    if (adjIndex >= 0 && adjIndex < this.angleAdjustments.length) {
+      adjustment = this.angleAdjustments[adjIndex]
     }
 
     return baseAngle + adjustment
@@ -205,13 +215,13 @@ class ZodiacWheel {
 
     for (let i = 12; i >= 0; i--) {
       // 1. Domain & Timing Logic
-      const slotYear = year.current + (CONFIG.WHEEL.ACTIVE_SLOT - i)
+      const slotYear = year.current + (layout.activeSlot - i)
       const zodiac = Year.getZodiac(slotYear)
       const angle = animator.interpolate(layout.getSlotAngle(i - 1), layout.getSlotAngle(i))
 
       // 2. Interpolation Factors
-      const angleDist = abs(angle - layout.getSlotAngle(CONFIG.WHEEL.ACTIVE_SLOT))
-      const hFactor = map(angleDist, 0, CONFIG.WHEEL.SPACING_ANGLE, 1.0, 0.0, true)
+      const angleDist = abs(angle - layout.getSlotAngle(layout.activeSlot))
+      const hFactor = map(angleDist, 0, layout.spacingAngle, 1.0, 0.0, true)
 
       // 3. Localized Opacity Interpolation
       let opacity
@@ -394,15 +404,15 @@ function drawDecoration() {
     layout.wheelCenter.y,
     layout.arcRadius.x * 2,
     layout.arcRadius.y * 2,
-    CONFIG.DECORATION.ARC_START_ANGLE,
-    CONFIG.DECORATION.ARC_END_ANGLE
+    layout.decoration.ARC_START_ANGLE,
+    layout.decoration.ARC_END_ANGLE
   )
 
   // Red Dots on Arc
   fill(CONFIG.COLORS.ACCENT)
   noStroke()
-  for (let i = 0; i < CONFIG.DECORATION.DOT_COUNT; i++) {
-    let a = CONFIG.DECORATION.DOT_START_ANGLE + i * CONFIG.DECORATION.DOT_SPACING_ANGLE
+  for (let i = 0; i < layout.decoration.DOT_COUNT; i++) {
+    let a = layout.decoration.DOT_START + i * layout.decoration.DOT_SPACING
     circle(
       layout.wheelCenter.x + cos(a) * layout.arcRadius.x,
       layout.wheelCenter.y + sin(a) * layout.arcRadius.y,
@@ -426,7 +436,7 @@ function drawNeedle() {
   let start = layout.needleStart
 
   // Localized Angle Interpolation
-  let active = CONFIG.WHEEL.ACTIVE_SLOT
+  let active = layout.activeSlot
   let needleAngle = animator.interpolate(
     layout.getSlotAngle(active - 1),
     layout.getSlotAngle(active)
@@ -438,7 +448,7 @@ function drawNeedle() {
   let dy = target.y - start.y
 
   // Draw needle using a fixed ratio for easy manual adjustment
-  let ratio = CONFIG.NEEDLE.LENGTH_RATIO
+  let ratio = layout.needle.LENGTH_RATIO
   line(start.x, start.y, start.x + dx * ratio, start.y + dy * ratio)
 }
 
