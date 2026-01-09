@@ -53,32 +53,25 @@ class Layout {
     this.vp = vp
 
     // --- 内部幾何学パラメータ ---
-    const MARGIN_RATIO = 0.02 // 基本マージン（2%）
-    const WHEEL = {
-      SPACING_ANGLE: 11, // 干支どうしの間隔（度数）
-      ACTIVE_SLOT: 3, // アクティブな干支が配置の何番目に来るか
-      HIGHLIGHT_ANGLE: 133, // アクティブな干支を表示する基準角度
-      // 各スロットの角度微調整 (基準間隔からのオフセット)
-      ANGLE_ADJUSTMENTS: [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    }
-    const DECORATION = {
+    const BASE_MARGIN = 0.02 // 基本マージン（2%）
+
+    // 外部（ZodiacWheel等）から参照される共有パラメータの公開
+    this.spacingAngle = 11 // 干支どうしの間隔（度数）
+    this.activeSlot = 3 // アクティブな干支が配置の何番目に来るか
+    this.highlightAngle = 133 // アクティブな干支を表示する基準角度
+    // 各スロットの角度微調整 (基準間隔からのオフセット)
+    this.angleAdjustments = [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    this.decoration = {
       ARC_START_ANGLE: 101.5, // 赤い円弧の開始角度
       ARC_END_ANGLE: 228, // 赤い円弧の終了角度
       DOT_START: 120, // 装飾ドットの開始角度
       DOT_SPACING: 35, // 装飾ドットの間隔
       DOT_COUNT: 4 // 装飾ドットの個数
     }
-    const NEEDLE = {
+    this.needle = {
       LENGTH_RATIO: 0.65 // 針の長さ比率
     }
-
-    // 外部（ZodiacWheel等）から参照されるパラメータの公開
-    this.spacingAngle = WHEEL.SPACING_ANGLE
-    this.activeSlot = WHEEL.ACTIVE_SLOT
-    this.highlightAngle = WHEEL.HIGHLIGHT_ANGLE
-    this.angleAdjustments = WHEEL.ANGLE_ADJUSTMENTS
-    this.decoration = DECORATION
-    this.needle = NEEDLE
 
     // 1. Wheel Geometry
     this.wheelCenter = {
@@ -97,7 +90,7 @@ class Layout {
     }
 
     // 3. Spacing & Margins
-    this.margin = this.vp.length(MARGIN_RATIO)
+    this.margin = this.vp.length(BASE_MARGIN)
 
     // 4. Text Layout Metrics
     this.text = {
@@ -125,7 +118,7 @@ class Layout {
     // Pre-calculated Text Positions (The "View Model")
     this.text.pos = {
       header: {
-        x: this.vp.x(1.0 - MARGIN_RATIO * 3),
+        x: this.vp.x(1.0 - BASE_MARGIN * 3),
         yHappy: this.vp.y(-0.2),
         yNewYear: this.vp.y(0)
       },
@@ -138,7 +131,7 @@ class Layout {
         y: subEdges.bottom
       },
       footer: {
-        x: this.vp.x(-1.0 + MARGIN_RATIO),
+        x: this.vp.x(-1.0 + BASE_MARGIN),
         y: this.vp.y(1.45)
       }
     }
@@ -164,7 +157,7 @@ class Layout {
 
     // 7. Decoration Positions
     this.needleStart = {
-      x: this.vp.x(1.0 - MARGIN_RATIO * 4),
+      x: this.vp.x(1.0 - BASE_MARGIN * 4),
       y: this.wheelCenter.y
     }
   }
