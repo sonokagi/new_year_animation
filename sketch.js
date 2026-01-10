@@ -91,48 +91,31 @@ class Layout {
     this.margin = this.vp.length(BASE_MARGIN)
 
     // 4. Text Layout Metrics
-    this.text = {
-      sizes: {
-        header: this.vp.length(0.24),
-        yearMain: this.vp.length(0.17),
-        yearSub: this.vp.length(0.1),
-        footer: this.vp.length(0.07),
-        boxMain: this.vp.length(0.6),
-        boxSub: this.vp.length(0.3)
-      }
-    }
+    this.textSizeHeader = this.vp.length(0.24)
+    this.textSizeYearMain = this.vp.length(0.17)
+    this.textSizeYearSub = this.vp.length(0.1)
+    this.textSizeFooter = this.vp.length(0.07)
+    this.textBoxMain = this.vp.length(0.6)
+    this.textBoxSub = this.vp.length(0.3)
 
     // Calculate independent anchor points for labels
     // Use Exact Tracking for labels to match visual slot positions
-    const mainEdges = this.getLabelEdges(
-      this.getSlotAngle(this.activeSlot),
-      this.text.sizes.boxMain
-    )
-    const subEdges = this.getLabelEdges(
-      this.getSlotAngle(this.activeSlot + 1),
-      this.text.sizes.boxSub
-    )
+    const mainEdges = this.getLabelEdges(this.getSlotAngle(this.activeSlot), this.textBoxMain)
+    const subEdges = this.getLabelEdges(this.getSlotAngle(this.activeSlot + 1), this.textBoxSub)
 
     // Pre-calculated Text Positions (The "View Model")
-    this.text.pos = {
-      header: {
-        x: this.vp.x(1.0 - BASE_MARGIN * 3),
-        yHappy: this.vp.y(-0.2),
-        yNewYear: this.vp.y(0)
-      },
-      yearMain: {
-        x: mainEdges.left - this.margin,
-        y: mainEdges.bottom
-      },
-      yearSub: {
-        x: subEdges.left - this.margin,
-        y: subEdges.bottom
-      },
-      footer: {
-        x: this.vp.x(-1.0 + BASE_MARGIN),
-        y: this.vp.y(1.45)
-      }
-    }
+    this.textPosXHeader = this.vp.x(1.0 - BASE_MARGIN * 3)
+    this.textPosYHappy = this.vp.y(-0.2)
+    this.textPosYNewYear = this.vp.y(0)
+
+    this.textPosXYearMain = mainEdges.left - this.margin
+    this.textPosYYearMain = mainEdges.bottom
+
+    this.textPosXYearSub = subEdges.left - this.margin
+    this.textPosYYearSub = subEdges.bottom
+
+    this.textPosXFooter = this.vp.x(-1.0 + BASE_MARGIN)
+    this.textPosYFooter = this.vp.y(1.45)
 
     // 5. Outer Frame Geometry
     this.outerFrame = {
@@ -426,9 +409,6 @@ function drawNeedle() {
 }
 
 function drawTextContent() {
-  const pos = layout.text.pos
-  const sizes = layout.text.sizes
-
   // Derived Display State
   let displayYear = animator._running ? year.previous : year.current
 
@@ -436,26 +416,26 @@ function drawTextContent() {
   textAlign(RIGHT, CENTER)
   fill(CONFIG.COLORS.MAIN)
   noStroke()
-  textSize(sizes.header)
+  textSize(layout.textSizeHeader)
   textStyle(BOLDITALIC)
-  text("HAPPY", pos.header.x, pos.header.yHappy)
-  text("NEW YEAR!", pos.header.x, pos.header.yNewYear)
+  text("HAPPY", layout.textPosXHeader, layout.textPosYHappy)
+  text("NEW YEAR!", layout.textPosXHeader, layout.textPosYNewYear)
 
   // 2. Year Labels (Aligned to tiles)
   textAlign(RIGHT, BOTTOM)
   textStyle(NORMAL)
   // Previous Year (Gray)
   fill(CONFIG.COLORS.SUB)
-  textSize(sizes.yearSub)
-  text(displayYear - 1 + ":", pos.yearSub.x, pos.yearSub.y)
+  textSize(layout.textSizeYearSub)
+  text(displayYear - 1 + ":", layout.textPosXYearSub, layout.textPosYYearSub)
   // Current Year (Black)
   fill(CONFIG.COLORS.MAIN)
-  textSize(sizes.yearMain)
-  text(displayYear + ":", pos.yearMain.x, pos.yearMain.y)
+  textSize(layout.textSizeYearMain)
+  text(displayYear + ":", layout.textPosXYearMain, layout.textPosYYearMain)
 
   // 3. Footer
   textAlign(LEFT, BOTTOM)
-  textSize(sizes.footer)
+  textSize(layout.textSizeFooter)
   fill(CONFIG.COLORS.MAIN)
-  text("今年もよろしくお願いします。", pos.footer.x, pos.footer.y)
+  text("今年もよろしくお願いします。", layout.textPosXFooter, layout.textPosYFooter)
 }
