@@ -61,7 +61,7 @@ class Layout {
     this.highlightAngle = 133 // アクティブな干支を表示する基準角度
     this.angleAdjustments = [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0] // 各スロットの角度微調整
 
-    // 1. Wheel Geometry
+    // 1. Wheel & Zodiac Entities
     this.wheel = {
       center: {
         x: vp.x(1.2), // ホイールの中心X座標のオフセット比率
@@ -70,33 +70,7 @@ class Layout {
       radius: {
         x: vp.length(1.64 * 1.25), // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
         y: vp.length(1.64 * 0.8) // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
-      }
-    }
-
-    // 2. Decoration Geometry
-    this.decoration = {
-      arcStartAngle: 101.5, // 赤い円弧の開始角度
-      arcEndAngle: 228, // 赤い円弧の終了角度
-      arcRadius: {
-        x: vp.length(1.36 * 1.25), // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
-        y: vp.length(1.36 * 0.75) // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
       },
-      dots: {
-        start: 120, // 装飾ドットの開始角度
-        spacing: 35, // 装飾ドットの間隔
-        count: 4 // 装飾ドットの個数
-      },
-      dotRadius: vp.length(0.06),
-      needleLengthRatio: 0.65, // 針の長さ比率
-      needleStart: {
-        x: vp.x(1.0 - BASE_MARGIN * 4),
-        y: vp.y(0) // will be updated below
-      }
-    }
-    this.decoration.needleStart.y = this.wheel.center.y
-
-    // 3. Zodiac Component Sizes
-    this.zodiac = {
       boxSize: {
         min: vp.length(0.3),
         max: vp.length(0.6)
@@ -107,42 +81,67 @@ class Layout {
       }
     }
 
-    // 4. Text Layout Metrics
-    // Calculate independent anchor points for labels (using zodiac box sizes)
-    const mainEdges = this.getLabelEdges(
-      this.getSlotAngle(this.activeSlot),
-      this.zodiac.boxSize.max
-    )
+    // 2. Functional Indicators & Background
+    this.arc = {
+      start: 101.5, // 赤い円弧の開始角度
+      end: 228, // 赤い円弧の終了角度
+      radius: {
+        x: vp.length(1.36 * 1.25), // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
+        y: vp.length(1.36 * 0.75) // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
+      }
+    }
+
+    this.dots = {
+      start: 120, // 装飾ドットの開始角度
+      spacing: 35, // 装飾ドットの間隔
+      count: 4, // 装飾ドットの個数
+      radius: vp.length(0.06)
+    }
+
+    this.needle = {
+      lengthRatio: 0.65, // 針の長さ比率
+      start: {
+        x: vp.x(1.0 - BASE_MARGIN * 4),
+        y: this.wheel.center.y
+      }
+    }
+
+    // 4. Content Components
+    this.header = {
+      size: vp.length(0.24),
+      pos: {
+        x: vp.x(1.0 - BASE_MARGIN * 3),
+        yHappy: vp.y(-0.2),
+        yNewYear: vp.y(0)
+      }
+    }
+
+    const mainEdges = this.getLabelEdges(this.getSlotAngle(this.activeSlot), this.wheel.boxSize.max)
+    this.yearMain = {
+      size: vp.length(0.17),
+      pos: {
+        x: mainEdges.left - vp.length(BASE_MARGIN),
+        y: mainEdges.bottom
+      }
+    }
+
     const subEdges = this.getLabelEdges(
       this.getSlotAngle(this.activeSlot + 1),
-      this.zodiac.boxSize.min
+      this.wheel.boxSize.min
     )
-
-    this.text = {
-      sizes: {
-        header: vp.length(0.24),
-        yearMain: vp.length(0.17),
-        yearSub: vp.length(0.1),
-        footer: vp.length(0.07)
-      },
+    this.yearSub = {
+      size: vp.length(0.1),
       pos: {
-        header: {
-          x: vp.x(1.0 - BASE_MARGIN * 3),
-          yHappy: vp.y(-0.2),
-          yNewYear: vp.y(0)
-        },
-        yearMain: {
-          x: mainEdges.left - vp.length(BASE_MARGIN),
-          y: mainEdges.bottom
-        },
-        yearSub: {
-          x: subEdges.left - vp.length(BASE_MARGIN),
-          y: subEdges.bottom
-        },
-        footer: {
-          x: vp.x(-1.0 + BASE_MARGIN),
-          y: vp.y(1.45)
-        }
+        x: subEdges.left - vp.length(BASE_MARGIN),
+        y: subEdges.bottom
+      }
+    }
+
+    this.footer = {
+      size: vp.length(0.07),
+      pos: {
+        x: vp.x(-1.0 + BASE_MARGIN),
+        y: vp.y(1.45)
       }
     }
 
@@ -216,8 +215,8 @@ class ZodiacWheel {
 
   _renderItem(character, hFactor, opacity) {
     // 1. Geometry & Interpolation
-    let currentBoxSize = lerp(layout.zodiac.boxSize.min, layout.zodiac.boxSize.max, hFactor)
-    let currentTextSize = lerp(layout.zodiac.textSize.min, layout.zodiac.textSize.max, hFactor)
+    let currentBoxSize = lerp(layout.wheel.boxSize.min, layout.wheel.boxSize.max, hFactor)
+    let currentTextSize = lerp(layout.wheel.textSize.min, layout.wheel.textSize.max, hFactor)
     let baseFillColor = lerp(CONFIG.COLORS.SUB, CONFIG.COLORS.MAIN, hFactor)
 
     // 2. Color Definitions (Consolidated Alpha Management)
@@ -354,7 +353,9 @@ function draw() {
 
   viewport.applyOffset()
 
-  drawDecoration()
+  drawArc()
+  drawDots()
+  drawOuterFrame()
   drawNeedle()
   drawHeader()
   drawYearLabels()
@@ -368,33 +369,36 @@ function mousePressed() {
   animator.play()
 }
 
-function drawDecoration() {
-  // Red Arc
+function drawArc() {
+  // Red Arc (Background)
   noFill()
   stroke(CONFIG.COLORS.ACCENT)
   strokeWeight(3)
   arc(
     layout.wheel.center.x,
     layout.wheel.center.y,
-    layout.decoration.arcRadius.x * 2,
-    layout.decoration.arcRadius.y * 2,
-    layout.decoration.arcStartAngle,
-    layout.decoration.arcEndAngle
+    layout.arc.radius.x * 2,
+    layout.arc.radius.y * 2,
+    layout.arc.start,
+    layout.arc.end
   )
+}
 
-  // Red Dots on Arc
+function drawDots() {
+  // Decorative Dots on Arc
   fill(CONFIG.COLORS.ACCENT)
   noStroke()
-  for (let i = 0; i < layout.decoration.dots.count; i++) {
-    let a = layout.decoration.dots.start + i * layout.decoration.dots.spacing
+  for (let i = 0; i < layout.dots.count; i++) {
+    let a = layout.dots.start + i * layout.dots.spacing
     circle(
-      layout.wheel.center.x + cos(a) * layout.decoration.arcRadius.x,
-      layout.wheel.center.y + sin(a) * layout.decoration.arcRadius.y,
-      layout.decoration.dotRadius
+      layout.wheel.center.x + cos(a) * layout.arc.radius.x,
+      layout.wheel.center.y + sin(a) * layout.arc.radius.y,
+      layout.dots.radius
     )
   }
+}
 
-  // Outer Frame
+function drawOuterFrame() {
   noFill()
   stroke(CONFIG.COLORS.MAIN)
   strokeWeight(2)
@@ -403,11 +407,11 @@ function drawDecoration() {
 }
 
 function drawNeedle() {
-  // Red Needle
+  // Red Needle (Indicator)
   stroke(CONFIG.COLORS.ACCENT)
   strokeWeight(15)
 
-  let start = layout.decoration.needleStart
+  let start = layout.needle.start
 
   // Localized Angle Interpolation
   let active = layout.activeSlot
@@ -422,7 +426,7 @@ function drawNeedle() {
   let dy = target.y - start.y
 
   // Draw needle using a fixed ratio for easy manual adjustment
-  let ratio = layout.decoration.needleLengthRatio
+  let ratio = layout.needle.lengthRatio
   line(start.x, start.y, start.x + dx * ratio, start.y + dy * ratio)
 }
 
@@ -430,10 +434,10 @@ function drawHeader() {
   textAlign(RIGHT, CENTER)
   fill(CONFIG.COLORS.MAIN)
   noStroke()
-  textSize(layout.text.sizes.header)
+  textSize(layout.header.size)
   textStyle(BOLDITALIC)
-  text("HAPPY", layout.text.pos.header.x, layout.text.pos.header.yHappy)
-  text("NEW YEAR!", layout.text.pos.header.x, layout.text.pos.header.yNewYear)
+  text("HAPPY", layout.header.pos.x, layout.header.pos.yHappy)
+  text("NEW YEAR!", layout.header.pos.x, layout.header.pos.yNewYear)
 }
 
 function drawYearLabels() {
@@ -444,17 +448,17 @@ function drawYearLabels() {
   textStyle(NORMAL)
   // Previous Year (Gray)
   fill(CONFIG.COLORS.SUB)
-  textSize(layout.text.sizes.yearSub)
-  text(displayYear - 1 + ":", layout.text.pos.yearSub.x, layout.text.pos.yearSub.y)
+  textSize(layout.yearSub.size)
+  text(displayYear - 1 + ":", layout.yearSub.pos.x, layout.yearSub.pos.y)
   // Current Year (Black)
   fill(CONFIG.COLORS.MAIN)
-  textSize(layout.text.sizes.yearMain)
-  text(displayYear + ":", layout.text.pos.yearMain.x, layout.text.pos.yearMain.y)
+  textSize(layout.yearMain.size)
+  text(displayYear + ":", layout.yearMain.pos.x, layout.yearMain.pos.y)
 }
 
 function drawFooter() {
   textAlign(LEFT, BOTTOM)
-  textSize(layout.text.sizes.footer)
+  textSize(layout.footer.size)
   fill(CONFIG.COLORS.MAIN)
-  text("今年もよろしくお願いします。", layout.text.pos.footer.x, layout.text.pos.footer.y)
+  text("今年もよろしくお願いします。", layout.footer.pos.x, layout.footer.pos.y)
 }
