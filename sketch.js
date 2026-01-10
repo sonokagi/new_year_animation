@@ -62,16 +62,14 @@ class Layout {
     // 各スロットの角度微調整 (基準間隔からのオフセット)
     this.angleAdjustments = [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    this.decoration = {
-      ARC_START_ANGLE: 101.5, // 赤い円弧の開始角度
-      ARC_END_ANGLE: 228, // 赤い円弧の終了角度
-      DOT_START: 120, // 装飾ドットの開始角度
-      DOT_SPACING: 35, // 装飾ドットの間隔
-      DOT_COUNT: 4 // 装飾ドットの個数
+    this.arcStartAngle = 101.5 // 赤い円弧の開始角度
+    this.arcEndAngle = 228 // 赤い円弧の終了角度
+    this.dots = {
+      start: 120, // 装飾ドットの開始角度
+      spacing: 35, // 装飾ドットの間隔
+      count: 4 // 装飾ドットの個数
     }
-    this.needle = {
-      LENGTH_RATIO: 0.65 // 針の長さ比率
-    }
+    this.needleLengthRatio = 0.65 // 針の長さ比率
 
     // 1. Wheel Geometry
     this.wheelCenter = {
@@ -145,15 +143,11 @@ class Layout {
     }
 
     // 6. Component Sizes
-    this.zodiacSizes = {
-      boxMin: this.vp.length(0.3),
-      boxMax: this.vp.length(0.6),
-      textMin: this.vp.length(0.24),
-      textMax: this.vp.length(0.48)
-    }
-    this.decorationSizes = {
-      dotRadius: this.vp.length(0.06)
-    }
+    this.zodiacBoxMin = this.vp.length(0.3)
+    this.zodiacBoxMax = this.vp.length(0.6)
+    this.zodiacTextMin = this.vp.length(0.24)
+    this.zodiacTextMax = this.vp.length(0.48)
+    this.dotRadius = this.vp.length(0.06)
 
     // 7. Decoration Positions
     this.needleStart = {
@@ -181,18 +175,9 @@ class Layout {
   }
 
   getSlotAngle(i) {
-    // Determine base angle for slot i
-    let baseAngle = this.highlightAngle + (i - this.activeSlot) * this.spacingAngle
-
-    // Apply custom adjustment if available
-    // Map logic index i (-1 to 12) to array index (0 to 13)
-    let adjIndex = i + 1
-    let adjustment = 0
-    if (adjIndex >= 0 && adjIndex < this.angleAdjustments.length) {
-      adjustment = this.angleAdjustments[adjIndex]
-    }
-
-    return baseAngle + adjustment
+    const base = this.highlightAngle + (i - this.activeSlot) * this.spacingAngle
+    const adjustment = this.angleAdjustments[i + 1] || 0 // i: -1 to 12 -> index: 0 to 13
+    return base + adjustment
   }
 }
 
@@ -232,8 +217,8 @@ class ZodiacWheel {
 
   _renderItem(character, hFactor, opacity) {
     // 1. Geometry & Interpolation
-    let currentBoxSize = lerp(layout.zodiacSizes.boxMin, layout.zodiacSizes.boxMax, hFactor)
-    let currentTextSize = lerp(layout.zodiacSizes.textMin, layout.zodiacSizes.textMax, hFactor)
+    let currentBoxSize = lerp(layout.zodiacBoxMin, layout.zodiacBoxMax, hFactor)
+    let currentTextSize = lerp(layout.zodiacTextMin, layout.zodiacTextMax, hFactor)
     let baseFillColor = lerp(CONFIG.COLORS.SUB, CONFIG.COLORS.MAIN, hFactor)
 
     // 2. Color Definitions (Consolidated Alpha Management)
@@ -392,19 +377,19 @@ function drawDecoration() {
     layout.wheelCenter.y,
     layout.arcRadius.x * 2,
     layout.arcRadius.y * 2,
-    layout.decoration.ARC_START_ANGLE,
-    layout.decoration.ARC_END_ANGLE
+    layout.arcStartAngle,
+    layout.arcEndAngle
   )
 
   // Red Dots on Arc
   fill(CONFIG.COLORS.ACCENT)
   noStroke()
-  for (let i = 0; i < layout.decoration.DOT_COUNT; i++) {
-    let a = layout.decoration.DOT_START + i * layout.decoration.DOT_SPACING
+  for (let i = 0; i < layout.dots.count; i++) {
+    let a = layout.dots.start + i * layout.dots.spacing
     circle(
       layout.wheelCenter.x + cos(a) * layout.arcRadius.x,
       layout.wheelCenter.y + sin(a) * layout.arcRadius.y,
-      layout.decorationSizes.dotRadius
+      layout.dotRadius
     )
   }
 
@@ -436,7 +421,7 @@ function drawNeedle() {
   let dy = target.y - start.y
 
   // Draw needle using a fixed ratio for easy manual adjustment
-  let ratio = layout.needle.LENGTH_RATIO
+  let ratio = layout.needleLengthRatio
   line(start.x, start.y, start.x + dx * ratio, start.y + dy * ratio)
 }
 
