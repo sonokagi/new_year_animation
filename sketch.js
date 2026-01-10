@@ -57,9 +57,13 @@ class Layout {
 
     // 外部（ZodiacWheel等）から参照される共有パラメータの公開
     this.spacingAngle = 11 // 干支どうしの間隔（度数）
-    this.activeSlot = 3 // アクティブな干支が配置の何番目に来るか
+    this._activeSlot = 3 // アクティブな干支が配置の何番目に来るか（内部用）
     this.highlightAngle = 133 // アクティブな干支を表示する基準角度
     this.angleAdjustments = [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0] // 各スロットの角度微調整
+
+    // 相対境界の定義（アクティブを0としたオフセット範囲）
+    this.minOffset = 0 - this._activeSlot // 通常 -3
+    this.maxOffset = 12 - this._activeSlot // 通常 9
 
     // 1. Wheel & Zodiac Entities
     this.wheel = {
@@ -106,7 +110,7 @@ class Layout {
       }
     }
 
-    // 4. Content Components
+    // 3. Content Components
     this.header = {
       size: vp.length(0.24),
       pos: {
@@ -116,7 +120,7 @@ class Layout {
       }
     }
 
-    const mainEdges = this.getLabelEdges(this.getSlotAngle(this.activeSlot), this.wheel.boxSize.max)
+    const mainEdges = this.getLabelEdges(this.getAngle(0), this.wheel.boxSize.max)
     this.yearMain = {
       size: vp.length(0.17),
       pos: {
@@ -125,10 +129,7 @@ class Layout {
       }
     }
 
-    const subEdges = this.getLabelEdges(
-      this.getSlotAngle(this.activeSlot + 1),
-      this.wheel.boxSize.min
-    )
+    const subEdges = this.getLabelEdges(this.getAngle(1), this.wheel.boxSize.min)
     this.yearSub = {
       size: vp.length(0.1),
       pos: {
@@ -172,8 +173,12 @@ class Layout {
     }
   }
 
+  getAngle(offset = 0) {
+    return this.getSlotAngle(this._activeSlot + offset)
+  }
+
   getSlotAngle(i) {
-    const base = this.highlightAngle + (i - this.activeSlot) * this.spacingAngle
+    const base = this.highlightAngle + (i - this._activeSlot) * this.spacingAngle
     const adjustment = this.angleAdjustments[i + 1] || 0 // i: -1 to 12 -> index: 0 to 13
     return base + adjustment
   }
@@ -184,21 +189,21 @@ class ZodiacWheel {
     push()
     translate(layout.wheel.center.x, layout.wheel.center.y)
 
-    for (let i = 12; i >= 0; i--) {
+    for (let offset = layout.maxOffset; offset >= layout.minOffset; offset--) {
       // 1. Domain & Timing Logic
-      const slotYear = year.current + (layout.activeSlot - i)
+      const slotYear = year.current - offset
       const zodiac = Year.getZodiac(slotYear)
-      const angle = animator.interpolate(layout.getSlotAngle(i - 1), layout.getSlotAngle(i))
+      const angle = animator.interpolate(layout.getAngle(offset - 1), layout.getAngle(offset))
 
       // 2. Interpolation Factors
-      const angleDist = abs(angle - layout.getSlotAngle(layout.activeSlot))
+      const angleDist = abs(angle - layout.getAngle(0))
       const hFactor = map(angleDist, 0, layout.spacingAngle, 1.0, 0.0, true)
 
       // 3. Localized Opacity Interpolation
       let opacity
-      if (i === 0) {
+      if (offset === layout.minOffset) {
         opacity = animator.interpolate(0, 255) // Fade-in
-      } else if (i === 12) {
+      } else if (offset === layout.maxOffset) {
         opacity = animator.interpolate(255, 0) // Fade-out
       } else {
         opacity = 255
@@ -414,11 +419,7 @@ function drawNeedle() {
   let start = layout.needle.start
 
   // Localized Angle Interpolation
-  let active = layout.activeSlot
-  let needleAngle = animator.interpolate(
-    layout.getSlotAngle(active - 1),
-    layout.getSlotAngle(active)
-  )
+  let needleAngle = animator.interpolate(layout.getAngle(-1), layout.getAngle(0))
   let target = layout.getWheelPosition(needleAngle)
 
   // Vector from Start to Target
