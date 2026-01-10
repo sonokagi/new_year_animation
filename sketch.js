@@ -59,83 +59,99 @@ class Layout {
     this.spacingAngle = 11 // 干支どうしの間隔（度数）
     this.activeSlot = 3 // アクティブな干支が配置の何番目に来るか
     this.highlightAngle = 133 // アクティブな干支を表示する基準角度
-    // 各スロットの角度微調整 (基準間隔からのオフセット)
-    this.angleAdjustments = [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-    this.arcStartAngle = 101.5 // 赤い円弧の開始角度
-    this.arcEndAngle = 228 // 赤い円弧の終了角度
-    this.dots = {
-      start: 120, // 装飾ドットの開始角度
-      spacing: 35, // 装飾ドットの間隔
-      count: 4 // 装飾ドットの個数
-    }
-    this.needleLengthRatio = 0.65 // 針の長さ比率
+    this.angleAdjustments = [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0] // 各スロットの角度微調整
 
     // 1. Wheel Geometry
-    this.wheelCenter = {
-      x: this.vp.x(1.2), // ホイールの中心X座標のオフセット比率
-      y: this.vp.y(0)
-    }
-    this.wheelRadius = {
-      x: this.vp.length(1.64 * 1.25), // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
-      y: this.vp.length(1.64 * 0.8) // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
+    this.wheel = {
+      center: {
+        x: vp.x(1.2), // ホイールの中心X座標のオフセット比率
+        y: vp.y(0)
+      },
+      radius: {
+        x: vp.length(1.64 * 1.25), // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
+        y: vp.length(1.64 * 0.8) // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
+      }
     }
 
     // 2. Decoration Geometry
-    this.arcRadius = {
-      x: this.vp.length(1.36 * 1.25), // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
-      y: this.vp.length(1.36 * 0.75) // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
+    this.decoration = {
+      arcStartAngle: 101.5, // 赤い円弧の開始角度
+      arcEndAngle: 228, // 赤い円弧の終了角度
+      arcRadius: {
+        x: vp.length(1.36 * 1.25), // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
+        y: vp.length(1.36 * 0.75) // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
+      },
+      dots: {
+        start: 120, // 装飾ドットの開始角度
+        spacing: 35, // 装飾ドットの間隔
+        count: 4 // 装飾ドットの個数
+      },
+      dotRadius: vp.length(0.06),
+      needleLengthRatio: 0.65, // 針の長さ比率
+      needleStart: {
+        x: vp.x(1.0 - BASE_MARGIN * 4),
+        y: vp.y(0) // will be updated below
+      }
+    }
+    this.decoration.needleStart.y = this.wheel.center.y
+
+    // 3. Zodiac Component Sizes
+    this.zodiac = {
+      boxSize: {
+        min: vp.length(0.3),
+        max: vp.length(0.6)
+      },
+      textSize: {
+        min: vp.length(0.24),
+        max: vp.length(0.48)
+      }
     }
 
-    // 3. Spacing & Margins
-    this.margin = this.vp.length(BASE_MARGIN)
-
     // 4. Text Layout Metrics
-    this.textSizeHeader = this.vp.length(0.24)
-    this.textSizeYearMain = this.vp.length(0.17)
-    this.textSizeYearSub = this.vp.length(0.1)
-    this.textSizeFooter = this.vp.length(0.07)
-    this.textBoxMain = this.vp.length(0.6)
-    this.textBoxSub = this.vp.length(0.3)
+    // Calculate independent anchor points for labels (using zodiac box sizes)
+    const mainEdges = this.getLabelEdges(
+      this.getSlotAngle(this.activeSlot),
+      this.zodiac.boxSize.max
+    )
+    const subEdges = this.getLabelEdges(
+      this.getSlotAngle(this.activeSlot + 1),
+      this.zodiac.boxSize.min
+    )
 
-    // Calculate independent anchor points for labels
-    // Use Exact Tracking for labels to match visual slot positions
-    const mainEdges = this.getLabelEdges(this.getSlotAngle(this.activeSlot), this.textBoxMain)
-    const subEdges = this.getLabelEdges(this.getSlotAngle(this.activeSlot + 1), this.textBoxSub)
-
-    // Pre-calculated Text Positions (The "View Model")
-    this.textPosXHeader = this.vp.x(1.0 - BASE_MARGIN * 3)
-    this.textPosYHappy = this.vp.y(-0.2)
-    this.textPosYNewYear = this.vp.y(0)
-
-    this.textPosXYearMain = mainEdges.left - this.margin
-    this.textPosYYearMain = mainEdges.bottom
-
-    this.textPosXYearSub = subEdges.left - this.margin
-    this.textPosYYearSub = subEdges.bottom
-
-    this.textPosXFooter = this.vp.x(-1.0 + BASE_MARGIN)
-    this.textPosYFooter = this.vp.y(1.45)
+    this.text = {
+      sizes: {
+        header: vp.length(0.24),
+        yearMain: vp.length(0.17),
+        yearSub: vp.length(0.1),
+        footer: vp.length(0.07)
+      },
+      pos: {
+        header: {
+          x: vp.x(1.0 - BASE_MARGIN * 3),
+          yHappy: vp.y(-0.2),
+          yNewYear: vp.y(0)
+        },
+        yearMain: {
+          x: mainEdges.left - vp.length(BASE_MARGIN),
+          y: mainEdges.bottom
+        },
+        yearSub: {
+          x: subEdges.left - vp.length(BASE_MARGIN),
+          y: subEdges.bottom
+        },
+        footer: {
+          x: vp.x(-1.0 + BASE_MARGIN),
+          y: vp.y(1.45)
+        }
+      }
+    }
 
     // 5. Outer Frame Geometry
     this.outerFrame = {
-      x1: this.vp.x(-0.95),
-      y1: this.vp.y(-0.9),
-      x2: this.vp.x(1),
-      y2: this.vp.y(1.05)
-    }
-
-    // 6. Component Sizes
-    this.zodiacBoxMin = this.vp.length(0.3)
-    this.zodiacBoxMax = this.vp.length(0.6)
-    this.zodiacTextMin = this.vp.length(0.24)
-    this.zodiacTextMax = this.vp.length(0.48)
-    this.dotRadius = this.vp.length(0.06)
-
-    // 7. Decoration Positions
-    this.needleStart = {
-      x: this.vp.x(1.0 - BASE_MARGIN * 4),
-      y: this.wheelCenter.y
+      x1: vp.x(-0.95),
+      y1: vp.y(-0.9),
+      x2: vp.x(1),
+      y2: vp.y(1.05)
     }
   }
 
@@ -143,8 +159,8 @@ class Layout {
   // Absolute position for a specific angle on the wheel
   getWheelPosition(angle) {
     return {
-      x: this.wheelCenter.x + cos(angle) * this.wheelRadius.x,
-      y: this.wheelCenter.y + sin(angle) * this.wheelRadius.y
+      x: this.wheel.center.x + cos(angle) * this.wheel.radius.x,
+      y: this.wheel.center.y + sin(angle) * this.wheel.radius.y
     }
   }
 
@@ -167,7 +183,7 @@ class Layout {
 class ZodiacWheel {
   render() {
     push()
-    translate(layout.wheelCenter.x, layout.wheelCenter.y)
+    translate(layout.wheel.center.x, layout.wheel.center.y)
 
     for (let i = 12; i >= 0; i--) {
       // 1. Domain & Timing Logic
@@ -190,7 +206,7 @@ class ZodiacWheel {
       }
 
       push()
-      translate(layout.wheelRadius.x * cos(angle), layout.wheelRadius.y * sin(angle))
+      translate(layout.wheel.radius.x * cos(angle), layout.wheel.radius.y * sin(angle))
       this._renderItem(zodiac, hFactor, opacity)
       pop()
     }
@@ -200,8 +216,8 @@ class ZodiacWheel {
 
   _renderItem(character, hFactor, opacity) {
     // 1. Geometry & Interpolation
-    let currentBoxSize = lerp(layout.zodiacBoxMin, layout.zodiacBoxMax, hFactor)
-    let currentTextSize = lerp(layout.zodiacTextMin, layout.zodiacTextMax, hFactor)
+    let currentBoxSize = lerp(layout.zodiac.boxSize.min, layout.zodiac.boxSize.max, hFactor)
+    let currentTextSize = lerp(layout.zodiac.textSize.min, layout.zodiac.textSize.max, hFactor)
     let baseFillColor = lerp(CONFIG.COLORS.SUB, CONFIG.COLORS.MAIN, hFactor)
 
     // 2. Color Definitions (Consolidated Alpha Management)
@@ -340,7 +356,9 @@ function draw() {
 
   drawDecoration()
   drawNeedle()
-  drawTextContent()
+  drawHeader()
+  drawYearLabels()
+  drawFooter()
   wheel.render()
 }
 
@@ -356,23 +374,23 @@ function drawDecoration() {
   stroke(CONFIG.COLORS.ACCENT)
   strokeWeight(3)
   arc(
-    layout.wheelCenter.x,
-    layout.wheelCenter.y,
-    layout.arcRadius.x * 2,
-    layout.arcRadius.y * 2,
-    layout.arcStartAngle,
-    layout.arcEndAngle
+    layout.wheel.center.x,
+    layout.wheel.center.y,
+    layout.decoration.arcRadius.x * 2,
+    layout.decoration.arcRadius.y * 2,
+    layout.decoration.arcStartAngle,
+    layout.decoration.arcEndAngle
   )
 
   // Red Dots on Arc
   fill(CONFIG.COLORS.ACCENT)
   noStroke()
-  for (let i = 0; i < layout.dots.count; i++) {
-    let a = layout.dots.start + i * layout.dots.spacing
+  for (let i = 0; i < layout.decoration.dots.count; i++) {
+    let a = layout.decoration.dots.start + i * layout.decoration.dots.spacing
     circle(
-      layout.wheelCenter.x + cos(a) * layout.arcRadius.x,
-      layout.wheelCenter.y + sin(a) * layout.arcRadius.y,
-      layout.dotRadius
+      layout.wheel.center.x + cos(a) * layout.decoration.arcRadius.x,
+      layout.wheel.center.y + sin(a) * layout.decoration.arcRadius.y,
+      layout.decoration.dotRadius
     )
   }
 
@@ -389,7 +407,7 @@ function drawNeedle() {
   stroke(CONFIG.COLORS.ACCENT)
   strokeWeight(15)
 
-  let start = layout.needleStart
+  let start = layout.decoration.needleStart
 
   // Localized Angle Interpolation
   let active = layout.activeSlot
@@ -404,38 +422,39 @@ function drawNeedle() {
   let dy = target.y - start.y
 
   // Draw needle using a fixed ratio for easy manual adjustment
-  let ratio = layout.needleLengthRatio
+  let ratio = layout.decoration.needleLengthRatio
   line(start.x, start.y, start.x + dx * ratio, start.y + dy * ratio)
 }
 
-function drawTextContent() {
-  // Derived Display State
-  let displayYear = animator._running ? year.previous : year.current
-
-  // 1. HAPPY NEW YEAR!
+function drawHeader() {
   textAlign(RIGHT, CENTER)
   fill(CONFIG.COLORS.MAIN)
   noStroke()
-  textSize(layout.textSizeHeader)
+  textSize(layout.text.sizes.header)
   textStyle(BOLDITALIC)
-  text("HAPPY", layout.textPosXHeader, layout.textPosYHappy)
-  text("NEW YEAR!", layout.textPosXHeader, layout.textPosYNewYear)
+  text("HAPPY", layout.text.pos.header.x, layout.text.pos.header.yHappy)
+  text("NEW YEAR!", layout.text.pos.header.x, layout.text.pos.header.yNewYear)
+}
 
-  // 2. Year Labels (Aligned to tiles)
+function drawYearLabels() {
+  // Derived Display State
+  let displayYear = animator._running ? year.previous : year.current
+
   textAlign(RIGHT, BOTTOM)
   textStyle(NORMAL)
   // Previous Year (Gray)
   fill(CONFIG.COLORS.SUB)
-  textSize(layout.textSizeYearSub)
-  text(displayYear - 1 + ":", layout.textPosXYearSub, layout.textPosYYearSub)
+  textSize(layout.text.sizes.yearSub)
+  text(displayYear - 1 + ":", layout.text.pos.yearSub.x, layout.text.pos.yearSub.y)
   // Current Year (Black)
   fill(CONFIG.COLORS.MAIN)
-  textSize(layout.textSizeYearMain)
-  text(displayYear + ":", layout.textPosXYearMain, layout.textPosYYearMain)
+  textSize(layout.text.sizes.yearMain)
+  text(displayYear + ":", layout.text.pos.yearMain.x, layout.text.pos.yearMain.y)
+}
 
-  // 3. Footer
+function drawFooter() {
   textAlign(LEFT, BOTTOM)
-  textSize(layout.textSizeFooter)
+  textSize(layout.text.sizes.footer)
   fill(CONFIG.COLORS.MAIN)
-  text("今年もよろしくお願いします。", layout.textPosXFooter, layout.textPosYFooter)
+  text("今年もよろしくお願いします。", layout.text.pos.footer.x, layout.text.pos.footer.y)
 }
