@@ -55,15 +55,29 @@ class Layout {
     // --- 内部幾何学パラメータ ---
     const BASE_MARGIN = 0.02 // 基本マージン（2%）
 
-    // 外部（ZodiacWheel等）から参照される共有パラメータの公開
-    this.spacingAngle = 11 // 干支どうしの間隔（度数）
-    this._activeSlot = 3 // アクティブな干支が配置の何番目に来るか（内部用）
-    this.highlightAngle = 133 // アクティブな干支を表示する基準角度
-    this.angleAdjustments = [2, 0, -2.5, -4.5, -1.5, 0, 0, 0, 0, 0, 0, 0, 0, 0] // 各スロットの角度微調整
+    // --- タイムライン構成（Master） ---
+    this.futureDisplayLimit = -3 // 未来方向に何年分表示するか
+    this.pastDisplayLimit = 9 // 過去方向に何年分表示するか
 
-    // 相対境界の定義（アクティブを0としたオフセット範囲）
-    this.minOffset = 0 - this._activeSlot // 通常 -3
-    this.maxOffset = 12 - this._activeSlot // 通常 9
+    // --- 物理パラメータ（Detail） ---
+    // 13枚のパネルを表示するが、境界の補間（次に現れる干支）のために
+    // 円環上に 14個(13+1) の配置場所（スロット）を確保する
+    const displayYearsCount = this.pastDisplayLimit - this.futureDisplayLimit + 1 // 13年分
+    this.angleAdjustments = new Array(displayYearsCount + 1).fill(0)
+
+    // 物理スロットごとの微調整（インデックスは論理上の年数ではなく「場所」を表す）
+    this.angleAdjustments[0] = 2.0 // [予備] 未来側の補間元（画面外）
+    this.angleAdjustments[1] = 0 // [表示端] 未来側の端 (-3)
+    this.angleAdjustments[2] = -2.5 // [表示]
+    this.angleAdjustments[3] = -4.5 // [表示]
+    this.angleAdjustments[4] = -1.5 // [現在] 基準となる今年の配置
+    // ※ 以降のスロットは補正なし(0)
+
+    // 針が指すべき基準位置の導出（未来側のスロット数 + 予備スロット1つ分）
+    this._activeSlot = Math.abs(this.futureDisplayLimit) + 1 // 結果: 4
+
+    this.spacingAngle = 11 // 干支どうしの間隔（度数）
+    this.highlightAngle = 133 // アクティブな干支を表示する基準角度
 
     // 1. Wheel & Zodiac Entities
     this.wheel = {
@@ -120,7 +134,7 @@ class Layout {
       }
     }
 
-    const mainEdges = this.getLabelEdges(this.getAngle(0), this.wheel.boxSize.max)
+    const mainEdges = this.getLabelEdges(this.getAngleByRelativeYear(0), this.wheel.boxSize.max)
     this.yearMain = {
       size: vp.length(0.17),
       pos: {
@@ -129,7 +143,7 @@ class Layout {
       }
     }
 
-    const subEdges = this.getLabelEdges(this.getAngle(1), this.wheel.boxSize.min)
+    const subEdges = this.getLabelEdges(this.getAngleByRelativeYear(1), this.wheel.boxSize.min)
     this.yearSub = {
       size: vp.length(0.1),
       pos: {
@@ -173,13 +187,13 @@ class Layout {
     }
   }
 
-  getAngle(offset = 0) {
-    return this.getSlotAngle(this._activeSlot + offset)
+  getAngleByRelativeYear(relativeYear = 0) {
+    return this.getSlotAngle(this._activeSlot + relativeYear)
   }
 
   getSlotAngle(i) {
     const base = this.highlightAngle + (i - this._activeSlot) * this.spacingAngle
-    const adjustment = this.angleAdjustments[i + 1] || 0 // i: -1 to 12 -> index: 0 to 13
+    const adjustment = this.angleAdjustments[i] || 0
     return base + adjustment
   }
 }
@@ -189,21 +203,28 @@ class ZodiacWheel {
     push()
     translate(layout.wheel.center.x, layout.wheel.center.y)
 
-    for (let offset = layout.maxOffset; offset >= layout.minOffset; offset--) {
+    for (
+      let relativeYear = layout.pastDisplayLimit;
+      relativeYear >= layout.futureDisplayLimit;
+      relativeYear--
+    ) {
       // 1. Domain & Timing Logic
-      const slotYear = year.current - offset
+      const slotYear = year.current - relativeYear
       const zodiac = Year.getZodiac(slotYear)
-      const angle = animator.interpolate(layout.getAngle(offset - 1), layout.getAngle(offset))
+      const angle = animator.interpolate(
+        layout.getAngleByRelativeYear(relativeYear - 1),
+        layout.getAngleByRelativeYear(relativeYear)
+      )
 
       // 2. Interpolation Factors
-      const angleDist = abs(angle - layout.getAngle(0))
+      const angleDist = abs(angle - layout.getAngleByRelativeYear(0))
       const hFactor = map(angleDist, 0, layout.spacingAngle, 1.0, 0.0, true)
 
       // 3. Localized Opacity Interpolation
       let opacity
-      if (offset === layout.minOffset) {
+      if (relativeYear === layout.futureDisplayLimit) {
         opacity = animator.interpolate(0, 255) // Fade-in
-      } else if (offset === layout.maxOffset) {
+      } else if (relativeYear === layout.pastDisplayLimit) {
         opacity = animator.interpolate(255, 0) // Fade-out
       } else {
         opacity = 255
@@ -419,7 +440,10 @@ function drawNeedle() {
   let start = layout.needle.start
 
   // Localized Angle Interpolation
-  let needleAngle = animator.interpolate(layout.getAngle(-1), layout.getAngle(0))
+  let needleAngle = animator.interpolate(
+    layout.getAngleByRelativeYear(-1),
+    layout.getAngleByRelativeYear(0)
+  )
   let target = layout.getWheelPosition(needleAngle)
 
   // Vector from Start to Target
