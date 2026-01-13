@@ -8,8 +8,7 @@ const CONFIG = {
   },
   VIEWPORT: {
     OCCUPANCY_W: 0.95, // 横方向の画面占有率
-    OCCUPANCY_H: 0.75, // 縦方向の画面占有率
-    OFFSET_Y: -0.24 // 画面全体の上方へのオフセット量(Viewport半径に対する比率で指定)
+    OCCUPANCY_H: 0.75 // 縦方向の画面占有率
   },
   ANIMATION: {
     SPEED: 0.1 // アニメーション速度（追従率: 0.05〜0.2程度で調整）
@@ -42,10 +41,6 @@ class Viewport {
   length(ratio) {
     return ratio * this._unit
   }
-
-  applyOffset() {
-    translate(0, this.length(CONFIG.VIEWPORT.OFFSET_Y))
-  }
 }
 
 class Layout {
@@ -54,6 +49,12 @@ class Layout {
 
     // --- 内部幾何学パラメータ ---
     const BASE_MARGIN = 0.02 // 基本マージン（2%）
+
+    // レイアウト全体の基準となるオフセット（全体を上下左右に微調整する）
+    this.offset = {
+      x: vp.length(0),
+      y: vp.length(-0.24)
+    }
 
     // --- タイムライン構成（Master） ---
     this.futureDisplayLimit = -3 // 未来方向に何年分表示するか
@@ -382,7 +383,8 @@ function draw() {
 
   background(CONFIG.COLORS.BACK_GROUND)
 
-  viewport.applyOffset()
+  // レイアウトの指示に従って全体のオフセット（構図）を適用
+  translate(layout.offset.x, layout.offset.y)
 
   drawArc()
   drawDots()
