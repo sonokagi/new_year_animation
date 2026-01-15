@@ -123,38 +123,65 @@ class Layout {
     }
 
     // 3. Content Components
-    this.header = {
-      size: vp.length(0.24),
+    this.headerHappy = {
       pos: {
         x: vp.x(1.0 - BASE_MARGIN * 3),
-        yHappy: vp.y(-0.2),
-        yNewYear: vp.y(0)
+        y: vp.y(-0.2)
+      },
+      size: vp.length(0.24),
+      align: {
+        h: RIGHT,
+        v: CENTER
+      }
+    }
+
+    this.headerNewYear = {
+      pos: {
+        x: vp.x(1.0 - BASE_MARGIN * 3),
+        y: vp.y(0)
+      },
+      size: vp.length(0.24),
+      align: {
+        h: RIGHT,
+        v: CENTER
       }
     }
 
     const mainEdges = this.getLabelEdges(this.getAngleByRelativeYear(0), this.wheel.boxSize.max)
     this.yearMain = {
-      size: vp.length(0.17),
       pos: {
         x: mainEdges.left - vp.length(BASE_MARGIN),
         y: mainEdges.bottom
+      },
+      size: vp.length(0.17),
+      align: {
+        h: RIGHT,
+        v: BOTTOM
       }
     }
 
     const subEdges = this.getLabelEdges(this.getAngleByRelativeYear(1), this.wheel.boxSize.min)
     this.yearSub = {
-      size: vp.length(0.1),
       pos: {
         x: subEdges.left - vp.length(BASE_MARGIN),
         y: subEdges.bottom
+      },
+      size: vp.length(0.1),
+      align: {
+        h: RIGHT,
+        v: BOTTOM
       }
     }
 
     this.footer = {
-      size: vp.length(0.07),
       pos: {
         x: vp.x(-1.0 + BASE_MARGIN),
         y: vp.y(1.45)
+      },
+      size: vp.length(0.07),
+      align: {
+        h: LEFT,
+        v: BOTTOM
       }
     }
 
@@ -462,35 +489,37 @@ function drawNeedle() {
   line(start.x, start.y, start.x + dx * ratio, start.y + dy * ratio)
 }
 
-function drawHeader() {
-  textAlign(RIGHT, CENTER)
-  fill(CONFIG.COLORS.MAIN)
+/**
+ * 共通のラベル描画ヘルパー
+ * @param {Object} label - Layoutクラスから提供される配置情報 { pos: {x, y}, size, align: {h, v} }
+ * @param {string} content - 表示する内容
+ * @param {any} clr - 色
+ * @param {any} stl - 書体
+ */
+function drawLabel(label, content, clr, stl) {
+  fill(clr)
   noStroke()
-  textSize(layout.header.size)
-  textStyle(BOLDITALIC)
-  text("HAPPY", layout.header.pos.x, layout.header.pos.yHappy)
-  text("NEW YEAR!", layout.header.pos.x, layout.header.pos.yNewYear)
+  textStyle(stl)
+  textAlign(label.align.h, label.align.v)
+  textSize(label.size)
+  text(content, label.pos.x, label.pos.y)
+}
+
+function drawHeader() {
+  drawLabel(layout.headerHappy, "HAPPY", CONFIG.COLORS.MAIN, BOLDITALIC)
+  drawLabel(layout.headerNewYear, "NEW YEAR!", CONFIG.COLORS.MAIN, BOLDITALIC)
 }
 
 function drawYearLabels() {
   // Derived Display State
   let displayYear = animator._running ? year.previous : year.current
 
-  textAlign(RIGHT, BOTTOM)
-  textStyle(NORMAL)
   // Previous Year (Gray)
-  fill(CONFIG.COLORS.SUB)
-  textSize(layout.yearSub.size)
-  text(displayYear - 1 + ":", layout.yearSub.pos.x, layout.yearSub.pos.y)
+  drawLabel(layout.yearSub, displayYear - 1 + ":", CONFIG.COLORS.SUB, NORMAL)
   // Current Year (Black)
-  fill(CONFIG.COLORS.MAIN)
-  textSize(layout.yearMain.size)
-  text(displayYear + ":", layout.yearMain.pos.x, layout.yearMain.pos.y)
+  drawLabel(layout.yearMain, displayYear + ":", CONFIG.COLORS.MAIN, NORMAL)
 }
 
 function drawFooter() {
-  textAlign(LEFT, BOTTOM)
-  textSize(layout.footer.size)
-  fill(CONFIG.COLORS.MAIN)
-  text("今年もよろしくお願いします。", layout.footer.pos.x, layout.footer.pos.y)
+  drawLabel(layout.footer, "今年もよろしくお願いします。", CONFIG.COLORS.MAIN, NORMAL)
 }
