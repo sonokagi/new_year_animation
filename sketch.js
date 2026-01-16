@@ -115,11 +115,8 @@ class Layout {
     }
 
     this.needle = {
-      lengthRatio: 0.65, // 針の長さ比率
-      start: {
-        x: vp.x(1.0 - BASE_MARGIN * 4),
-        y: this.wheel.center.y
-      }
+      x: vp.x(1.0 - BASE_MARGIN * 4),
+      y: this.wheel.center.y
     }
 
     // 3. Content Components
@@ -376,6 +373,9 @@ let layout
 // Wheel State
 let wheel
 
+// Needle State
+let needle
+
 function setup() {
   createCanvas(windowWidth, windowHeight)
   textFont("Noto Sans JP")
@@ -384,6 +384,7 @@ function setup() {
   year = new Year(new Date().getFullYear())
   animator = new Animator()
   wheel = new ZodiacWheel()
+  needle = new Needle()
 
   // Initial Layout Calculation
   updateLayout()
@@ -416,7 +417,7 @@ function draw() {
   drawArc()
   drawDots()
   drawOuterFrame()
-  drawNeedle()
+  needle.render()
   drawHeader()
   drawYearLabels()
   drawFooter()
@@ -466,27 +467,33 @@ function drawOuterFrame() {
   rect(layout.outerFrame.x1, layout.outerFrame.y1, layout.outerFrame.x2, layout.outerFrame.y2)
 }
 
-function drawNeedle() {
-  // Red Needle (Indicator)
-  stroke(CONFIG.COLORS.ACCENT)
-  strokeWeight(15)
+class Needle {
+  constructor() {
+    this.lengthRatio = 0.65
+  }
 
-  let start = layout.needle.start
+  render() {
+    // Red Needle (Indicator)
+    stroke(CONFIG.COLORS.ACCENT)
+    strokeWeight(15)
+    strokeCap(ROUND)
 
-  // Localized Angle Interpolation
-  let needleAngle = animator.interpolate(
-    layout.getAngleByRelativeYear(-1),
-    layout.getAngleByRelativeYear(0)
-  )
-  let target = layout.getWheelPosition(needleAngle)
+    const start = layout.needle
 
-  // Vector from Start to Target
-  let dx = target.x - start.x
-  let dy = target.y - start.y
+    // Localized Angle Interpolation
+    const needleAngle = animator.interpolate(
+      layout.getAngleByRelativeYear(-1),
+      layout.getAngleByRelativeYear(0)
+    )
+    const target = layout.getWheelPosition(needleAngle)
 
-  // Draw needle using a fixed ratio for easy manual adjustment
-  let ratio = layout.needle.lengthRatio
-  line(start.x, start.y, start.x + dx * ratio, start.y + dy * ratio)
+    // Vector from Start to Target
+    const dx = target.x - start.x
+    const dy = target.y - start.y
+
+    // Draw needle using a fixed ratio for easy manual adjustment
+    line(start.x, start.y, start.x + dx * this.lengthRatio, start.y + dy * this.lengthRatio)
+  }
 }
 
 /**
