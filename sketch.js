@@ -513,6 +513,6 @@ function renderLabel(content, pos, config) {
   noStroke()
   textStyle(config.style)
   textAlign(config.align[0], config.align[1])
-  textSize(layout.vp.length(config.size))
+  textSize(viewport.length(config.size))
   text(content, pos.x, pos.y)
 }
