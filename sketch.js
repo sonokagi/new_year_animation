@@ -171,15 +171,8 @@ class Layout {
     }
 
     this.footer = {
-      pos: {
-        x: vp.x(-1.0 + BASE_MARGIN),
-        y: vp.y(1.45)
-      },
-      size: vp.length(0.07),
-      align: {
-        h: LEFT,
-        v: BOTTOM
-      }
+      x: vp.x(-1.0 + BASE_MARGIN),
+      y: vp.y(1.45)
     }
 
     // 5. Outer Frame Geometry
@@ -528,5 +521,23 @@ function drawYearLabels() {
 }
 
 function drawFooter() {
-  drawLabel(layout.footer, "今年もよろしくお願いします。", CONFIG.COLORS.MAIN, NORMAL)
+  renderLabel("今年もよろしくお願いします。", layout.footer, {
+    size: 0.07,
+    align: [LEFT, BOTTOM],
+    color: CONFIG.COLORS.MAIN
+  })
+}
+
+/**
+ * 宣言的なラベル描画ヘルパー
+ * @param {string} content - テキスト内容
+ * @param {Object} pos - 座標 {x, y}
+ * @param {Object} config - 設定 {size: 比率, align: [h, v], color: 色, style: 書体}
+ */
+function renderLabel(content, pos, config) {
+  fill(config.color)
+  noStroke()
+  textAlign(config.align[0], config.align[1])
+  textSize(layout.vp.length(config.size))
+  text(content, pos.x, pos.y)
 }
