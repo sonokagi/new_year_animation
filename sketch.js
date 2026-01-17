@@ -405,19 +405,24 @@ function drawIndicators() {
     }
   }
 
+  push()
+  translate(x, y)
+
   // 1. Red Arc
   noFill()
   stroke(CONFIG.COLORS.ACCENT)
   strokeWeight(3)
-  arc(x, y, spec.arc.radius.x * 2, spec.arc.radius.y * 2, spec.arc.start, spec.arc.end)
+  arc(0, 0, spec.arc.radius.x * 2, spec.arc.radius.y * 2, spec.arc.start, spec.arc.end)
 
   // 2. Decorative Dots
   fill(CONFIG.COLORS.ACCENT)
   noStroke()
   for (let i = 0; i < spec.dots.count; i++) {
     let a = spec.dots.start + i * spec.dots.spacing
-    circle(x + cos(a) * spec.arc.radius.x, y + sin(a) * spec.arc.radius.y, spec.dots.radius)
+    circle(cos(a) * spec.arc.radius.x, sin(a) * spec.arc.radius.y, spec.dots.radius)
   }
+
+  pop()
 }
 
 function drawOuterFrame() {
