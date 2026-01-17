@@ -327,9 +327,6 @@ let layout
 // Wheel State
 let wheel
 
-// Needle State
-let needle
-
 function setup() {
   createCanvas(windowWidth, windowHeight)
   textFont("Noto Sans JP")
@@ -338,7 +335,6 @@ function setup() {
   year = new Year(new Date().getFullYear())
   animator = new Animator()
   wheel = new ZodiacWheel()
-  needle = new Needle()
 
   // Initial Layout Calculation
   updateLayout()
@@ -370,7 +366,7 @@ function draw() {
 
   drawIndicators()
   drawOuterFrame()
-  needle.render()
+  drawNeedle()
   drawHeader()
   drawYearLabels()
   drawFooter()
@@ -433,33 +429,28 @@ function drawOuterFrame() {
   rect(layout.outerFrame.x1, layout.outerFrame.y1, layout.outerFrame.x2, layout.outerFrame.y2)
 }
 
-class Needle {
-  constructor() {
-    this.lengthRatio = 0.65
-  }
+function drawNeedle() {
+  const start = layout.needle
+  const lengthRatio = 0.65
 
-  render() {
-    // Red Needle (Indicator)
-    stroke(CONFIG.COLORS.ACCENT)
-    strokeWeight(15)
-    strokeCap(ROUND)
+  // Red Needle (Indicator)
+  stroke(CONFIG.COLORS.ACCENT)
+  strokeWeight(15)
+  strokeCap(ROUND)
 
-    const start = layout.needle
+  // Localized Angle Interpolation
+  const needleAngle = animator.interpolate(
+    layout.getAngleByRelativeYear(-1),
+    layout.getAngleByRelativeYear(0)
+  )
+  const target = layout.getWheelPosition(needleAngle)
 
-    // Localized Angle Interpolation
-    const needleAngle = animator.interpolate(
-      layout.getAngleByRelativeYear(-1),
-      layout.getAngleByRelativeYear(0)
-    )
-    const target = layout.getWheelPosition(needleAngle)
+  // Vector from Start to Target
+  const dx = target.x - start.x
+  const dy = target.y - start.y
 
-    // Vector from Start to Target
-    const dx = target.x - start.x
-    const dy = target.y - start.y
-
-    // Draw needle using a fixed ratio for easy manual adjustment
-    line(start.x, start.y, start.x + dx * this.lengthRatio, start.y + dy * this.lengthRatio)
-  }
+  // Draw needle using direct specifications
+  line(start.x, start.y, start.x + dx * lengthRatio, start.y + dy * lengthRatio)
 }
 
 function drawHeader() {
