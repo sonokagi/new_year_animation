@@ -103,15 +103,6 @@ class Layout {
       y: this.wheel.center.y
     }
 
-    this.arc = {
-      start: 101.5, // 赤い円弧の開始角度
-      end: 228, // 赤い円弧の終了角度
-      radius: {
-        x: vp.length(1.36 * 1.25), // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
-        y: vp.length(1.36 * 0.75) // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
-      }
-    }
-
     this.needle = {
       x: vp.x(1.0 - BASE_MARGIN * 4),
       y: this.wheel.center.y
@@ -394,18 +385,26 @@ function mousePressed() {
 }
 
 function drawArc() {
+  const { x, y } = layout.indicators
+  const vp = viewport
+
+  // Specification for Arc
+  const spec = {
+    arc: {
+      start: 101.5,
+      end: 228,
+      radius: {
+        x: vp.length(1.36 * 1.25),
+        y: vp.length(1.36 * 0.75)
+      }
+    }
+  }
+
   // Red Arc (Background)
   noFill()
   stroke(CONFIG.COLORS.ACCENT)
   strokeWeight(3)
-  arc(
-    layout.wheel.center.x,
-    layout.wheel.center.y,
-    layout.arc.radius.x * 2,
-    layout.arc.radius.y * 2,
-    layout.arc.start,
-    layout.arc.end
-  )
+  arc(x, y, spec.arc.radius.x * 2, spec.arc.radius.y * 2, spec.arc.start, spec.arc.end)
 }
 
 function drawDots() {
@@ -413,25 +412,27 @@ function drawDots() {
   const vp = viewport
 
   // Specification for placement and style
-  const arc = {
-    radius: {
-      x: vp.length(1.36 * 1.25),
-      y: vp.length(1.36 * 0.75)
+  const spec = {
+    arc: {
+      radius: {
+        x: vp.length(1.36 * 1.25),
+        y: vp.length(1.36 * 0.75)
+      }
+    },
+    dots: {
+      start: 120,
+      spacing: 35,
+      count: 4,
+      radius: vp.length(0.06)
     }
-  }
-  const dots = {
-    start: 120,
-    spacing: 35,
-    count: 4,
-    radius: vp.length(0.06)
   }
 
   // Decorative Dots on Arc
   fill(CONFIG.COLORS.ACCENT)
   noStroke()
-  for (let i = 0; i < dots.count; i++) {
-    let a = dots.start + i * dots.spacing
-    circle(x + cos(a) * arc.radius.x, y + sin(a) * arc.radius.y, dots.radius)
+  for (let i = 0; i < spec.dots.count; i++) {
+    let a = spec.dots.start + i * spec.dots.spacing
+    circle(x + cos(a) * spec.arc.radius.x, y + sin(a) * spec.arc.radius.y, spec.dots.radius)
   }
 }
 
