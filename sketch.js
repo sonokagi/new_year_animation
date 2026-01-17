@@ -449,8 +449,11 @@ function drawNeedle() {
   const dx = target.x - start.x
   const dy = target.y - start.y
 
+  push()
+  translate(start.x, start.y)
   // Draw needle using direct specifications
-  line(start.x, start.y, start.x + dx * lengthRatio, start.y + dy * lengthRatio)
+  line(0, 0, dx * lengthRatio, dy * lengthRatio)
+  pop()
 }
 
 function drawHeader() {
