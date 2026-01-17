@@ -98,6 +98,11 @@ class Layout {
     }
 
     // 2. Functional Indicators & Background
+    this.indicators = {
+      x: this.wheel.center.x,
+      y: this.wheel.center.y
+    }
+
     this.arc = {
       start: 101.5, // 赤い円弧の開始角度
       end: 228, // 赤い円弧の終了角度
@@ -105,13 +110,6 @@ class Layout {
         x: vp.length(1.36 * 1.25), // 赤い円弧の横半径比率 (0.68 * 2 * 1.25)
         y: vp.length(1.36 * 0.75) // 赤い円弧の縦半径比率 (0.68 * 2 * 0.75)
       }
-    }
-
-    this.dots = {
-      start: 120, // 装飾ドットの開始角度
-      spacing: 35, // 装飾ドットの間隔
-      count: 4, // 装飾ドットの個数
-      radius: vp.length(0.06)
     }
 
     this.needle = {
@@ -411,16 +409,29 @@ function drawArc() {
 }
 
 function drawDots() {
+  const { x, y } = layout.indicators
+  const vp = viewport
+
+  // Specification for placement and style
+  const arc = {
+    radius: {
+      x: vp.length(1.36 * 1.25),
+      y: vp.length(1.36 * 0.75)
+    }
+  }
+  const dots = {
+    start: 120,
+    spacing: 35,
+    count: 4,
+    radius: vp.length(0.06)
+  }
+
   // Decorative Dots on Arc
   fill(CONFIG.COLORS.ACCENT)
   noStroke()
-  for (let i = 0; i < layout.dots.count; i++) {
-    let a = layout.dots.start + i * layout.dots.spacing
-    circle(
-      layout.wheel.center.x + cos(a) * layout.arc.radius.x,
-      layout.wheel.center.y + sin(a) * layout.arc.radius.y,
-      layout.dots.radius
-    )
+  for (let i = 0; i < dots.count; i++) {
+    let a = dots.start + i * dots.spacing
+    circle(x + cos(a) * arc.radius.x, y + sin(a) * arc.radius.y, dots.radius)
   }
 }
 
