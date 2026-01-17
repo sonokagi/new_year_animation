@@ -368,8 +368,7 @@ function draw() {
   // レイアウトの指示に従って全体のオフセット（構図）を適用
   translate(layout.offset.x, layout.offset.y)
 
-  drawArc()
-  drawDots()
+  drawIndicators()
   drawOuterFrame()
   needle.render()
   drawHeader()
@@ -384,36 +383,15 @@ function mousePressed() {
   animator.play()
 }
 
-function drawArc() {
+function drawIndicators() {
   const { x, y } = layout.indicators
   const vp = viewport
 
-  // Specification for Arc
+  // Internalized Specification
   const spec = {
     arc: {
       start: 101.5,
       end: 228,
-      radius: {
-        x: vp.length(1.36 * 1.25),
-        y: vp.length(1.36 * 0.75)
-      }
-    }
-  }
-
-  // Red Arc (Background)
-  noFill()
-  stroke(CONFIG.COLORS.ACCENT)
-  strokeWeight(3)
-  arc(x, y, spec.arc.radius.x * 2, spec.arc.radius.y * 2, spec.arc.start, spec.arc.end)
-}
-
-function drawDots() {
-  const { x, y } = layout.indicators
-  const vp = viewport
-
-  // Specification for placement and style
-  const spec = {
-    arc: {
       radius: {
         x: vp.length(1.36 * 1.25),
         y: vp.length(1.36 * 0.75)
@@ -427,7 +405,13 @@ function drawDots() {
     }
   }
 
-  // Decorative Dots on Arc
+  // 1. Red Arc
+  noFill()
+  stroke(CONFIG.COLORS.ACCENT)
+  strokeWeight(3)
+  arc(x, y, spec.arc.radius.x * 2, spec.arc.radius.y * 2, spec.arc.start, spec.arc.end)
+
+  // 2. Decorative Dots
   fill(CONFIG.COLORS.ACCENT)
   noStroke()
   for (let i = 0; i < spec.dots.count; i++) {
