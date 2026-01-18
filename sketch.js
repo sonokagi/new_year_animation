@@ -492,11 +492,6 @@ function drawNeedle() {
   const start = layout.needle
   const lengthRatio = 0.65
 
-  // Red Needle (Indicator)
-  stroke(CONFIG.COLORS.ACCENT)
-  strokeWeight(15)
-  strokeCap(ROUND)
-
   // Localized Angle Interpolation
   const needleAngle = animator.interpolate(
     layout.getAngleByRelativeYear(-1),
@@ -510,6 +505,9 @@ function drawNeedle() {
   const dy = target.ny - start.ny
 
   push()
+  stroke(CONFIG.COLORS.ACCENT)
+  strokeWeight(15)
+  strokeCap(ROUND)
   viewport.translate(start.nx, start.ny)
   viewport.line(0, 0, dx * lengthRatio, dy * lengthRatio)
   pop()
