@@ -14,6 +14,11 @@ This project follows these core principles:
 
 1. **Explicit Permission Required**: Git commits and merges MUST NOT be performed automatically. You MUST ask for and receive explicit permission from the user BEFORE executing a command that results in a commit.
 
+### Implementation Process
+
+1. **Explicit Approval Required**: Do NOT execute implementation code changes or file modifications until explicitly approved by the user.
+2. **Wait for Instructions**: Always present a plan and wait for the user's explicit command to proceed before writing code.
+
 ### Refactoring & Architecture
 
 1. Follow "Simplicity First" and "YAGNI".
