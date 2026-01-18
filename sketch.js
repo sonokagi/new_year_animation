@@ -424,22 +424,10 @@ function mousePressed() {
 }
 
 function drawIndicators() {
-  // Internalized Specification
-  const spec = {
-    arc: {
-      start: 101.5,
-      end: 228,
-      radius: {
-        x: 1.36 * 1.25,
-        y: 1.36 * 0.75
-      }
-    },
-    dots: {
-      start: 120,
-      spacing: 35,
-      count: 4,
-      radius: 0.06
-    }
+  // Shared Geometry
+  const radius = {
+    x: 1.36 * 1.25,
+    y: 1.36 * 0.75
   }
 
   push()
@@ -449,17 +437,19 @@ function drawIndicators() {
   noFill()
   stroke(CONFIG.COLORS.ACCENT)
   strokeWeight(3)
-  viewport.arc(spec.arc.radius.x * 2, spec.arc.radius.y * 2, spec.arc.start, spec.arc.end)
+  // Main Arc: 101.5 to 228 degrees
+  viewport.arc(radius.x * 2, radius.y * 2, 101.5, 228)
 
   // 2. Decorative Dots
   fill(CONFIG.COLORS.ACCENT)
   noStroke()
-  for (let i = 0; i < spec.dots.count; i++) {
-    const a = spec.dots.start + i * spec.dots.spacing
+  for (let i = 0; i < 4; i++) {
+    // Start at 120deg, spaced by 35deg
+    const degree = 120 + i * 35
 
     push()
-    viewport.translate(cos(a) * spec.arc.radius.x, sin(a) * spec.arc.radius.y)
-    viewport.circle(spec.dots.radius)
+    viewport.translate(cos(degree) * radius.x, sin(degree) * radius.y)
+    viewport.circle(0.06)
     pop()
   }
 
