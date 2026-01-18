@@ -140,8 +140,8 @@ class Layout {
 
     // 3. Content Components
     this.header = {
-      x: vp.x(1.0 - BASE_MARGIN * 3),
-      y: vp.y(-0.2)
+      nx: 1.0 - BASE_MARGIN * 3,
+      ny: -0.2
     }
 
     const mainEdges = this.getLabelEdges(this.getAngleByRelativeYear(0), this.wheel.boxSize.max)
@@ -157,8 +157,8 @@ class Layout {
     }
 
     this.footer = {
-      x: vp.x(-1.0 + BASE_MARGIN),
-      y: vp.y(1.45)
+      nx: -1.0 + BASE_MARGIN,
+      ny: 1.45
     }
 
     // 5. Outer Frame Geometry
@@ -493,9 +493,9 @@ function drawHeader() {
   }
 
   push()
-  translate(layout.header.x, layout.header.y)
+  viewport.translate(layout.header.nx, layout.header.ny)
   renderLabel("HAPPY", config)
-  translate(0, viewport.pixel(0.2))
+  viewport.translate(0, 0.2)
   renderLabel("NEW YEAR!", config)
   pop()
 }
@@ -529,7 +529,7 @@ function drawYearLabels() {
 
 function drawFooter() {
   push()
-  translate(layout.footer.x, layout.footer.y)
+  viewport.translate(layout.footer.nx, layout.footer.ny)
   renderLabel("今年もよろしくお願いします。", {
     size: 0.07,
     align: [LEFT, BOTTOM],
