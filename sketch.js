@@ -96,6 +96,12 @@ class Layout {
     // --- 内部幾何学パラメータ ---
     const BASE_MARGIN = 0.02 // 基本マージン（2%）
 
+    const WHEEL_CENTER = { nx: 1.2, ny: 0 } // ホイールの中心位置（比率）
+    const WHEEL_RADIUS = {
+      nx: 1.64 * 1.25, // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
+      ny: 1.64 * 0.8 // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
+    }
+
     // レイアウト全体の基準となるオフセット（全体を上下左右に微調整する）
     this.offset = {
       nx: 0,
@@ -124,14 +130,18 @@ class Layout {
     this.highlightAngle = 133 // アクティブな干支を表示する基準角度
 
     // 1. Wheel & Zodiac Entities
-    const WHEEL_CENTER = { nx: 1.2, ny: 0 }
-
     this.wheel = {
-      x: vp.x(WHEEL_CENTER.nx), // ホイールの中心X座標のオフセット比率
+      x: vp.x(WHEEL_CENTER.nx),
       y: vp.y(WHEEL_CENTER.ny),
+
+      nx: WHEEL_CENTER.nx,
+      ny: WHEEL_CENTER.ny,
+
       radius: {
-        x: vp.pixel(1.64 * 1.25), // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
-        y: vp.pixel(1.64 * 0.8) // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
+        x: vp.pixel(WHEEL_RADIUS.nx),
+        y: vp.pixel(WHEEL_RADIUS.ny),
+        nx: WHEEL_RADIUS.nx,
+        ny: WHEEL_RADIUS.ny
       },
       boxSize: {
         min: vp.pixel(0.3),
@@ -192,6 +202,13 @@ class Layout {
     return {
       x: this.wheel.x + cos(angle) * this.wheel.radius.x,
       y: this.wheel.y + sin(angle) * this.wheel.radius.y
+    }
+  }
+
+  getWheelPositionByRatio(angle) {
+    return {
+      nx: this.wheel.nx + cos(angle) * this.wheel.radius.nx,
+      ny: this.wheel.ny + sin(angle) * this.wheel.radius.ny
     }
   }
 
@@ -478,11 +495,12 @@ function drawNeedle() {
     layout.getAngleByRelativeYear(-1),
     layout.getAngleByRelativeYear(0)
   )
-  const target = layout.getWheelPosition(needleAngle)
+
+  const target = layout.getWheelPositionByRatio(needleAngle)
 
   // Vector from Start to Target
-  const dx = target.x - start.x
-  const dy = target.y - start.y
+  const dx = viewport.x(target.nx) - start.x
+  const dy = viewport.y(target.ny) - start.y
 
   push()
   translate(start.x, start.y)
