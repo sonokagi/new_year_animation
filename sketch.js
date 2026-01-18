@@ -124,9 +124,11 @@ class Layout {
     this.highlightAngle = 133 // アクティブな干支を表示する基準角度
 
     // 1. Wheel & Zodiac Entities
+    const WHEEL_CENTER = { nx: 1.2, ny: 0 }
+
     this.wheel = {
-      x: vp.x(1.2), // ホイールの中心X座標のオフセット比率
-      y: vp.y(0),
+      x: vp.x(WHEEL_CENTER.nx), // ホイールの中心X座標のオフセット比率
+      y: vp.y(WHEEL_CENTER.ny),
       radius: {
         x: vp.pixel(1.64 * 1.25), // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
         y: vp.pixel(1.64 * 0.8) // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
@@ -143,8 +145,8 @@ class Layout {
 
     // 2. Functional Indicators & Background
     this.indicators = {
-      x: this.wheel.x,
-      y: this.wheel.y
+      nx: WHEEL_CENTER.nx,
+      ny: WHEEL_CENTER.ny
     }
 
     this.needle = {
@@ -422,8 +424,6 @@ function mousePressed() {
 }
 
 function drawIndicators() {
-  const { x, y } = layout.indicators
-
   // Internalized Specification
   const spec = {
     arc: {
@@ -443,7 +443,7 @@ function drawIndicators() {
   }
 
   push()
-  translate(x, y)
+  viewport.translate(layout.indicators.nx, layout.indicators.ny)
 
   // 1. Red Arc
   noFill()
