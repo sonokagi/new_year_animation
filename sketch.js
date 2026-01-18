@@ -90,8 +90,8 @@ class Layout {
         max: vp.length(0.6)
       },
       textSize: {
-        min: vp.length(0.24),
-        max: vp.length(0.48)
+        min: 0.24,
+        max: 0.48
       }
     }
 
@@ -240,12 +240,12 @@ class ZodiacWheel {
     rect(0, 0, currentBoxSize, currentBoxSize)
 
     // 4. Render Character Text
-    fill(textColor)
-    noStroke()
-    textAlign(CENTER, CENTER)
-    textStyle(BOLD)
-    textSize(currentTextSize)
-    text(character, 0, 0)
+    renderLabel(character, {
+      size: currentTextSize,
+      align: [CENTER, CENTER],
+      color: textColor,
+      style: BOLD
+    })
   }
 }
 
