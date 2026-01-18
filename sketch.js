@@ -79,10 +79,8 @@ class Layout {
 
     // 1. Wheel & Zodiac Entities
     this.wheel = {
-      center: {
-        x: vp.x(1.2), // ホイールの中心X座標のオフセット比率
-        y: vp.y(0)
-      },
+      x: vp.x(1.2), // ホイールの中心X座標のオフセット比率
+      y: vp.y(0),
       radius: {
         x: vp.length(1.64 * 1.25), // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
         y: vp.length(1.64 * 0.8) // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
@@ -99,13 +97,13 @@ class Layout {
 
     // 2. Functional Indicators & Background
     this.indicators = {
-      x: this.wheel.center.x,
-      y: this.wheel.center.y
+      x: this.wheel.x,
+      y: this.wheel.y
     }
 
     this.needle = {
       x: vp.x(1.0 - BASE_MARGIN * 4),
-      y: this.wheel.center.y
+      y: this.wheel.y
     }
 
     // 3. Content Components
@@ -149,8 +147,8 @@ class Layout {
   // Absolute position for a specific angle on the wheel
   getWheelPosition(angle) {
     return {
-      x: this.wheel.center.x + cos(angle) * this.wheel.radius.x,
-      y: this.wheel.center.y + sin(angle) * this.wheel.radius.y
+      x: this.wheel.x + cos(angle) * this.wheel.radius.x,
+      y: this.wheel.y + sin(angle) * this.wheel.radius.y
     }
   }
 
@@ -185,7 +183,7 @@ class Layout {
 class ZodiacWheel {
   render() {
     push()
-    translate(layout.wheel.center.x, layout.wheel.center.y)
+    translate(layout.wheel.x, layout.wheel.y)
 
     for (
       let relativeYear = layout.pastDisplayLimit;
