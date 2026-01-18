@@ -29,10 +29,10 @@ class Viewport {
   }
 
   x(ratio) {
-    return this._center.x + ratio * this._unit
+    return ratio * this._unit
   }
   y(ratio) {
-    return this._center.y + ratio * this._unit
+    return ratio * this._unit
   }
 
   // Returns a length scaled by the unit (Radius)
@@ -45,6 +45,11 @@ class Viewport {
   // DSL: Sets p5.js textSize based on ratio
   textSize(ratio) {
     textSize(this.length(ratio))
+  }
+
+  // DSL: Establishes (0,0) at the center of the viewport
+  setup() {
+    translate(this._center.x, this._center.y)
   }
 }
 
@@ -359,7 +364,10 @@ function draw() {
 
   background(CONFIG.COLORS.BACK_GROUND)
 
-  // レイアウトの指示に従って全体のオフセット（構図）を適用
+  // 1. Viewport: Establish (0,0) at screen center
+  viewport.setup()
+
+  // 2. Layout: Apply compositional offset
   translate(layout.offset.x, layout.offset.y)
 
   drawIndicators()
