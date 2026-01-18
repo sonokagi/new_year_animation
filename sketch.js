@@ -69,6 +69,20 @@ class Viewport {
     translate(this.pixel(nx), this.pixel(ny))
   }
 
+  /**
+   * DSL: Draws a circle at (0,0) with ratio-based size (diameter).
+   */
+  circle(nSize) {
+    circle(0, 0, this.pixel(nSize))
+  }
+
+  /**
+   * DSL: Draws an arc at (0,0) with ratio-based width and height.
+   */
+  arc(nWidth, nHeight, startAngle, stopAngle) {
+    arc(0, 0, this.pixel(nWidth), this.pixel(nHeight), startAngle, stopAngle)
+  }
+
   // DSL: Establishes (0,0) at the center of the viewport
   setup() {
     translate(this._center.x, this._center.y)
@@ -409,7 +423,6 @@ function mousePressed() {
 
 function drawIndicators() {
   const { x, y } = layout.indicators
-  const vp = viewport
 
   // Internalized Specification
   const spec = {
@@ -417,15 +430,15 @@ function drawIndicators() {
       start: 101.5,
       end: 228,
       radius: {
-        x: vp.pixel(1.36 * 1.25),
-        y: vp.pixel(1.36 * 0.75)
+        x: 1.36 * 1.25,
+        y: 1.36 * 0.75
       }
     },
     dots: {
       start: 120,
       spacing: 35,
       count: 4,
-      radius: vp.pixel(0.06)
+      radius: 0.06
     }
   }
 
@@ -436,14 +449,18 @@ function drawIndicators() {
   noFill()
   stroke(CONFIG.COLORS.ACCENT)
   strokeWeight(3)
-  arc(0, 0, spec.arc.radius.x * 2, spec.arc.radius.y * 2, spec.arc.start, spec.arc.end)
+  viewport.arc(spec.arc.radius.x * 2, spec.arc.radius.y * 2, spec.arc.start, spec.arc.end)
 
   // 2. Decorative Dots
   fill(CONFIG.COLORS.ACCENT)
   noStroke()
   for (let i = 0; i < spec.dots.count; i++) {
-    let a = spec.dots.start + i * spec.dots.spacing
-    circle(cos(a) * spec.arc.radius.x, sin(a) * spec.arc.radius.y, spec.dots.radius)
+    const a = spec.dots.start + i * spec.dots.spacing
+
+    push()
+    viewport.translate(cos(a) * spec.arc.radius.x, sin(a) * spec.arc.radius.y)
+    viewport.circle(spec.dots.radius)
+    pop()
   }
 
   pop()
