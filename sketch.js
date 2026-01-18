@@ -28,23 +28,37 @@ class Viewport {
     this._unit = size / 2 // Fundamental Unit: Radius
   }
 
-  x(ratio) {
-    return ratio * this._unit
-  }
-  y(ratio) {
+  // --- Unit Mapping (The Core of the DSL) ---
+
+  /**
+   * Converts a ratio (normalized by viewport size) to pixel value.
+   * This is the fundamental scaler for the entire system.
+   */
+  pixel(ratio) {
     return ratio * this._unit
   }
 
-  // Returns a length scaled by the unit (Radius)
-  // length(1.0) = Radius (Distance from center to edge)
-  // length(2.0) = Diameter (Full Size)
-  length(ratio) {
-    return ratio * this._unit
+  /**
+   * Returns a relative X offset from the center origin.
+   * Implementation is identical to pixel() due to 1:1 square scale.
+   */
+  x(ratio) {
+    return this.pixel(ratio)
   }
+
+  /**
+   * Returns a relative Y offset from the center origin.
+   * Implementation is identical to pixel() due to 1:1 square scale.
+   */
+  y(ratio) {
+    return this.pixel(ratio)
+  }
+
+  // --- State Application DSL ---
 
   // DSL: Sets p5.js textSize based on ratio
   textSize(ratio) {
-    textSize(this.length(ratio))
+    textSize(this.pixel(ratio))
   }
 
   // DSL: Establishes (0,0) at the center of the viewport
@@ -62,8 +76,8 @@ class Layout {
 
     // レイアウト全体の基準となるオフセット（全体を上下左右に微調整する）
     this.offset = {
-      x: vp.length(0),
-      y: vp.length(-0.24)
+      x: vp.pixel(0),
+      y: vp.pixel(-0.24)
     }
 
     // --- タイムライン構成（Master） ---
@@ -92,12 +106,12 @@ class Layout {
       x: vp.x(1.2), // ホイールの中心X座標のオフセット比率
       y: vp.y(0),
       radius: {
-        x: vp.length(1.64 * 1.25), // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
-        y: vp.length(1.64 * 0.8) // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
+        x: vp.pixel(1.64 * 1.25), // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
+        y: vp.pixel(1.64 * 0.8) // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
       },
       boxSize: {
-        min: vp.length(0.3),
-        max: vp.length(0.6)
+        min: vp.pixel(0.3),
+        max: vp.pixel(0.6)
       },
       textSize: {
         min: 0.24,
@@ -124,13 +138,13 @@ class Layout {
 
     const mainEdges = this.getLabelEdges(this.getAngleByRelativeYear(0), this.wheel.boxSize.max)
     this.yearMain = {
-      x: mainEdges.left - vp.length(BASE_MARGIN),
+      x: mainEdges.left - vp.pixel(BASE_MARGIN),
       y: mainEdges.bottom
     }
 
     const subEdges = this.getLabelEdges(this.getAngleByRelativeYear(1), this.wheel.boxSize.min)
     this.yearSub = {
-      x: subEdges.left - vp.length(BASE_MARGIN),
+      x: subEdges.left - vp.pixel(BASE_MARGIN),
       y: subEdges.bottom
     }
 
@@ -395,15 +409,15 @@ function drawIndicators() {
       start: 101.5,
       end: 228,
       radius: {
-        x: vp.length(1.36 * 1.25),
-        y: vp.length(1.36 * 0.75)
+        x: vp.pixel(1.36 * 1.25),
+        y: vp.pixel(1.36 * 0.75)
       }
     },
     dots: {
       start: 120,
       spacing: 35,
       count: 4,
-      radius: vp.length(0.06)
+      radius: vp.pixel(0.06)
     }
   }
 
@@ -473,7 +487,7 @@ function drawHeader() {
   push()
   translate(layout.header.x, layout.header.y)
   renderLabel("HAPPY", config)
-  translate(0, viewport.length(0.2))
+  translate(0, viewport.pixel(0.2))
   renderLabel("NEW YEAR!", config)
   pop()
 }
