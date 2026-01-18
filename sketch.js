@@ -83,6 +83,13 @@ class Viewport {
     arc(0, 0, this.pixel(nWidth), this.pixel(nHeight), startAngle, stopAngle)
   }
 
+  /**
+   * DSL: Draws a line using ratio-based coordinates.
+   */
+  line(nx1, ny1, nx2, ny2) {
+    line(this.pixel(nx1), this.pixel(ny1), this.pixel(nx2), this.pixel(ny2))
+  }
+
   // DSL: Establishes (0,0) at the center of the viewport
   setup() {
     translate(this._center.x, this._center.y)
@@ -160,8 +167,8 @@ class Layout {
     }
 
     this.needle = {
-      x: vp.x(1.0 - BASE_MARGIN * 4),
-      y: this.wheel.y
+      nx: 1.0 - BASE_MARGIN * 4,
+      ny: this.wheel.ny
     }
 
     // 3. Content Components
@@ -499,13 +506,12 @@ function drawNeedle() {
   const target = layout.getWheelPositionByRatio(needleAngle)
 
   // Vector from Start to Target
-  const dx = viewport.x(target.nx) - start.x
-  const dy = viewport.y(target.ny) - start.y
+  const dx = target.nx - start.nx
+  const dy = target.ny - start.ny
 
   push()
-  translate(start.x, start.y)
-  // Draw needle using direct specifications
-  line(0, 0, dx * lengthRatio, dy * lengthRatio)
+  viewport.translate(start.nx, start.ny)
+  viewport.line(0, 0, dx * lengthRatio, dy * lengthRatio)
   pop()
 }
 
