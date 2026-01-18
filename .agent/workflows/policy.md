@@ -12,14 +12,15 @@ This project follows these core principles:
 
 ### Git Operations
 
-1. Commits and merges MUST NOT be performed automatically. Explicit user instruction is required for every Git operation.
+1. **Explicit Permission Required**: Git commits and merges MUST NOT be performed automatically. You MUST ask for and receive explicit permission from the user BEFORE executing a command that results in a commit.
 
 ### Refactoring & Architecture
 
 1. Follow "Simplicity First" and "YAGNI".
 2. Improvements should be made in small, meaningful phases with user approval at each step.
 3. When a discussion with expert personas (Martin Fowler, Kent Beck, t-wada, Uncle Bob) is required:
-   - Perform the discussion within an artifact file (e.g., `implementation_plan.md` or a dedicated `discussion.md`).
+   - Use a single artifact file named `discussion.md`.
+   - **Overwrite** the content of `discussion.md` for each new discussion to keep it focused (do not create multiple debate files).
    - DO NOT output the full dialogue directly in the chat block.
    - Present only the summary or the final conclusion/proposal in the chat.
    - All expert discussions and their summaries MUST be provided in Japanese.
