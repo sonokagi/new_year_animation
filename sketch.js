@@ -41,6 +41,11 @@ class Viewport {
   length(ratio) {
     return ratio * this._unit
   }
+
+  // DSL: Sets p5.js textSize based on ratio
+  textSize(ratio) {
+    textSize(this.length(ratio))
+  }
 }
 
 class Layout {
@@ -515,6 +520,6 @@ function renderLabel(content, config) {
   noStroke()
   textStyle(config.style)
   textAlign(config.align[0], config.align[1])
-  textSize(viewport.length(config.size))
+  viewport.textSize(config.size)
   text(content, 0, 0)
 }
