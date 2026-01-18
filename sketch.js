@@ -107,14 +107,9 @@ class Layout {
     }
 
     // 3. Content Components
-    this.headerHappy = {
+    this.header = {
       x: vp.x(1.0 - BASE_MARGIN * 3),
       y: vp.y(-0.2)
-    }
-
-    this.headerNewYear = {
-      x: vp.x(1.0 - BASE_MARGIN * 3),
-      y: vp.y(0)
     }
 
     const mainEdges = this.getLabelEdges(this.getAngleByRelativeYear(0), this.wheel.boxSize.max)
@@ -463,12 +458,9 @@ function drawHeader() {
   }
 
   push()
-  translate(layout.headerHappy.x, layout.headerHappy.y)
+  translate(layout.header.x, layout.header.y)
   renderLabel("HAPPY", config)
-  pop()
-
-  push()
-  translate(layout.headerNewYear.x, layout.headerNewYear.y)
+  translate(0, viewport.length(0.2))
   renderLabel("NEW YEAR!", config)
   pop()
 }
