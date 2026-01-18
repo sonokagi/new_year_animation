@@ -61,6 +61,14 @@ class Viewport {
     textSize(this.pixel(ratio))
   }
 
+  /**
+   * DSL: Performs a relative translate using ratio-based coordinates.
+   * This abstracts away px calculation from the drawing code.
+   */
+  translate(nx, ny) {
+    translate(this.pixel(nx), this.pixel(ny))
+  }
+
   // DSL: Establishes (0,0) at the center of the viewport
   setup() {
     translate(this._center.x, this._center.y)
@@ -76,8 +84,8 @@ class Layout {
 
     // レイアウト全体の基準となるオフセット（全体を上下左右に微調整する）
     this.offset = {
-      x: vp.pixel(0),
-      y: vp.pixel(-0.24)
+      nx: 0,
+      ny: -0.24
     }
 
     // --- タイムライン構成（Master） ---
@@ -382,7 +390,7 @@ function draw() {
   viewport.setup()
 
   // 2. Layout: Apply compositional offset
-  translate(layout.offset.x, layout.offset.y)
+  viewport.translate(layout.offset.nx, layout.offset.ny)
 
   drawIndicators()
   drawOuterFrame()
