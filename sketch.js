@@ -461,8 +461,16 @@ function drawHeader() {
     color: CONFIG.COLORS.MAIN,
     style: BOLDITALIC
   }
-  renderLabel("HAPPY", layout.headerHappy, config)
-  renderLabel("NEW YEAR!", layout.headerNewYear, config)
+
+  push()
+  translate(layout.headerHappy.x, layout.headerHappy.y)
+  renderLabel("HAPPY", config)
+  pop()
+
+  push()
+  translate(layout.headerNewYear.x, layout.headerNewYear.y)
+  renderLabel("NEW YEAR!", config)
+  pop()
 }
 
 function drawYearLabels() {
@@ -470,42 +478,51 @@ function drawYearLabels() {
   let displayYear = animator._running ? year.previous : year.current
 
   // Previous Year (Gray)
-  renderLabel(displayYear - 1 + ":", layout.yearSub, {
+  push()
+  translate(layout.yearSub.x, layout.yearSub.y)
+  renderLabel(displayYear - 1 + ":", {
     size: 0.1,
     align: [RIGHT, BOTTOM],
     color: CONFIG.COLORS.SUB,
     style: NORMAL
   })
+  pop()
 
   // Current Year (Black)
-  renderLabel(displayYear + ":", layout.yearMain, {
+  push()
+  translate(layout.yearMain.x, layout.yearMain.y)
+  renderLabel(displayYear + ":", {
     size: 0.17,
     align: [RIGHT, BOTTOM],
     color: CONFIG.COLORS.MAIN,
     style: NORMAL
   })
+  pop()
 }
 
 function drawFooter() {
-  renderLabel("今年もよろしくお願いします。", layout.footer, {
+  push()
+  translate(layout.footer.x, layout.footer.y)
+  renderLabel("今年もよろしくお願いします。", {
     size: 0.07,
     align: [LEFT, BOTTOM],
     color: CONFIG.COLORS.MAIN,
     style: NORMAL
   })
+  pop()
 }
 
 /**
  * 宣言的なラベル描画ヘルパー
+ * (0, 0) に描画するため、配置には push/translate を使用することを推奨します。
  * @param {string} content - テキスト内容
- * @param {Object} pos - 座標 {x, y}
  * @param {Object} config - 設定 {size: 比率, align: [h, v], color: 色, style: 書体}
  */
-function renderLabel(content, pos, config) {
+function renderLabel(content, config) {
   fill(config.color)
   noStroke()
   textStyle(config.style)
   textAlign(config.align[0], config.align[1])
   textSize(viewport.length(config.size))
-  text(content, pos.x, pos.y)
+  text(content, 0, 0)
 }
