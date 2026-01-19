@@ -84,6 +84,13 @@ class Viewport {
   }
 
   /**
+   * DSL: Draws a rectangle using ratio-based coordinates.
+   */
+  rect(nx1, ny1, nx2, ny2) {
+    rect(this.pixel(nx1), this.pixel(ny1), this.pixel(nx2), this.pixel(ny2))
+  }
+
+  /**
    * DSL: Draws a line using ratio-based coordinates.
    */
   line(nx1, ny1, nx2, ny2) {
@@ -196,10 +203,10 @@ class Layout {
 
     // 5. Outer Frame Geometry
     this.outerFrame = {
-      x1: vp.x(-0.95),
-      y1: vp.y(-0.9),
-      x2: vp.x(1),
-      y2: vp.y(1.05)
+      nx1: -0.95,
+      ny1: -0.9,
+      nx2: 1.0,
+      ny2: 1.05
     }
   }
 
@@ -485,7 +492,12 @@ function drawOuterFrame() {
   stroke(CONFIG.COLORS.MAIN)
   strokeWeight(2)
   rectMode(CORNERS)
-  rect(layout.outerFrame.x1, layout.outerFrame.y1, layout.outerFrame.x2, layout.outerFrame.y2)
+  viewport.rect(
+    layout.outerFrame.nx1,
+    layout.outerFrame.ny1,
+    layout.outerFrame.nx2,
+    layout.outerFrame.ny2
+  )
 }
 
 function drawNeedle() {
