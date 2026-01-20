@@ -159,7 +159,9 @@ class Layout {
       },
       boxSize: {
         min: vp.pixel(0.3),
-        max: vp.pixel(0.6)
+        max: vp.pixel(0.6),
+        nMin: 0.3,
+        nMax: 0.6
       },
       textSize: {
         min: 0.24,
@@ -184,16 +186,16 @@ class Layout {
       ny: -0.2
     }
 
-    const mainEdges = this.getLabelEdges(this.getAngleByRelativeYear(0), this.wheel.boxSize.max)
+    const mainPos = this.getWheelPositionByRatio(this.getAngleByRelativeYear(0))
     this.yearMain = {
-      x: mainEdges.left - vp.pixel(BASE_MARGIN),
-      y: mainEdges.bottom
+      nx: mainPos.nx - this.wheel.boxSize.nMax / 2 - BASE_MARGIN,
+      ny: mainPos.ny + this.wheel.boxSize.nMax / 2
     }
 
-    const subEdges = this.getLabelEdges(this.getAngleByRelativeYear(1), this.wheel.boxSize.min)
+    const subPos = this.getWheelPositionByRatio(this.getAngleByRelativeYear(1))
     this.yearSub = {
-      x: subEdges.left - vp.pixel(BASE_MARGIN),
-      y: subEdges.bottom
+      nx: subPos.nx - this.wheel.boxSize.nMin / 2 - BASE_MARGIN,
+      ny: subPos.ny + this.wheel.boxSize.nMin / 2
     }
 
     this.footer = {
@@ -547,7 +549,7 @@ function drawYearLabels() {
 
   // Previous Year (Gray)
   push()
-  translate(layout.yearSub.x, layout.yearSub.y)
+  viewport.translate(layout.yearSub.nx, layout.yearSub.ny)
   renderLabel(displayYear - 1 + ":", {
     size: 0.1,
     align: [RIGHT, BOTTOM],
@@ -558,7 +560,7 @@ function drawYearLabels() {
 
   // Current Year (Black)
   push()
-  translate(layout.yearMain.x, layout.yearMain.y)
+  viewport.translate(layout.yearMain.nx, layout.yearMain.ny)
   renderLabel(displayYear + ":", {
     size: 0.17,
     align: [RIGHT, BOTTOM],
