@@ -145,27 +145,20 @@ class Layout {
 
     // 1. Wheel & Zodiac Entities
     this.wheel = {
-      x: vp.x(WHEEL_CENTER.nx),
-      y: vp.y(WHEEL_CENTER.ny),
-
       nx: WHEEL_CENTER.nx,
       ny: WHEEL_CENTER.ny,
 
       radius: {
-        x: vp.pixel(WHEEL_RADIUS.nx),
-        y: vp.pixel(WHEEL_RADIUS.ny),
         nx: WHEEL_RADIUS.nx,
         ny: WHEEL_RADIUS.ny
       },
       boxSize: {
-        min: vp.pixel(0.3),
-        max: vp.pixel(0.6),
         nMin: 0.3,
         nMax: 0.6
       },
       textSize: {
-        min: 0.24,
-        max: 0.48
+        nMin: 0.24,
+        nMax: 0.48
       }
     }
 
@@ -186,13 +179,13 @@ class Layout {
       ny: -0.2
     }
 
-    const mainPos = this.getWheelPositionByRatio(this.getAngleByRelativeYear(0))
+    const mainPos = this.getWheelPosition(this.getAngleByRelativeYear(0))
     this.yearMain = {
       nx: mainPos.nx - this.wheel.boxSize.nMax / 2 - BASE_MARGIN,
       ny: mainPos.ny + this.wheel.boxSize.nMax / 2
     }
 
-    const subPos = this.getWheelPositionByRatio(this.getAngleByRelativeYear(1))
+    const subPos = this.getWheelPosition(this.getAngleByRelativeYear(1))
     this.yearSub = {
       nx: subPos.nx - this.wheel.boxSize.nMin / 2 - BASE_MARGIN,
       ny: subPos.ny + this.wheel.boxSize.nMin / 2
@@ -213,27 +206,10 @@ class Layout {
   }
 
   // POSITION HELPERS
-  // Absolute position for a specific angle on the wheel
   getWheelPosition(angle) {
-    return {
-      x: this.wheel.x + cos(angle) * this.wheel.radius.x,
-      y: this.wheel.y + sin(angle) * this.wheel.radius.y
-    }
-  }
-
-  getWheelPositionByRatio(angle) {
     return {
       nx: this.wheel.nx + cos(angle) * this.wheel.radius.nx,
       ny: this.wheel.ny + sin(angle) * this.wheel.radius.ny
-    }
-  }
-
-  // Label positioning (adapted from getTileEdges)
-  getLabelEdges(angle, size) {
-    const pos = this.getWheelPosition(angle)
-    return {
-      bottom: pos.y + size / 2,
-      left: pos.x - size / 2
     }
   }
 
@@ -259,7 +235,7 @@ class Layout {
 class ZodiacWheel {
   render() {
     push()
-    translate(layout.wheel.x, layout.wheel.y)
+    viewport.translate(layout.wheel.nx, layout.wheel.ny)
 
     for (
       let relativeYear = layout.pastDisplayLimit;
@@ -289,7 +265,10 @@ class ZodiacWheel {
       }
 
       push()
-      translate(layout.wheel.radius.x * cos(angle), layout.wheel.radius.y * sin(angle))
+      // Calculate nx, ny offset from wheel center
+      const nx = layout.wheel.radius.nx * cos(angle)
+      const ny = layout.wheel.radius.ny * sin(angle)
+      viewport.translate(nx, ny)
       this._renderItem(zodiac, hFactor, opacity)
       pop()
     }
@@ -298,9 +277,9 @@ class ZodiacWheel {
   }
 
   _renderItem(character, hFactor, opacity) {
-    // 1. Geometry & Interpolation
-    let currentBoxSize = lerp(layout.wheel.boxSize.min, layout.wheel.boxSize.max, hFactor)
-    let currentTextSize = lerp(layout.wheel.textSize.min, layout.wheel.textSize.max, hFactor)
+    // 1. Geometry & Interpolation (Ratio-based)
+    let nBoxSize = lerp(layout.wheel.boxSize.nMin, layout.wheel.boxSize.nMax, hFactor)
+    let nTextSize = lerp(layout.wheel.textSize.nMin, layout.wheel.textSize.nMax, hFactor)
     let baseFillColor = lerp(CONFIG.COLORS.SUB, CONFIG.COLORS.MAIN, hFactor)
 
     // 2. Color Definitions (Consolidated Alpha Management)
@@ -318,11 +297,11 @@ class ZodiacWheel {
     stroke(strokeColor)
     strokeWeight(2)
     rectMode(CENTER)
-    rect(0, 0, currentBoxSize, currentBoxSize)
+    viewport.rect(0, 0, nBoxSize, nBoxSize)
 
     // 4. Render Character Text
     renderLabel(character, {
-      size: currentTextSize,
+      size: nTextSize,
       align: [CENTER, CENTER],
       color: textColor,
       style: BOLD
@@ -512,7 +491,7 @@ function drawNeedle() {
     layout.getAngleByRelativeYear(0)
   )
 
-  const target = layout.getWheelPositionByRatio(needleAngle)
+  const target = layout.getWheelPosition(needleAngle)
 
   // Vector from Start to Target
   const dx = target.nx - start.nx
