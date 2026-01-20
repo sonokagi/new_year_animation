@@ -229,6 +229,18 @@ class Layout {
     return 1.0 - dist / this.spacingAngle
   }
 
+  /**
+   * その角度における干支の完成されたスタイル（サイズ、色、近さ）を返す
+   */
+  getZodiacStyle(angle) {
+    const proximity = this.getProximity(angle)
+    return {
+      nBoxSize: lerp(this.wheel.boxSize.nMin, this.wheel.boxSize.nMax, proximity),
+      nTextSize: lerp(this.wheel.textSize.nMin, this.wheel.textSize.nMax, proximity),
+      color: lerp(CONFIG.COLORS.SUB, CONFIG.COLORS.MAIN, proximity)
+    }
+  }
+
   getAngleByRelativeYear(relativeYear = 0) {
     // 1. 論理的な「年」から直接座標（ベース角度）を算出
     const baseAngle = this.highlightAngle + relativeYear * this.spacingAngle
@@ -266,8 +278,8 @@ class ZodiacWheel {
         layout.getAngleByRelativeYear(relativeYear)
       )
 
-      // 2. Interpolation Factors
-      const hFactor = layout.getProximity(angle)
+      // 2. Visual Style (Atomic)
+      const style = layout.getZodiacStyle(angle)
 
       // 3. Localized Opacity Interpolation
       let opacity
@@ -284,21 +296,17 @@ class ZodiacWheel {
       const nx = layout.wheel.radius.nx * cos(angle)
       const ny = layout.wheel.radius.ny * sin(angle)
       viewport.translate(nx, ny)
-      this._renderItem(zodiac, hFactor, opacity)
+
+      this._renderItem(zodiac, style, opacity)
       pop()
     }
 
     pop()
   }
 
-  _renderItem(character, hFactor, opacity) {
-    // 1. Geometry & Interpolation (Ratio-based)
-    let nBoxSize = lerp(layout.wheel.boxSize.nMin, layout.wheel.boxSize.nMax, hFactor)
-    let nTextSize = lerp(layout.wheel.textSize.nMin, layout.wheel.textSize.nMax, hFactor)
-    let baseFillColor = lerp(CONFIG.COLORS.SUB, CONFIG.COLORS.MAIN, hFactor)
-
-    // 2. Color Definitions (Consolidated Alpha Management)
-    let fillColor = color(baseFillColor)
+  _renderItem(character, style, opacity) {
+    // 1. Color Definitions (Consolidated Alpha Management)
+    let fillColor = color(style.color)
     fillColor.setAlpha(opacity)
 
     let strokeColor = color(CONFIG.COLORS.MAIN)
@@ -307,16 +315,16 @@ class ZodiacWheel {
     let textColor = color(CONFIG.COLORS.BACK_GROUND)
     textColor.setAlpha(opacity)
 
-    // 3. Render Box
+    // 2. Render Box
     fill(fillColor)
     stroke(strokeColor)
     strokeWeight(2)
     rectMode(CENTER)
-    viewport.rect(0, 0, nBoxSize, nBoxSize)
+    viewport.rect(0, 0, style.nBoxSize, style.nBoxSize)
 
-    // 4. Render Character Text
+    // 3. Render Character Text
     renderLabel(character, {
-      size: nTextSize,
+      size: style.nTextSize,
       align: [CENTER, CENTER],
       color: textColor,
       style: BOLD
