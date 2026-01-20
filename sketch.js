@@ -143,7 +143,7 @@ class Layout {
     this.spacingAngle = 11 // 干支どうしの間隔（度数）
     this.highlightAngle = 133 // アクティブな干支を表示する基準角度
 
-    // 1. Wheel & Zodiac Entities
+    // 1. Wheel & Zodiac Appearance
     this.wheel = {
       nx: WHEEL_CENTER.nx,
       ny: WHEEL_CENTER.ny,
@@ -151,14 +151,19 @@ class Layout {
       radius: {
         nx: WHEEL_RADIUS.nx,
         ny: WHEEL_RADIUS.ny
+      }
+    }
+
+    this.zodiac = {
+      normal: {
+        nBoxSize: 0.3,
+        nTextSize: 0.24,
+        color: CONFIG.COLORS.SUB
       },
-      boxSize: {
-        nMin: 0.3,
-        nMax: 0.6
-      },
-      textSize: {
-        nMin: 0.24,
-        nMax: 0.48
+      highlight: {
+        nBoxSize: 0.6,
+        nTextSize: 0.48,
+        color: CONFIG.COLORS.MAIN
       }
     }
 
@@ -181,14 +186,14 @@ class Layout {
 
     const mainPos = this.getWheelPosition(this.getAngleByRelativeYear(0))
     this.yearMain = {
-      nx: mainPos.nx - this.wheel.boxSize.nMax / 2 - BASE_MARGIN,
-      ny: mainPos.ny + this.wheel.boxSize.nMax / 2
+      nx: mainPos.nx - this.zodiac.highlight.nBoxSize / 2 - BASE_MARGIN,
+      ny: mainPos.ny + this.zodiac.highlight.nBoxSize / 2
     }
 
     const subPos = this.getWheelPosition(this.getAngleByRelativeYear(1))
     this.yearSub = {
-      nx: subPos.nx - this.wheel.boxSize.nMin / 2 - BASE_MARGIN,
-      ny: subPos.ny + this.wheel.boxSize.nMin / 2
+      nx: subPos.nx - this.zodiac.normal.nBoxSize / 2 - BASE_MARGIN,
+      ny: subPos.ny + this.zodiac.normal.nBoxSize / 2
     }
 
     this.footer = {
@@ -234,10 +239,12 @@ class Layout {
    */
   getZodiacStyle(angle) {
     const proximity = this.getProximity(angle)
+    const { normal, highlight } = this.zodiac
+
     return {
-      nBoxSize: lerp(this.wheel.boxSize.nMin, this.wheel.boxSize.nMax, proximity),
-      nTextSize: lerp(this.wheel.textSize.nMin, this.wheel.textSize.nMax, proximity),
-      color: lerp(CONFIG.COLORS.SUB, CONFIG.COLORS.MAIN, proximity)
+      nBoxSize: lerp(normal.nBoxSize, highlight.nBoxSize, proximity),
+      nTextSize: lerp(normal.nTextSize, highlight.nTextSize, proximity),
+      color: lerp(normal.color, highlight.color, proximity)
     }
   }
 
