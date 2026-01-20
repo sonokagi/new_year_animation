@@ -170,7 +170,7 @@ class Layout {
 
     this.needle = {
       nx: 1.0 - BASE_MARGIN * 4,
-      ny: this.wheel.ny
+      ny: 0
     }
 
     // 3. Content Components
