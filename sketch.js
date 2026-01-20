@@ -213,6 +213,22 @@ class Layout {
     }
   }
 
+  /**
+   * 指定された角度が強調位置（highlightAngle）にどれだけ「近いか」を 0.0 ~ 1.0 で返す
+   */
+  getProximity(angle) {
+    const targetAngle = this.getAngleByRelativeYear(0)
+    const dist = abs(angle - targetAngle)
+
+    // 強調範囲（隣の干支との間隔）より離れている場合は 0 (近さなし)
+    if (dist >= this.spacingAngle) {
+      return 0
+    }
+
+    // 近さに応じて 1.0 (中心) 〜 0.0 (境界) を線形に返す
+    return 1.0 - dist / this.spacingAngle
+  }
+
   getAngleByRelativeYear(relativeYear = 0) {
     // 1. 論理的な「年」から直接座標（ベース角度）を算出
     const baseAngle = this.highlightAngle + relativeYear * this.spacingAngle
@@ -251,8 +267,7 @@ class ZodiacWheel {
       )
 
       // 2. Interpolation Factors
-      const angleDist = abs(angle - layout.getAngleByRelativeYear(0))
-      const hFactor = map(angleDist, 0, layout.spacingAngle, 1.0, 0.0, true)
+      const hFactor = layout.getProximity(angle)
 
       // 3. Localized Opacity Interpolation
       let opacity
