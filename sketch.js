@@ -239,9 +239,6 @@ class Layout {
 
 class ZodiacWheel {
   render() {
-    push()
-    vCanvas.translate(layout.wheel.nx, layout.wheel.ny)
-
     for (
       let relativeYear = layout.pastDisplayLimit;
       relativeYear >= layout.futureDisplayLimit;
@@ -268,17 +265,13 @@ class ZodiacWheel {
         opacity = 255
       }
 
+      // 4. Position & Render
+      const pos = layout.getWheelPosition(angle)
       push()
-      // Calculate nx, ny offset from wheel center
-      const nx = layout.wheel.radius.nx * cos(angle)
-      const ny = layout.wheel.radius.ny * sin(angle)
-      vCanvas.translate(nx, ny)
-
+      vCanvas.translate(pos.nx, pos.ny)
       this._renderItem(zodiac, style, opacity)
       pop()
     }
-
-    pop()
   }
 
   _renderItem(character, style, opacity) {
