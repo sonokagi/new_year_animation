@@ -6,7 +6,7 @@ const CONFIG = {
     SUB: 120, // サブ色（グレー）
     ACCENT: [255, 0, 0] // アクセント色（赤）
   },
-  VIEWPORT: {
+  VIRTUAL_CANVAS: {
     OCCUPANCY_W: 0.95, // 横方向の画面占有率
     OCCUPANCY_H: 0.75 // 縦方向の画面占有率
   },
@@ -15,13 +15,13 @@ const CONFIG = {
   }
 }
 
-class Viewport {
+class VirtualCanvas {
   constructor(screenW, screenH) {
     // Encapsulate sizing logic
     // Fixed 1:1 Aspect Ratio (Square)
     // Always fit within the smaller dimension of the screen, considering separate occupancy rules
-    let constrainedWidth = screenW * CONFIG.VIEWPORT.OCCUPANCY_W
-    let constrainedHeight = screenH * CONFIG.VIEWPORT.OCCUPANCY_H
+    let constrainedWidth = screenW * CONFIG.VIRTUAL_CANVAS.OCCUPANCY_W
+    let constrainedHeight = screenH * CONFIG.VIRTUAL_CANVAS.OCCUPANCY_H
     let size = min(constrainedWidth, constrainedHeight)
 
     this._center = { x: screenW / 2, y: screenH / 2 }
@@ -31,27 +31,11 @@ class Viewport {
   // --- Unit Mapping (The Core of the DSL) ---
 
   /**
-   * Converts a ratio (normalized by viewport size) to pixel value.
+   * Converts a ratio (normalized by VirtualCanvas size) to pixel value.
    * This is the fundamental scaler for the entire system.
    */
   pixel(ratio) {
     return ratio * this._unit
-  }
-
-  /**
-   * Returns a relative X offset from the center origin.
-   * Implementation is identical to pixel() due to 1:1 square scale.
-   */
-  x(ratio) {
-    return this.pixel(ratio)
-  }
-
-  /**
-   * Returns a relative Y offset from the center origin.
-   * Implementation is identical to pixel() due to 1:1 square scale.
-   */
-  y(ratio) {
-    return this.pixel(ratio)
   }
 
   // --- State Application DSL ---
@@ -97,15 +81,15 @@ class Viewport {
     line(this.pixel(nx1), this.pixel(ny1), this.pixel(nx2), this.pixel(ny2))
   }
 
-  // DSL: Establishes (0,0) at the center of the viewport
+  // DSL: Establishes (0,0) at the center of the VirtualCanvas
   setup() {
     translate(this._center.x, this._center.y)
   }
 }
 
 class Layout {
-  constructor(vp) {
-    this.vp = vp
+  constructor(vCanvas) {
+    this.vCanvas = vCanvas
 
     // --- 内部幾何学パラメータ ---
     const BASE_MARGIN = 0.02 // 基本マージン（2%）
@@ -270,7 +254,7 @@ class Layout {
 class ZodiacWheel {
   render() {
     push()
-    viewport.translate(layout.wheel.nx, layout.wheel.ny)
+    vCanvas.translate(layout.wheel.nx, layout.wheel.ny)
 
     for (
       let relativeYear = layout.pastDisplayLimit;
@@ -302,7 +286,7 @@ class ZodiacWheel {
       // Calculate nx, ny offset from wheel center
       const nx = layout.wheel.radius.nx * cos(angle)
       const ny = layout.wheel.radius.ny * sin(angle)
-      viewport.translate(nx, ny)
+      vCanvas.translate(nx, ny)
 
       this._renderItem(zodiac, style, opacity)
       pop()
@@ -327,7 +311,7 @@ class ZodiacWheel {
     stroke(strokeColor)
     strokeWeight(2)
     rectMode(CENTER)
-    viewport.rect(0, 0, style.nBoxSize, style.nBoxSize)
+    vCanvas.rect(0, 0, style.nBoxSize, style.nBoxSize)
 
     // 3. Render Character Text
     renderLabel(character, {
@@ -404,7 +388,7 @@ let year
 let animator
 
 // Layout State
-let viewport
+let vCanvas
 let layout
 
 // Wheel State
@@ -435,8 +419,8 @@ function windowResized() {
  * Recalculates layout parameters based on current window size.
  */
 function updateLayout() {
-  viewport = new Viewport(width, height)
-  layout = new Layout(viewport)
+  vCanvas = new VirtualCanvas(width, height)
+  layout = new Layout(vCanvas)
 }
 
 function draw() {
@@ -444,11 +428,11 @@ function draw() {
 
   background(CONFIG.COLORS.BACK_GROUND)
 
-  // 1. Viewport: Establish (0,0) at screen center
-  viewport.setup()
+  // 1. VirtualCanvas: Establish (0,0) at screen center
+  vCanvas.setup()
 
   // 2. Layout: Apply compositional offset
-  viewport.translate(layout.offset.nx, layout.offset.ny)
+  vCanvas.translate(layout.offset.nx, layout.offset.ny)
 
   drawIndicators()
   drawOuterFrame()
@@ -473,14 +457,14 @@ function drawIndicators() {
   }
 
   push()
-  viewport.translate(layout.indicators.nx, layout.indicators.ny)
+  vCanvas.translate(layout.indicators.nx, layout.indicators.ny)
 
   // 1. Red Arc
   noFill()
   stroke(CONFIG.COLORS.ACCENT)
   strokeWeight(3)
   // Main Arc: 101.5 to 228 degrees
-  viewport.arc(radius.x * 2, radius.y * 2, 101.5, 228)
+  vCanvas.arc(radius.x * 2, radius.y * 2, 101.5, 228)
 
   // 2. Decorative Dots
   fill(CONFIG.COLORS.ACCENT)
@@ -490,8 +474,8 @@ function drawIndicators() {
     const degree = 120 + i * 35
 
     push()
-    viewport.translate(cos(degree) * radius.x, sin(degree) * radius.y)
-    viewport.circle(0.06)
+    vCanvas.translate(cos(degree) * radius.x, sin(degree) * radius.y)
+    vCanvas.circle(0.06)
     pop()
   }
 
@@ -503,7 +487,7 @@ function drawOuterFrame() {
   stroke(CONFIG.COLORS.MAIN)
   strokeWeight(2)
   rectMode(CORNERS)
-  viewport.rect(
+  vCanvas.rect(
     layout.outerFrame.nx1,
     layout.outerFrame.ny1,
     layout.outerFrame.nx2,
@@ -531,8 +515,8 @@ function drawNeedle() {
   stroke(CONFIG.COLORS.ACCENT)
   strokeWeight(15)
   strokeCap(ROUND)
-  viewport.translate(start.nx, start.ny)
-  viewport.line(0, 0, dx * lengthRatio, dy * lengthRatio)
+  vCanvas.translate(start.nx, start.ny)
+  vCanvas.line(0, 0, dx * lengthRatio, dy * lengthRatio)
   pop()
 }
 
@@ -545,9 +529,9 @@ function drawHeader() {
   }
 
   push()
-  viewport.translate(layout.header.nx, layout.header.ny)
+  vCanvas.translate(layout.header.nx, layout.header.ny)
   renderLabel("HAPPY", config)
-  viewport.translate(0, 0.2)
+  vCanvas.translate(0, 0.2)
   renderLabel("NEW YEAR!", config)
   pop()
 }
@@ -558,7 +542,7 @@ function drawYearLabels() {
 
   // Previous Year (Gray)
   push()
-  viewport.translate(layout.yearSub.nx, layout.yearSub.ny)
+  vCanvas.translate(layout.yearSub.nx, layout.yearSub.ny)
   renderLabel(displayYear - 1 + ":", {
     size: 0.1,
     align: [RIGHT, BOTTOM],
@@ -569,7 +553,7 @@ function drawYearLabels() {
 
   // Current Year (Black)
   push()
-  viewport.translate(layout.yearMain.nx, layout.yearMain.ny)
+  vCanvas.translate(layout.yearMain.nx, layout.yearMain.ny)
   renderLabel(displayYear + ":", {
     size: 0.17,
     align: [RIGHT, BOTTOM],
@@ -581,7 +565,7 @@ function drawYearLabels() {
 
 function drawFooter() {
   push()
-  viewport.translate(layout.footer.nx, layout.footer.ny)
+  vCanvas.translate(layout.footer.nx, layout.footer.ny)
   renderLabel("今年もよろしくお願いします。", {
     size: 0.07,
     align: [LEFT, BOTTOM],
@@ -602,6 +586,6 @@ function renderLabel(content, config) {
   noStroke()
   textStyle(config.style)
   textAlign(config.align[0], config.align[1])
-  viewport.textSize(config.size)
+  vCanvas.textSize(config.size)
   text(content, 0, 0)
 }
