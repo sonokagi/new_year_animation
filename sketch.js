@@ -108,19 +108,15 @@ class Layout {
     this.futureDisplayLimit = -3 // 未来方向に何年分表示するか
     this.pastDisplayLimit = 9 // 過去方向に何年分表示するか
 
-    // --- 物理パラメータ（Detail） ---
-    // 13枚のスロットを表示するが、境界の補間（次に現れる干支）のために
-    // 円環上に 14個(13+1) の配置場所（スロット）を確保する
-    const displayYearsCount = this.pastDisplayLimit - this.futureDisplayLimit + 1 // 13年分
-    this.angleAdjustments = new Array(displayYearsCount + 1).fill(0)
-
-    // 物理スロットごとの微調整（インデックスは論理上の年数ではなく「場所」を表す）
-    this.angleAdjustments[0] = 2.0 // [予備] 未来側の補間元（画面外）
-    this.angleAdjustments[1] = 0 // [表示端] 未来側の端 (-3)
-    this.angleAdjustments[2] = -2.5 // [表示]
-    this.angleAdjustments[3] = -4.5 // [表示]
-    this.angleAdjustments[4] = -1.5 // [現在] 基準となる今年の配置
-    // ※ 以降のスロットは補正なし(0)
+    // 干支の配置（角度）の微調整マップ
+    // キー: 相対年 (relativeYear), 値: 角度の補正度数
+    this.angleAdjustments = {
+      0: -1.5, // 今年 (Current)
+      "-1": -4.5, // 来年 (Next)
+      "-2": -2.5, // 2年後
+      "-3": 0, // 3年後 (表示境界)
+      "-4": 2.0 // 4年後 (補間用予備)
+    }
 
     this.spacingAngle = 11 // 干支どうしの間隔（度数）
     this.highlightAngle = 133 // アクティブな干支を表示する基準角度
@@ -234,18 +230,10 @@ class Layout {
     // 1. 論理的な「年」から直接座標（ベース角度）を算出
     const baseAngle = this.highlightAngle + relativeYear * this.spacingAngle
 
-    // 2. 物理的な「スロット」の補正値を解決（実装詳細のカプセル化）
-    const adjustment = this.angleAdjustments[this._toSlotIndex(relativeYear)] || 0
+    // 2. 直接論理年ベースの補正値を解決
+    const adjustment = this.angleAdjustments[relativeYear] || 0
 
     return baseAngle + adjustment
-  }
-
-  // 論理的な年を物理的なスロット番号に変換する
-  _toSlotIndex(relativeYear) {
-    // 配列内で「現在の年(0)」が配置されるインデックスを特定
-    // (未来側の表示数 + 予備スロット1つ分)
-    const currentYearIndex = Math.abs(this.futureDisplayLimit) + 1
-    return currentYearIndex + relativeYear
   }
 }
 
