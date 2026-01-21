@@ -41,8 +41,8 @@ class VirtualCanvas {
   // --- State Application DSL ---
 
   // DSL: Sets p5.js textSize based on ratio
-  textSize(ratio) {
-    textSize(this.pixel(ratio))
+  textSize(nSize) {
+    textSize(this.pixel(nSize))
   }
 
   /**
@@ -88,9 +88,7 @@ class VirtualCanvas {
 }
 
 class Layout {
-  constructor(vCanvas) {
-    this.vCanvas = vCanvas
-
+  constructor() {
     // --- 内部幾何学パラメータ ---
     const BASE_MARGIN = 0.02 // 基本マージン（2%）
 
@@ -420,7 +418,7 @@ function windowResized() {
  */
 function updateLayout() {
   vCanvas = new VirtualCanvas(width, height)
-  layout = new Layout(vCanvas)
+  layout = new Layout()
 }
 
 function draw() {
