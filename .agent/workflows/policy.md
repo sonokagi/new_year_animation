@@ -18,6 +18,7 @@ This project follows these core principles:
 
 1. **Explicit Approval Required**: Do NOT execute implementation code changes or file modifications until explicitly approved by the user.
 2. **Wait for Instructions**: Always present a plan and wait for the user's explicit command to proceed before writing code.
+3. **Code Comments**: Do not write about the implementation process or history in comments. Write comments that concisely describe the current state and intent of the code.
 
 ### Refactoring & Architecture
 
