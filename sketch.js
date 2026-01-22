@@ -237,8 +237,8 @@ class Layout {
   }
 }
 
-class ZodiacWheel {
-  render() {
+class ZodiacGroup {
+  draw() {
     for (
       let relativeYear = layout.pastDisplayLimit;
       relativeYear >= layout.futureDisplayLimit;
@@ -269,12 +269,12 @@ class ZodiacWheel {
       const pos = layout.getWheelPosition(angle)
       push()
       vCanvas.translate(pos.nx, pos.ny)
-      this._renderItem(zodiac, style, opacity)
+      this._drawZodiac(zodiac, style, opacity)
       pop()
     }
   }
 
-  _renderItem(character, style, opacity) {
+  _drawZodiac(character, style, opacity) {
     // 1. Color Definitions (Consolidated Alpha Management)
     let fillColor = color(style.color)
     fillColor.setAlpha(opacity)
@@ -369,9 +369,7 @@ let animator
 // Layout State
 let vCanvas
 let layout
-
-// Wheel State
-let wheel
+let zodiacs
 
 function setup() {
   createCanvas(windowWidth, windowHeight)
@@ -380,7 +378,7 @@ function setup() {
 
   year = new Year(new Date().getFullYear())
   animator = new Animator()
-  wheel = new ZodiacWheel()
+  zodiacs = new ZodiacGroup()
 
   // Initial Layout Calculation
   updateLayout()
@@ -419,7 +417,7 @@ function draw() {
   drawHeader()
   drawYearLabels()
   drawFooter()
-  wheel.render()
+  zodiacs.draw()
 }
 
 function mousePressed() {
