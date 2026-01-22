@@ -245,8 +245,7 @@ class ZodiacGroup {
       relativeYear--
     ) {
       // 1. Domain & Timing Logic
-      const slotYear = year.current - relativeYear
-      const zodiac = Year.getZodiac(slotYear)
+      const zodiac = year.getZodiac(relativeYear)
       const angle = animator.interpolate(
         layout.getAngleByRelativeYear(relativeYear - 1),
         layout.getAngleByRelativeYear(relativeYear)
@@ -322,8 +321,9 @@ class Year {
     return this.value - 1
   }
 
-  static getZodiac(yearValue) {
-    const idx = (Year.OFFSET_YEAR_0 + yearValue) % Year.ZODIACS.length
+  getZodiac(relativeYear) {
+    const targetYear = this.value - relativeYear
+    const idx = (Year.OFFSET_YEAR_0 + targetYear) % Year.ZODIACS.length
     return Year.ZODIACS[idx]
   }
 }
