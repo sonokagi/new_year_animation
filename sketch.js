@@ -81,6 +81,14 @@ class VirtualCanvas {
     line(this.pixel(nx1), this.pixel(ny1), this.pixel(nx2), this.pixel(ny2))
   }
 
+  /**
+   * DSL: Draws text using ratio-based coordinates.
+   * This is a primitive that only handles positioning.
+   */
+  text(content, nx, ny) {
+    text(content, this.pixel(nx), this.pixel(ny))
+  }
+
   // DSL: Establishes (0,0) at the center of the VirtualCanvas
   setup() {
     translate(this._center.x, this._center.y)
@@ -287,7 +295,7 @@ class ZodiacGroup {
     vCanvas.rect(0, 0, style.nBoxSize, style.nBoxSize)
 
     // 3. Render Character Text
-    renderLabel(character, {
+    drawText(character, {
       size: style.nTextSize,
       align: [CENTER, CENTER],
       color: textColor,
@@ -498,9 +506,9 @@ function drawHeader() {
 
   push()
   vCanvas.translate(layout.header.nx, layout.header.ny)
-  renderLabel("HAPPY", config)
+  drawText("HAPPY", config)
   vCanvas.translate(0, 0.2)
-  renderLabel("NEW YEAR!", config)
+  drawText("NEW YEAR!", config)
   pop()
 }
 
@@ -512,7 +520,7 @@ function drawYearLabels() {
   // Previous Year (Gray)
   push()
   vCanvas.translate(layout.yearSub.nx, layout.yearSub.ny)
-  renderLabel(displayYearSub + ":", {
+  drawText(displayYearSub + ":", {
     size: 0.1,
     align: [RIGHT, BOTTOM],
     color: CONFIG.COLORS.SUB,
@@ -523,7 +531,7 @@ function drawYearLabels() {
   // Current Year (Black)
   push()
   vCanvas.translate(layout.yearMain.nx, layout.yearMain.ny)
-  renderLabel(displayYearMain + ":", {
+  drawText(displayYearMain + ":", {
     size: 0.17,
     align: [RIGHT, BOTTOM],
     color: CONFIG.COLORS.MAIN,
@@ -535,7 +543,7 @@ function drawYearLabels() {
 function drawFooter() {
   push()
   vCanvas.translate(layout.footer.nx, layout.footer.ny)
-  renderLabel("今年もよろしくお願いします。", {
+  drawText("今年もよろしくお願いします。", {
     size: 0.07,
     align: [LEFT, BOTTOM],
     color: CONFIG.COLORS.MAIN,
@@ -545,18 +553,18 @@ function drawFooter() {
 }
 
 /**
- * 宣言的なラベル描画ヘルパー
+ * 独自のテキスト描画ヘルパー
  * (0, 0) に描画するため、配置には push/translate を使用することを推奨します。
  * @param {string} content - テキスト内容
  * @param {Object} config - 設定 {size: 比率, align: [h, v], color: 色, style: 書体}
  */
-function renderLabel(content, config) {
+function drawText(content, config) {
   fill(config.color)
   noStroke()
   textStyle(config.style)
   textAlign(config.align[0], config.align[1])
   vCanvas.textSize(config.size)
-  text(content, 0, 0)
+  vCanvas.text(content, 0, 0)
 }
 
 // --- Global Helpers ---
