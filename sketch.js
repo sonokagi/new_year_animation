@@ -312,10 +312,6 @@ class Year {
     return this.value
   }
 
-  get previous() {
-    return this.value - 1
-  }
-
   getZodiac(relativeYear) {
     const targetYear = this.value - relativeYear
     const idx = (Year.OFFSET_YEAR_0 + targetYear) % Year.ZODIACS.length
@@ -510,12 +506,13 @@ function drawHeader() {
 
 function drawYearLabels() {
   // Derived Display State
-  let displayYear = animator._running ? year.previous : year.current
+  const displayYearMain = animator._running ? year.current - 1 : year.current
+  const displayYearSub = animator._running ? year.current - 2 : year.current - 1
 
   // Previous Year (Gray)
   push()
   vCanvas.translate(layout.yearSub.nx, layout.yearSub.ny)
-  renderLabel(displayYear - 1 + ":", {
+  renderLabel(displayYearSub + ":", {
     size: 0.1,
     align: [RIGHT, BOTTOM],
     color: CONFIG.COLORS.SUB,
@@ -526,7 +523,7 @@ function drawYearLabels() {
   // Current Year (Black)
   push()
   vCanvas.translate(layout.yearMain.nx, layout.yearMain.ny)
-  renderLabel(displayYear + ":", {
+  renderLabel(displayYearMain + ":", {
     size: 0.17,
     align: [RIGHT, BOTTOM],
     color: CONFIG.COLORS.MAIN,
