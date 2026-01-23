@@ -20,7 +20,11 @@ This project follows these core principles:
 
 1. **Explicit Approval Required**: Do NOT execute implementation code changes or file modifications until explicitly approved by the user.
 2. **Wait for Instructions**: Always present a plan and wait for the user's explicit command to proceed before writing code.
-3. **Code Comments**: Do not write about the implementation process or history in comments. Write comments that concisely describe the current state and intent of the code.
+3. **Verified Editing Protocol**:
+   - **Pre-Verification Source Review**: After any file modification, you MUST use `view_file` to read the altered lines and confirm they match the intended state BEFORE proceeding to verification (browser testing, etc.).
+   - **Immediate Stop on Tool Failure**: If a replacement tool fails (even partially), you MUST STOP immediately, report the failure to the user, and re-evaluate the plan. Never proceed with "possibly broken" code.
+   - **Zero Unplanned Changes**: Do not modify properties, styles, or naming that are not explicitly mentioned in the approved `implementation_plan.md`.
+4. **Code Comments**: Do not write about the implementation process or history in comments. Write comments that concisely describe the current state and intent of the code.
 
 ### Refactoring & Architecture
 
