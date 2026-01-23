@@ -13,6 +13,8 @@ This project follows these core principles:
 ### Git Operations
 
 1. **Explicit Permission Required**: Git commits and merges MUST NOT be performed automatically. You MUST ask for and receive explicit permission from the user BEFORE executing a command that results in a commit.
+   - **Two-Step Approval Principle**: "Approval for implementation" and "Approval for commit" are completely separate steps. An instruction to "Implement" only permits code changes and verification, and does not include permission to commit.
+   - **Re-confirmation after Verification**: After completion of implementation and verification, always ask the user again if it is okay to commit and obtain explicit permission for each commit.
 
 ### Implementation Process
 
