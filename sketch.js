@@ -275,14 +275,9 @@ class ZodiacGroup {
 
   _drawZodiac(character, style, opacity) {
     // 1. Color Definitions (Consolidated Alpha Management)
-    let fillColor = color(style.color)
-    fillColor.setAlpha(opacity)
-
-    let strokeColor = color(CONFIG.COLORS.MAIN)
-    strokeColor.setAlpha(opacity)
-
-    let textColor = color(CONFIG.COLORS.BACK_GROUND)
-    textColor.setAlpha(opacity)
+    const fillColor = colorWithAlpha(style.color, opacity)
+    const strokeColor = colorWithAlpha(CONFIG.COLORS.MAIN, opacity)
+    const textColor = colorWithAlpha(CONFIG.COLORS.BACK_GROUND, opacity)
 
     // 2. Render Box
     fill(fillColor)
@@ -565,4 +560,15 @@ function renderLabel(content, config) {
   textAlign(config.align[0], config.align[1])
   vCanvas.textSize(config.size)
   text(content, 0, 0)
+}
+
+// --- Global Helpers ---
+
+/**
+ * Returns a p5.Color object with the specified opacity applied.
+ */
+function colorWithAlpha(baseColor, opacity) {
+  const c = color(baseColor)
+  c.setAlpha(opacity)
+  return c
 }
