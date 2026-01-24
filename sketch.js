@@ -15,91 +15,58 @@ const CONFIG = {
   }
 }
 
+/**
+ * 画面サイズに対する比率ベースの座標系を提供し、1:1のアスペクト比を維持するクラス
+ */
 class VirtualCanvas {
   constructor(screenW, screenH) {
-    // Encapsulate sizing logic
-    // Fixed 1:1 Aspect Ratio (Square)
-    // Always fit within the smaller dimension of the screen, considering separate occupancy rules
     let constrainedWidth = screenW * CONFIG.VIRTUAL_CANVAS.OCCUPANCY_W
     let constrainedHeight = screenH * CONFIG.VIRTUAL_CANVAS.OCCUPANCY_H
     let size = min(constrainedWidth, constrainedHeight)
 
     this._center = { x: screenW / 2, y: screenH / 2 }
-    this._unit = size / 2 // Fundamental Unit: Radius
+    this._unit = size / 2 // 基準単位 (半径)
   }
 
-  // --- Unit Mapping (The Core of the DSL) ---
-
-  /**
-   * Converts a ratio (normalized by VirtualCanvas size) to pixel value.
-   * This is the fundamental scaler for the entire system.
-   */
+  // 比率をピクセル値に変換（システムの基盤となるスケーラー）
   pixel(ratio) {
     return ratio * this._unit
   }
 
-  // --- State Application DSL ---
-
-  // DSL: Sets p5.js textSize based on ratio
   textSize(nSize) {
     textSize(this.pixel(nSize))
   }
 
-  /**
-   * DSL: Performs a relative translate using ratio-based coordinates.
-   * This abstracts away px calculation from the drawing code.
-   */
   translate(nx, ny) {
     translate(this.pixel(nx), this.pixel(ny))
   }
 
-  /**
-   * DSL: Draws a circle at (0,0) with ratio-based size (diameter).
-   */
   circle(nSize) {
     circle(0, 0, this.pixel(nSize))
   }
 
-  /**
-   * DSL: Draws an arc at (0,0) with ratio-based width and height.
-   */
   arc(nWidth, nHeight, startAngle, stopAngle) {
     arc(0, 0, this.pixel(nWidth), this.pixel(nHeight), startAngle, stopAngle)
   }
 
-  /**
-   * DSL: Draws a rectangle using ratio-based coordinates.
-   */
   rect(nx1, ny1, nx2, ny2) {
     rect(this.pixel(nx1), this.pixel(ny1), this.pixel(nx2), this.pixel(ny2))
   }
 
-  /**
-   * DSL: Draws a line using ratio-based coordinates.
-   */
   line(nx1, ny1, nx2, ny2) {
     line(this.pixel(nx1), this.pixel(ny1), this.pixel(nx2), this.pixel(ny2))
   }
 
-  /**
-   * DSL: Draws text using ratio-based coordinates.
-   * This is a primitive that only handles positioning.
-   */
   text(content, nx, ny) {
     text(content, this.pixel(nx), this.pixel(ny))
   }
 
-  /**
-   * DSL: Sets the strokeWeight based on ratio.
-   * Guarantees a minimum of 1px for visibility.
-   */
   strokeWeight(nWeight) {
     let px = this.pixel(nWeight)
-    // 画面縮小時に線が消えないよう、物理的な 1px を下限とする
+    // 視認性確保のため、物理的な 1px を下限とする
     strokeWeight(max(1, px))
   }
 
-  // DSL: Establishes (0,0) at the center of the VirtualCanvas
   setup() {
     translate(this._center.x, this._center.y)
   }
