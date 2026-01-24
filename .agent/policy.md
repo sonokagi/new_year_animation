@@ -7,33 +7,31 @@ description: Project development policy
 This project follows these core principles:
 
 1. **Simplicity First**: This is a simple animation program. Prioritize simplicity and readability over strictness, robustness, or complex design patterns.
-2. **YAGNI (You Ain't Gonna Need It)**: Do not implement features or safety nets (like complex default value handling) unless they are explicitly needed.
-3. **Branch Naming**: Use the prefix `feature/` followed by a descriptive name in snake_case (e.g., `feature/refactor_zodiac_animation`).
+2. **YAGNI (You Ain't Gonna Need It)**: Do not implement features or safety nets unless they are explicitly needed.
+3. **Branching & Naming**:
+   - **Default**: Work is primarily performed on the currently checked-out branch (e.g., `main`).
+   - **Feature Branches**: New branches (using the prefix `feature/` followed by snake_case) are created **only when explicitly instructed by the user**.
 
 ### Git Operations
 
 1. **Explicit Permission Required**: Git commits and merges MUST NOT be performed automatically. You MUST ask for and receive explicit permission from the user BEFORE executing a command that results in a commit.
-   - **Two-Step Approval Principle**: "Approval for implementation" and "Approval for commit" are completely separate steps. An instruction to "Implement" only permits code changes and verification, and does not include permission to commit.
-   - **Re-confirmation after Verification**: After completion of implementation and verification, always ask the user again if it is okay to commit and obtain explicit permission for each commit.
+   - **Two-Step Approval Principle**: "Approval for implementation" and "Approval for commit" are separate steps. "Implement" only permits code changes and verification, NOT committing.
+   - **Re-confirmation after Verification**: After verification, always ask again if it is okay to commit.
 
 ### Implementation Process
 
-1. **Explicit Approval Required**: Do NOT execute implementation code changes or file modifications until explicitly approved by the user.
-2. **Wait for Instructions**: Always present a plan and wait for the user's explicit command to proceed before writing code.
-3. **Verified Editing Protocol**:
-   - **Pre-Verification Source Review**: After any file modification, you MUST use `view_file` to read the altered lines and confirm they match the intended state BEFORE proceeding to verification (browser testing, etc.).
-   - **Immediate Stop on Tool Failure**: If a replacement tool fails (even partially), you MUST STOP immediately, report the failure to the user, and re-evaluate the plan. Never proceed with "possibly broken" code.
-   - **Zero Unplanned Changes**: Do not modify properties, styles, or naming that are not explicitly mentioned in the approved `implementation_plan.md`.
-4. **Code Comments**: Do not write about the implementation process or history in comments. Write comments that concisely describe the current state and intent of the code.
+1. **Explicit Approval Required**: Do NOT execute any code changes until the implementation plan is approved.
+2. **Verified Editing Protocol**:
+   - **Pre-Verification Source Review**: After any modification, you MUST use `view_file` to confirm the changes match the intended state BEFORE proceeding to verification.
+   - **Immediate Stop on Tool Failure**: If a replacement tool fails, STOP immediately and report to the user.
+3. **Artifact Language**: All user-facing artifacts (`implementation_plan.md`, `discussion.md`, `walkthrough.md`) MUST be provided in Japanese.
+4. **Code Comments**: Do not write about the history in comments. Describe the current intent concisely.
 
 ### Refactoring & Architecture
 
 1. Follow "Simplicity First" and "YAGNI".
-2. Improvements should be made in small, meaningful phases with user approval at each step.
+2. Improvements should be made in small, meaningful phases with user approval.
 3. When a discussion with expert personas (Martin Fowler, Kent Beck, t-wada, Uncle Bob) is required:
    - Use a single artifact file named `discussion.md`.
-   - **Overwrite** the content of `discussion.md` for each new discussion to keep it focused (do not create multiple debate files).
-   - DO NOT output the full dialogue directly in the chat block.
-   - Present only the summary or the final conclusion/proposal in the chat.
-   - All expert discussions and their summaries MUST be provided in Japanese.
-   - Walkthroughs (`walkthrough.md`) MUST be provided in Japanese.
+   - **Overwrite** the content of `discussion.md` to keep it focused.
+   - Present only the summary or final conclusion in the chat (in Japanese).
