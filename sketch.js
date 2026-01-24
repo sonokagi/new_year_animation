@@ -89,6 +89,16 @@ class VirtualCanvas {
     text(content, this.pixel(nx), this.pixel(ny))
   }
 
+  /**
+   * DSL: Sets the strokeWeight based on ratio.
+   * Guarantees a minimum of 1px for visibility.
+   */
+  strokeWeight(nWeight) {
+    let px = this.pixel(nWeight)
+    // 画面縮小時に線が消えないよう、物理的な 1px を下限とする
+    strokeWeight(max(1, px))
+  }
+
   // DSL: Establishes (0,0) at the center of the VirtualCanvas
   setup() {
     translate(this._center.x, this._center.y)
@@ -290,7 +300,7 @@ class ZodiacGroup {
     // 2. Render Box
     fill(fillColor)
     stroke(strokeColor)
-    strokeWeight(2)
+    vCanvas.strokeWeight(0.007)
     rectMode(CENTER)
     vCanvas.rect(0, 0, style.nBoxSize, style.nBoxSize)
 
@@ -438,7 +448,7 @@ function drawIndicators() {
   // 1. Red Arc
   noFill()
   stroke(CONFIG.COLORS.ACCENT)
-  strokeWeight(3)
+  vCanvas.strokeWeight(0.01)
   // Main Arc: 101.5 to 228 degrees
   vCanvas.arc(radius.x * 2, radius.y * 2, 101.5, 228)
 
@@ -461,7 +471,7 @@ function drawIndicators() {
 function drawOuterFrame() {
   noFill()
   stroke(CONFIG.COLORS.MAIN)
-  strokeWeight(2)
+  vCanvas.strokeWeight(0.007)
   rectMode(CORNERS)
   vCanvas.rect(
     layout.outerFrame.nx1,
@@ -489,7 +499,7 @@ function drawNeedle() {
 
   push()
   stroke(CONFIG.COLORS.ACCENT)
-  strokeWeight(15)
+  vCanvas.strokeWeight(0.05)
   strokeCap(ROUND)
   vCanvas.translate(start.nx, start.ny)
   vCanvas.line(0, 0, dx * lengthRatio, dy * lengthRatio)
