@@ -229,33 +229,39 @@ class ZodiacGroup {
       relativeYear >= layout.futureDisplayLimit;
       relativeYear--
     ) {
-      // 1. Domain & Timing Logic
+      // --- 1. State: 描画データの準備 (Pure Calculation) ---
       const zodiac = year.getZodiac(relativeYear)
+
+      // 角度とスタイルの計算
       const angle = animator.interpolate(
         layout.getAngleByRelativeYear(relativeYear - 1),
         layout.getAngleByRelativeYear(relativeYear)
       )
-
-      // 2. Visual Style (Atomic)
       const style = layout.getZodiacStyle(angle)
-
-      // 3. Localized Opacity Interpolation
-      let opacity
-      if (relativeYear === layout.futureDisplayLimit) {
-        opacity = animator.interpolate(0, 255) // Fade-in
-      } else if (relativeYear === layout.pastDisplayLimit) {
-        opacity = animator.interpolate(255, 0) // Fade-out
-      } else {
-        opacity = 255
-      }
-
-      // 4. Position & Render
       const pos = layout.getWheelPosition(angle)
+
+      // 不透明度の決定
+      const opacity = this._calculateOpacity(relativeYear)
+
+      // --- 2. Render: 描画の実行 (Side Effects) ---
       push()
       vCanvas.translate(pos.nx, pos.ny)
       this._drawZodiac(zodiac, style, opacity)
       pop()
     }
+  }
+
+  /**
+   * ループ境界におけるフェード処理（不透明度）を算出する
+   */
+  _calculateOpacity(relativeYear) {
+    if (relativeYear === layout.futureDisplayLimit) {
+      return animator.interpolate(0, 255) // Fade-in
+    }
+    if (relativeYear === layout.pastDisplayLimit) {
+      return animator.interpolate(255, 0) // Fade-out
+    }
+    return 255
   }
 
   _drawZodiac(character, style, opacity) {
