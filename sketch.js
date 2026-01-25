@@ -138,7 +138,8 @@ class Layout {
 
     this.needle = {
       nx: 1.0 - BASE_MARGIN * 4,
-      ny: 0
+      ny: 0,
+      lengthRatio: 0.65
     }
 
     // 3. Content Components
@@ -219,6 +220,20 @@ class Layout {
     const adjustment = this.angleAdjustments[relativeYear] || 0
 
     return baseAngle + adjustment
+  }
+
+  /**
+   * 指定された角度における針の状態（始点と相対ベクトル）を返す
+   */
+  getNeedleState(angle) {
+    const target = this.getWheelPosition(angle)
+    return {
+      start: this.needle,
+      vector: {
+        dx: (target.nx - this.needle.nx) * this.needle.lengthRatio,
+        dy: (target.ny - this.needle.ny) * this.needle.lengthRatio
+      }
+    }
   }
 }
 
@@ -455,27 +470,20 @@ function drawOuterFrame() {
 }
 
 function drawNeedle() {
-  const start = layout.needle
-  const lengthRatio = 0.65
-
   // Localized Angle Interpolation
   const needleAngle = animator.interpolate(
     layout.getAngleByRelativeYear(-1),
     layout.getAngleByRelativeYear(0)
   )
 
-  const target = layout.getWheelPosition(needleAngle)
-
-  // Vector from Start to Target
-  const dx = target.nx - start.nx
-  const dy = target.ny - start.ny
+  const needle = layout.getNeedleState(needleAngle)
 
   push()
   stroke(CONFIG.COLORS.ACCENT)
   vCanvas.strokeWeight(0.05)
   strokeCap(ROUND)
-  vCanvas.translate(start.nx, start.ny)
-  vCanvas.line(0, 0, dx * lengthRatio, dy * lengthRatio)
+  vCanvas.translate(needle.start.nx, needle.start.ny)
+  vCanvas.line(0, 0, needle.vector.dx, needle.vector.dy)
   pop()
 }
 
