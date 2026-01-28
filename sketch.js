@@ -75,7 +75,7 @@ class VirtualCanvas {
 class Layout {
   constructor() {
     // --- 内部幾何学パラメータ ---
-    const BASE_MARGIN = 0.02 // 基本マージン（2%）
+    this._margin = 0.02 // 基本マージン（2%）
 
     // 1. Zodiac (干支): レイアウト全体のアンカー
     this.zodiac = {
@@ -121,7 +121,7 @@ class Layout {
 
     // 3. Needle (針): アクティブな干支を指す赤い針
     this.needle = {
-      nx: 1.0 - BASE_MARGIN * 4,
+      nx: 1.0 - this._margin * 4,
       ny: 0,
       lengthRatio: 0.65
     }
@@ -133,30 +133,20 @@ class Layout {
     }
 
     this.header = {
-      nx: 1.0 - BASE_MARGIN * 3,
+      nx: 1.0 - this._margin * 3,
       ny: -0.2
     }
 
-    // 西暦ラベル（Main/Sub）の座標。リファクタリング前と同様のインライン計算を維持します。
-    const style = this.zodiac.style
-    const mainPos = this.getZodiacPosition(this.getZodiacAngle(0))
-    this.yearMain = {
-      nx: mainPos.nx - style.highlight.nBoxSize / 2 - BASE_MARGIN,
-      ny: mainPos.ny + style.highlight.nBoxSize / 2
-    }
-
-    const subPos = this.getZodiacPosition(this.getZodiacAngle(1))
-    this.yearSub = {
-      nx: subPos.nx - style.normal.nBoxSize / 2 - BASE_MARGIN,
-      ny: subPos.ny + style.normal.nBoxSize / 2
-    }
+    // 西暦ラベル（Main/Sub）の座標
+    this.yearMain = this._getYearLabelPosition(0)
+    this.yearSub = this._getYearLabelPosition(1)
 
     // 5. Timeline Configuration (Master)
     this.futureDisplayLimit = -3 // 未来方向に何年分表示するか
     this.pastDisplayLimit = 9 // 過去方向に何年分表示するか
 
     this.footer = {
-      nx: -1.0 + BASE_MARGIN,
+      nx: -1.0 + this._margin,
       ny: 1.45
     }
 
@@ -169,6 +159,22 @@ class Layout {
   }
 
   // POSITION HELPERS
+  /**
+   * 指定した相対年に対する西暦ラベルの配置座標を返す
+   * (干支の箱の左下隅を基準とするポリシーを定義)
+   */
+  _getYearLabelPosition(relativeYear) {
+    const angle = this.getZodiacAngle(relativeYear)
+    const pos = this.getZodiacPosition(angle)
+    const style = this.getZodiacStyle(angle)
+
+    const offset = style.nBoxSize / 2
+    return {
+      nx: pos.nx - offset - this._margin,
+      ny: pos.ny + offset
+    }
+  }
+
   getZodiacPosition(angle) {
     const pos = this.zodiac.position
     return {
