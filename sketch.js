@@ -77,95 +77,89 @@ class Layout {
     // --- 内部幾何学パラメータ ---
     const BASE_MARGIN = 0.02 // 基本マージン（2%）
 
-    const WHEEL_CENTER = { nx: 1.2, ny: 0 } // ホイールの中心位置（比率）
-    const WHEEL_RADIUS = {
-      nx: 1.64 * 1.25, // 干支ホイールの横半径比率 (0.82 * 2 * 1.25)
-      ny: 1.64 * 0.8 // 干支ホイールの縦半径比率 (0.82 * 2 * 0.8)
-    }
-
-    // レイアウト全体の基準となるオフセット（全体を上下左右に微調整する）
-    this.offset = {
-      nx: 0,
-      ny: -0.24
-    }
-
-    // --- タイムライン構成（Master） ---
-    this.futureDisplayLimit = -3 // 未来方向に何年分表示するか
-    this.pastDisplayLimit = 9 // 過去方向に何年分表示するか
-
-    // 干支の配置（角度）の微調整マップ
-    // キー: 相対年 (relativeYear), 値: 角度の補正度数
-    this.angleAdjustments = {
-      0: -1.5, // 今年 (Current)
-      "-1": -4.5, // 来年 (Next)
-      "-2": -2.5, // 2年後
-      "-3": 0, // 3年後 (表示境界)
-      "-4": 2.0 // 4年後 (補間用予備)
-    }
-
-    this.spacingAngle = 11 // 干支どうしの間隔（度数）
-    this.highlightAngle = 133 // アクティブな干支を表示する基準角度
-
-    // 1. Wheel & Zodiac Appearance
-    this.wheel = {
-      nx: WHEEL_CENTER.nx,
-      ny: WHEEL_CENTER.ny,
-
-      radius: {
-        nx: WHEEL_RADIUS.nx,
-        ny: WHEEL_RADIUS.ny
-      }
-    }
-
+    // 1. Zodiac (干支): レイアウト全体のアンカー
     this.zodiac = {
-      normal: {
-        nBoxSize: 0.3,
-        nTextSize: 0.24,
-        color: CONFIG.COLORS.SUB
+      position: {
+        center: { nx: 1.2, ny: 0 }, // 干支配置の中心位置
+        radius: {
+          nx: 1.64 * 1.25, // 干支配置の横半径比率
+          ny: 1.64 * 0.8 // 干支配置の縦半径比率
+        }
       },
-      highlight: {
-        nBoxSize: 0.6,
-        nTextSize: 0.48,
-        color: CONFIG.COLORS.MAIN
+      angle: {
+        spacing: 11, // 干支どうしの間隔（度数）
+        highlight: 133, // アクティブな干支を表示する基準角度
+        // 干支の配置（角度）の微調整マップ
+        // キー: 相対年 (relativeYear), 値: 角度の補正度数
+        adjustments: {
+          0: -1.5, // 今年 (Current)
+          "-1": -4.5, // 来年 (Next)
+          "-2": -2.5, // 2年後
+          "-3": 0, // 3年後 (表示境界)
+          "-4": 2.0 // 4年後 (補間用予備)
+        }
+      },
+      style: {
+        normal: {
+          nBoxSize: 0.3,
+          nTextSize: 0.24,
+          color: CONFIG.COLORS.SUB
+        },
+        highlight: {
+          nBoxSize: 0.6,
+          nTextSize: 0.48,
+          color: CONFIG.COLORS.MAIN
+        }
       }
     }
 
-    // 2. Functional Indicators & Background
+    // 2. Indicators (指示器): 背面の赤い円弧や装飾
     this.indicators = {
-      nx: WHEEL_CENTER.nx,
-      ny: WHEEL_CENTER.ny
+      nx: this.zodiac.position.center.nx,
+      ny: this.zodiac.position.center.ny
     }
 
+    // 3. Needle (針): アクティブな干支を指す赤い針
     this.needle = {
       nx: 1.0 - BASE_MARGIN * 4,
       ny: 0,
       lengthRatio: 0.65
     }
 
-    // 3. Content Components
+    // 4. UI Elements: レイアウト全体の基準となるオフセットや枠
+    this.offset = {
+      nx: 0,
+      ny: -0.24
+    }
+
     this.header = {
       nx: 1.0 - BASE_MARGIN * 3,
       ny: -0.2
     }
 
-    const mainPos = this.getWheelPosition(this.getAngleByRelativeYear(0))
+    // 西暦ラベル（Main/Sub）の座標。リファクタリング前と同様のインライン計算を維持します。
+    const style = this.zodiac.style
+    const mainPos = this.getZodiacPosition(this.getAngleByRelativeYear(0))
     this.yearMain = {
-      nx: mainPos.nx - this.zodiac.highlight.nBoxSize / 2 - BASE_MARGIN,
-      ny: mainPos.ny + this.zodiac.highlight.nBoxSize / 2
+      nx: mainPos.nx - style.highlight.nBoxSize / 2 - BASE_MARGIN,
+      ny: mainPos.ny + style.highlight.nBoxSize / 2
     }
 
-    const subPos = this.getWheelPosition(this.getAngleByRelativeYear(1))
+    const subPos = this.getZodiacPosition(this.getAngleByRelativeYear(1))
     this.yearSub = {
-      nx: subPos.nx - this.zodiac.normal.nBoxSize / 2 - BASE_MARGIN,
-      ny: subPos.ny + this.zodiac.normal.nBoxSize / 2
+      nx: subPos.nx - style.normal.nBoxSize / 2 - BASE_MARGIN,
+      ny: subPos.ny + style.normal.nBoxSize / 2
     }
+
+    // 5. Timeline Configuration (Master)
+    this.futureDisplayLimit = -3 // 未来方向に何年分表示するか
+    this.pastDisplayLimit = 9 // 過去方向に何年分表示するか
 
     this.footer = {
       nx: -1.0 + BASE_MARGIN,
       ny: 1.45
     }
 
-    // 5. Outer Frame Geometry
     this.outerFrame = {
       nx1: -0.95,
       ny1: -0.9,
@@ -175,10 +169,11 @@ class Layout {
   }
 
   // POSITION HELPERS
-  getWheelPosition(angle) {
+  getZodiacPosition(angle) {
+    const pos = this.zodiac.position
     return {
-      nx: this.wheel.nx + cos(angle) * this.wheel.radius.nx,
-      ny: this.wheel.ny + sin(angle) * this.wheel.radius.ny
+      nx: pos.center.nx + cos(angle) * pos.radius.nx,
+      ny: pos.center.ny + sin(angle) * pos.radius.ny
     }
   }
 
@@ -190,43 +185,44 @@ class Layout {
     const dist = abs(angle - targetAngle)
 
     // 強調範囲（隣の干支との間隔）より離れている場合は 0 (近さなし)
-    if (dist >= this.spacingAngle) {
+    if (dist >= this.zodiac.angle.spacing) {
       return 0
     }
 
     // 近さに応じて 1.0 (中心) 〜 0.0 (境界) を線形に返す
-    return 1.0 - dist / this.spacingAngle
+    return 1.0 - dist / this.zodiac.angle.spacing
   }
 
   /**
    * その角度における干支の完成されたスタイル（サイズ、色、近さ）を返す
    */
   getZodiacStyle(angle) {
+    const style = this.zodiac.style
     const proximity = this.getProximity(angle)
-    const { normal, highlight } = this.zodiac
 
     return {
-      nBoxSize: lerp(normal.nBoxSize, highlight.nBoxSize, proximity),
-      nTextSize: lerp(normal.nTextSize, highlight.nTextSize, proximity),
-      color: lerp(normal.color, highlight.color, proximity)
+      nBoxSize: lerp(style.normal.nBoxSize, style.highlight.nBoxSize, proximity),
+      nTextSize: lerp(style.normal.nTextSize, style.highlight.nTextSize, proximity),
+      color: lerp(style.normal.color, style.highlight.color, proximity)
     }
   }
 
   getAngleByRelativeYear(relativeYear = 0) {
+    const angle = this.zodiac.angle
     // 1. 論理的な「年」から直接座標（ベース角度）を算出
-    const baseAngle = this.highlightAngle + relativeYear * this.spacingAngle
+    const baseAngle = angle.highlight + relativeYear * angle.spacing
 
     // 2. 直接論理年ベースの補正値を解決
-    const adjustment = this.angleAdjustments[relativeYear] || 0
+    const adj = angle.adjustments[relativeYear] || 0
 
-    return baseAngle + adjustment
+    return baseAngle + adj
   }
 
   /**
    * 指定された角度における針の状態（始点と相対ベクトル）を返す
    */
   getNeedleState(angle) {
-    const target = this.getWheelPosition(angle)
+    const target = this.getZodiacPosition(angle)
     return {
       start: this.needle,
       vector: {
@@ -253,7 +249,7 @@ class ZodiacGroup {
         layout.getAngleByRelativeYear(relativeYear)
       )
       const style = layout.getZodiacStyle(angle)
-      const pos = layout.getWheelPosition(angle)
+      const pos = layout.getZodiacPosition(angle)
 
       // 不透明度の決定
       const opacity = this._calculateOpacity(relativeYear)
