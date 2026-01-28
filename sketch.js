@@ -139,13 +139,13 @@ class Layout {
 
     // 西暦ラベル（Main/Sub）の座標。リファクタリング前と同様のインライン計算を維持します。
     const style = this.zodiac.style
-    const mainPos = this.getZodiacPosition(this.getAngleByRelativeYear(0))
+    const mainPos = this.getZodiacPosition(this.getZodiacAngle(0))
     this.yearMain = {
       nx: mainPos.nx - style.highlight.nBoxSize / 2 - BASE_MARGIN,
       ny: mainPos.ny + style.highlight.nBoxSize / 2
     }
 
-    const subPos = this.getZodiacPosition(this.getAngleByRelativeYear(1))
+    const subPos = this.getZodiacPosition(this.getZodiacAngle(1))
     this.yearSub = {
       nx: subPos.nx - style.normal.nBoxSize / 2 - BASE_MARGIN,
       ny: subPos.ny + style.normal.nBoxSize / 2
@@ -181,7 +181,7 @@ class Layout {
    * 指定された角度が強調位置（highlightAngle）にどれだけ「近いか」を 0.0 ~ 1.0 で返す
    */
   getProximity(angle) {
-    const targetAngle = this.getAngleByRelativeYear(0)
+    const targetAngle = this.getZodiacAngle(0)
     const dist = abs(angle - targetAngle)
 
     // 強調範囲（隣の干支との間隔）より離れている場合は 0 (近さなし)
@@ -207,7 +207,7 @@ class Layout {
     }
   }
 
-  getAngleByRelativeYear(relativeYear = 0) {
+  getZodiacAngle(relativeYear = 0) {
     const angle = this.zodiac.angle
     // 1. 論理的な「年」から直接座標（ベース角度）を算出
     const baseAngle = angle.highlight + relativeYear * angle.spacing
@@ -245,8 +245,8 @@ class ZodiacGroup {
 
       // 角度とスタイルの計算
       const angle = animator.interpolate(
-        layout.getAngleByRelativeYear(relativeYear - 1),
-        layout.getAngleByRelativeYear(relativeYear)
+        layout.getZodiacAngle(relativeYear - 1),
+        layout.getZodiacAngle(relativeYear)
       )
       const style = layout.getZodiacStyle(angle)
       const pos = layout.getZodiacPosition(angle)
@@ -467,10 +467,7 @@ function drawOuterFrame() {
 
 function drawNeedle() {
   // Localized Angle Interpolation
-  const needleAngle = animator.interpolate(
-    layout.getAngleByRelativeYear(-1),
-    layout.getAngleByRelativeYear(0)
-  )
+  const needleAngle = animator.interpolate(layout.getZodiacAngle(-1), layout.getZodiacAngle(0))
 
   const needle = layout.getNeedleState(needleAngle)
 
