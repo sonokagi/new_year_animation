@@ -73,7 +73,8 @@ class VirtualCanvas {
 }
 
 class Layout {
-  constructor() {
+  constructor(animator) {
+    this._animator = animator
     // --- 内部幾何学パラメータ ---
     this._margin = 0.02 // 基本マージン（2%）
 
@@ -175,6 +176,16 @@ class Layout {
     }
   }
 
+  /**
+   * 現在のアニメーション進捗に基づいた干支の角度を取得する
+   */
+  _getCurrentZodiacAngle(relativeYear) {
+    return this._animator.interpolate(
+      this.getZodiacAngle(relativeYear - 1),
+      this.getZodiacAngle(relativeYear)
+    )
+  }
+
   getZodiacPosition(angle) {
     const pos = this.zodiac.position
     return {
@@ -225,9 +236,10 @@ class Layout {
   }
 
   /**
-   * 指定された角度における針の状態（始点と相対ベクトル）を返す
+   * 現在のアニメーション進捗に基づいた針の状態（始点と相対ベクトル）を返す
    */
-  getNeedleState(angle) {
+  getNeedleState() {
+    const angle = this._getCurrentZodiacAngle(0)
     const target = this.getZodiacPosition(angle)
     return {
       start: this.needle,
@@ -396,7 +408,7 @@ function windowResized() {
  */
 function updateLayout() {
   vCanvas = new VirtualCanvas(width, height)
-  layout = new Layout()
+  layout = new Layout(animator)
 }
 
 function draw() {
@@ -472,10 +484,7 @@ function drawOuterFrame() {
 }
 
 function drawNeedle() {
-  // Localized Angle Interpolation
-  const needleAngle = animator.interpolate(layout.getZodiacAngle(-1), layout.getZodiacAngle(0))
-
-  const needle = layout.getNeedleState(needleAngle)
+  const needle = layout.getNeedleState()
 
   push()
   stroke(CONFIG.COLORS.ACCENT)
