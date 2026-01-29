@@ -270,17 +270,14 @@ class Layout {
   }
 
   /**
-   * 現在のアニメーション進捗に基づいた針の状態（始点と相対ベクトル）を返す
+   * 現在のアニメーション進捗に基づいた針の相対ベクトル（向き）を返す
    */
-  getNeedleState() {
+  getNeedleVector() {
     const angle = this._getCurrentZodiacAngle(0)
     const target = this.getZodiacPosition(angle)
     return {
-      start: this.needle,
-      vector: {
-        dx: (target.nx - this.needle.nx) * this.needle.lengthRatio,
-        dy: (target.ny - this.needle.ny) * this.needle.lengthRatio
-      }
+      dx: (target.nx - this.needle.nx) * this.needle.lengthRatio,
+      dy: (target.ny - this.needle.ny) * this.needle.lengthRatio
     }
   }
 }
@@ -431,7 +428,11 @@ function draw() {
   pop()
 
   drawOuterFrame()
+
+  push()
+  vCanvas.translate(layout.needle.nx, layout.needle.ny)
   drawNeedle()
+  pop()
 
   push()
   vCanvas.translate(layout.header.nx, layout.header.ny)
@@ -496,14 +497,13 @@ function drawOuterFrame() {
 }
 
 function drawNeedle() {
-  const needle = layout.getNeedleState()
+  const vector = layout.getNeedleVector()
 
   push()
   stroke(CONFIG.COLORS.ACCENT)
   vCanvas.strokeWeight(0.05)
   strokeCap(ROUND)
-  vCanvas.translate(needle.start.nx, needle.start.ny)
-  vCanvas.line(0, 0, needle.vector.dx, needle.vector.dy)
+  vCanvas.line(0, 0, vector.dx, vector.dy)
   pop()
 }
 
