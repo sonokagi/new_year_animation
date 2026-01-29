@@ -425,12 +425,26 @@ function draw() {
   // 2. Layout: Apply compositional offset
   vCanvas.translate(layout.offset.nx, layout.offset.ny)
 
+  push()
+  vCanvas.translate(layout.indicators.nx, layout.indicators.ny)
   drawIndicators()
+  pop()
+
   drawOuterFrame()
   drawNeedle()
+
+  push()
+  vCanvas.translate(layout.header.nx, layout.header.ny)
   drawHeader()
+  pop()
+
   drawYearLabels()
+
+  push()
+  vCanvas.translate(layout.footer.nx, layout.footer.ny)
   drawFooter()
+  pop()
+
   zodiacs.draw()
 }
 
@@ -446,9 +460,6 @@ function drawIndicators() {
     x: 1.36 * 1.25,
     y: 1.36 * 0.75
   }
-
-  push()
-  vCanvas.translate(layout.indicators.nx, layout.indicators.ny)
 
   // 1. Red Arc
   noFill()
@@ -469,8 +480,6 @@ function drawIndicators() {
     vCanvas.circle(0.06)
     pop()
   }
-
-  pop()
 }
 
 function drawOuterFrame() {
@@ -506,12 +515,9 @@ function drawHeader() {
     style: BOLDITALIC
   }
 
-  push()
-  vCanvas.translate(layout.header.nx, layout.header.ny)
   drawText("HAPPY", config)
   vCanvas.translate(0, 0.2)
   drawText("NEW YEAR!", config)
-  pop()
 }
 
 function drawYearLabels() {
@@ -542,15 +548,12 @@ function drawYearLabels() {
 }
 
 function drawFooter() {
-  push()
-  vCanvas.translate(layout.footer.nx, layout.footer.ny)
   drawText("今年もよろしくお願いします。", {
     size: 0.07,
     align: [LEFT, BOTTOM],
     color: CONFIG.COLORS.MAIN,
     style: NORMAL
   })
-  pop()
 }
 
 /**
