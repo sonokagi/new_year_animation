@@ -73,8 +73,9 @@ class VirtualCanvas {
 }
 
 class Layout {
-  constructor(animator) {
+  constructor(animator, year) {
     this._animator = animator
+    this._year = year
     // --- 内部幾何学パラメータ ---
     this._margin = 0.02 // 基本マージン（2%）
 
@@ -184,6 +185,13 @@ class Layout {
       this.getZodiacAngle(relativeYear - 1),
       this.getZodiacAngle(relativeYear)
     )
+  }
+
+  /**
+   * 現在のアニメーション状態に基づき、メインとして表示すべき西暦（数値）を返す
+   */
+  getMainYearValue() {
+    return this._animator._running ? this._year.current - 1 : this._year.current
   }
 
   /**
@@ -409,7 +417,7 @@ function windowResized() {
  */
 function updateLayout() {
   vCanvas = new VirtualCanvas(width, height)
-  layout = new Layout(animator)
+  layout = new Layout(animator, year)
 }
 
 function draw() {
@@ -513,9 +521,8 @@ function drawHeader() {
 }
 
 function drawYearLabels() {
-  // Derived Display State
-  const displayYearMain = animator._running ? year.current - 1 : year.current
-  const displayYearSub = animator._running ? year.current - 2 : year.current - 1
+  const displayYearMain = layout.getMainYearValue()
+  const displayYearSub = displayYearMain - 1
 
   // Previous Year (Gray)
   push()
