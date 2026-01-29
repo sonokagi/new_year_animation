@@ -186,6 +186,31 @@ class Layout {
     )
   }
 
+  /**
+   * その年の干支を描画するための全状態（座標、スタイル、不透明度）を返す
+   */
+  getZodiacState(relativeYear) {
+    const angle = this._getCurrentZodiacAngle(relativeYear)
+    const pos = this.getZodiacPosition(angle)
+    const style = this.getZodiacStyle(angle)
+    const alpha = this._getZodiacAlpha(relativeYear)
+
+    return { pos, style, alpha }
+  }
+
+  /**
+   * ループ境界におけるフェード処理（アルファ値）を算出する
+   */
+  _getZodiacAlpha(relativeYear) {
+    if (relativeYear === this.futureDisplayLimit) {
+      return this._animator.interpolate(0, 255) // Fade-in
+    }
+    if (relativeYear === this.pastDisplayLimit) {
+      return this._animator.interpolate(255, 0) // Fade-out
+    }
+    return 255
+  }
+
   getZodiacPosition(angle) {
     const pos = this.zodiac.position
     return {
@@ -258,46 +283,22 @@ class ZodiacGroup {
       relativeYear >= layout.futureDisplayLimit;
       relativeYear--
     ) {
-      // --- 1. State: 描画データの準備 (Pure Calculation) ---
+      // ドメイン文字と、レイアウトによる描画状態を取得
       const zodiac = year.getZodiac(relativeYear)
+      const state = layout.getZodiacState(relativeYear)
 
-      // 角度とスタイルの計算
-      const angle = animator.interpolate(
-        layout.getZodiacAngle(relativeYear - 1),
-        layout.getZodiacAngle(relativeYear)
-      )
-      const style = layout.getZodiacStyle(angle)
-      const pos = layout.getZodiacPosition(angle)
-
-      // 不透明度の決定
-      const opacity = this._calculateOpacity(relativeYear)
-
-      // --- 2. Render: 描画の実行 (Side Effects) ---
       push()
-      vCanvas.translate(pos.nx, pos.ny)
-      this._drawZodiac(zodiac, style, opacity)
+      vCanvas.translate(state.pos.nx, state.pos.ny)
+      this._drawZodiac(zodiac, state.style, state.alpha)
       pop()
     }
   }
 
-  /**
-   * ループ境界におけるフェード処理（不透明度）を算出する
-   */
-  _calculateOpacity(relativeYear) {
-    if (relativeYear === layout.futureDisplayLimit) {
-      return animator.interpolate(0, 255) // Fade-in
-    }
-    if (relativeYear === layout.pastDisplayLimit) {
-      return animator.interpolate(255, 0) // Fade-out
-    }
-    return 255
-  }
-
-  _drawZodiac(character, style, opacity) {
+  _drawZodiac(character, style, alpha) {
     // 1. Color Definitions (Consolidated Alpha Management)
-    const fillColor = colorWithAlpha(style.color, opacity)
-    const strokeColor = colorWithAlpha(CONFIG.COLORS.MAIN, opacity)
-    const textColor = colorWithAlpha(CONFIG.COLORS.BACK_GROUND, opacity)
+    const fillColor = colorWithAlpha(style.color, alpha)
+    const strokeColor = colorWithAlpha(CONFIG.COLORS.MAIN, alpha)
+    const textColor = colorWithAlpha(CONFIG.COLORS.BACK_GROUND, alpha)
 
     // 2. Render Box
     fill(fillColor)
