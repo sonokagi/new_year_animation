@@ -198,12 +198,13 @@ class Layout {
    * その年の干支を描画するための全状態（座標、スタイル、不透明度）を返す
    */
   getZodiacState(relativeYear) {
+    const zodiac = this._year.getZodiac(relativeYear)
     const angle = this._getCurrentZodiacAngle(relativeYear)
     const pos = this.getZodiacPosition(angle)
     const style = this.getZodiacStyle(angle)
     const alpha = this._getZodiacAlpha(relativeYear)
 
-    return { pos, style, alpha }
+    return { zodiac, pos, style, alpha }
   }
 
   /**
@@ -291,35 +292,28 @@ class ZodiacGroup {
       relativeYear >= layout.futureDisplayLimit;
       relativeYear--
     ) {
-      // ドメイン文字と、レイアウトによる描画状態を取得
-      const zodiac = year.getZodiac(relativeYear)
       const state = layout.getZodiacState(relativeYear)
 
       push()
       vCanvas.translate(state.pos.nx, state.pos.ny)
-      this._drawZodiac(zodiac, state.style, state.alpha)
+      this._drawZodiac(state)
       pop()
     }
   }
 
-  _drawZodiac(character, style, alpha) {
-    // 1. Color Definitions (Consolidated Alpha Management)
-    const fillColor = colorWithAlpha(style.color, alpha)
-    const strokeColor = colorWithAlpha(CONFIG.COLORS.MAIN, alpha)
-    const textColor = colorWithAlpha(CONFIG.COLORS.BACK_GROUND, alpha)
+  _drawZodiac(state) {
+    const { zodiac, style, alpha } = state
 
-    // 2. Render Box
-    fill(fillColor)
-    stroke(strokeColor)
+    fill(colorWithAlpha(style.color, alpha))
+    stroke(colorWithAlpha(CONFIG.COLORS.MAIN, alpha))
     vCanvas.strokeWeight(0.007)
     rectMode(CENTER)
     vCanvas.rect(0, 0, style.nBoxSize, style.nBoxSize)
 
-    // 3. Render Character Text
-    drawText(character, {
+    drawText(zodiac, {
       size: style.nTextSize,
       align: [CENTER, CENTER],
-      color: textColor,
+      color: colorWithAlpha(CONFIG.COLORS.BACK_GROUND, alpha),
       style: BOLD
     })
   }
