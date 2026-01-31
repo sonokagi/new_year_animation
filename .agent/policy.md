@@ -12,15 +12,6 @@ This project follows these core principles:
    - **Default**: Work is primarily performed on the currently checked-out branch (e.g., `main`).
    - **Feature Branches**: New branches (using the prefix `feature/` followed by snake_case) are created **only when explicitly instructed by the user**.
 
-### Slash Command Workflows
-
-1. **`/plan`**: タスクの開始時に使用。実装計画（`implementation_plan.md`）を作成します。
-2. **`/ok`**: **文脈判断型の進捗コマンド**。
-   - プラン提出直後であれば → 承認されたとみなし、実装（`/exec`相当）を開始します。
-   - 実装・検証（Walkthrough）提出直後であれば → コミット（`/commit`相当）を開始します。
-3. **`/exec`**: 明示的に実装を開始する場合に使用。
-4. **`/commit`**: 明示的にコミットを実行する場合に使用。
-
 ### Git Operations
 
 1. **Explicit Permission Required**: Git commits and merges MUST NOT be performed automatically. You MUST ask for and receive explicit permission from the user BEFORE executing a command that results in a commit.
