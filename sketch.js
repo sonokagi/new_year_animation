@@ -169,9 +169,9 @@ class Layout {
    * (干支の箱の左下隅を基準とするポリシーを定義)
    */
   _yearLabelPosition(relativeYear) {
-    const angle = this.zodiacAngle(relativeYear)
-    const pos = this.zodiacOrbit(angle)
-    const style = this.zodiacStyle(angle)
+    const angle = this._zodiacAngle(relativeYear)
+    const pos = this._zodiacOrbit(angle)
+    const style = this._zodiacStyle(angle)
 
     const offset = style.nBoxSize / 2
     return {
@@ -185,8 +185,8 @@ class Layout {
    */
   _currentZodiacAngle(relativeYear) {
     return this._animator.interpolate(
-      this.zodiacAngle(relativeYear - 1),
-      this.zodiacAngle(relativeYear)
+      this._zodiacAngle(relativeYear - 1),
+      this._zodiacAngle(relativeYear)
     )
   }
 
@@ -207,7 +207,7 @@ class Layout {
    */
   zodiacPosition(relativeYear) {
     const angle = this._currentZodiacAngle(relativeYear)
-    return this.zodiacOrbit(angle)
+    return this._zodiacOrbit(angle)
   }
 
   /**
@@ -217,7 +217,7 @@ class Layout {
     const absoluteYear = this._targetYear - relativeYear
     const zodiac = this._zodiacSymbol(absoluteYear)
     const angle = this._currentZodiacAngle(relativeYear)
-    const style = this.zodiacStyle(angle)
+    const style = this._zodiacStyle(angle)
     const alpha = this._zodiacAlpha(relativeYear)
 
     return { zodiac, style, alpha }
@@ -236,7 +236,7 @@ class Layout {
     return 255
   }
 
-  zodiacOrbit(angle) {
+  _zodiacOrbit(angle) {
     const pos = this.zodiac.position
     return {
       nx: pos.center.nx + cos(angle) * pos.radius.nx,
@@ -247,8 +247,8 @@ class Layout {
   /**
    * 指定された角度が強調位置（highlightAngle）にどれだけ「近いか」を 0.0 ~ 1.0 で返す
    */
-  proximity(angle) {
-    const targetAngle = this.zodiacAngle(0)
+  _proximity(angle) {
+    const targetAngle = this._zodiacAngle(0)
     const dist = abs(angle - targetAngle)
 
     // 強調範囲（隣の干支との間隔）より離れている場合は 0 (近さなし)
@@ -263,9 +263,9 @@ class Layout {
   /**
    * その角度における干支の完成されたスタイル（サイズ、色、近さ）を返す
    */
-  zodiacStyle(angle) {
+  _zodiacStyle(angle) {
     const style = this.zodiac.style
-    const proximity = this.proximity(angle)
+    const proximity = this._proximity(angle)
 
     return {
       nBoxSize: lerp(style.normal.nBoxSize, style.highlight.nBoxSize, proximity),
@@ -274,7 +274,7 @@ class Layout {
     }
   }
 
-  zodiacAngle(relativeYear = 0) {
+  _zodiacAngle(relativeYear = 0) {
     const angle = this.zodiac.angle
     // 1. 論理的な「年」から直接座標（ベース角度）を算出
     const baseAngle = angle.highlight + relativeYear * angle.spacing
