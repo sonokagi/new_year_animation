@@ -73,9 +73,12 @@ class VirtualCanvas {
 }
 
 class Layout {
-  constructor(animator, year) {
+  static ZODIAC_SYMBOLS = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+  static OFFSET_YEAR_0 = 8 // 西暦0年の干支は(8:申)である
+
+  constructor(animator, targetYear) {
     this._animator = animator
-    this._year = year
+    this._targetYear = targetYear
     // --- 内部幾何学パラメータ ---
     this._margin = 0.02 // 基本マージン（2%）
 
@@ -191,14 +194,20 @@ class Layout {
    * 現在のアニメーション状態に基づき、メインとして表示すべき西暦（数値）を返す
    */
   getDisplayedYearValue() {
-    return this._animator._running ? this._year.value - 1 : this._year.value
+    return this._animator._running ? this._targetYear - 1 : this._targetYear
+  }
+
+  _getZodiacSymbol(absoluteYear) {
+    const idx = (Layout.OFFSET_YEAR_0 + absoluteYear) % Layout.ZODIAC_SYMBOLS.length
+    return Layout.ZODIAC_SYMBOLS[idx]
   }
 
   /**
    * その年の干支を描画するための全状態（座標、スタイル、不透明度）を返す
    */
   getZodiacState(relativeYear) {
-    const zodiac = this._year.getZodiac(relativeYear)
+    const absoluteYear = this._targetYear - relativeYear
+    const zodiac = this._getZodiacSymbol(absoluteYear)
     const angle = this._getCurrentZodiacAngle(relativeYear)
     const pos = this.getZodiacPosition(angle)
     const style = this.getZodiacStyle(angle)
@@ -316,25 +325,6 @@ class ZodiacGroup {
   }
 }
 
-class Year {
-  static ZODIACS = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
-  static OFFSET_YEAR_0 = 8 // 西暦0年の干支は(8:申)である
-
-  constructor(value) {
-    this.value = value
-  }
-
-  advance() {
-    this.value++
-  }
-
-  getZodiac(relativeYear) {
-    const targetYear = this.value - relativeYear
-    const idx = (Year.OFFSET_YEAR_0 + targetYear) % Year.ZODIACS.length
-    return Year.ZODIACS[idx]
-  }
-}
-
 class Animator {
   constructor() {
     this._progress = 1.0
@@ -368,7 +358,7 @@ class Animator {
 }
 
 // Domain State
-let year
+let targetYear
 
 // Animation State
 let animator
@@ -383,7 +373,7 @@ function setup() {
   textFont("Noto Sans JP")
   angleMode(DEGREES)
 
-  year = new Year(new Date().getFullYear())
+  targetYear = new Date().getFullYear()
   animator = new Animator()
   zodiacs = new ZodiacGroup()
 
@@ -404,7 +394,7 @@ function windowResized() {
  */
 function updateLayout() {
   vCanvas = new VirtualCanvas(width, height)
-  layout = new Layout(animator, year)
+  layout = new Layout(animator, targetYear)
 }
 
 function draw() {
@@ -458,7 +448,8 @@ function draw() {
 
 function mousePressed() {
   if (animator._running) return
-  year.advance()
+  targetYear++
+  updateLayout() // 最新の targetYear でレイアウトを更新
   animator.play()
 }
 
