@@ -153,10 +153,10 @@ class Layout {
     }
 
     this.outerFrame = {
-      nx1: -0.95,
-      ny1: -0.9,
-      nx2: 1.0,
-      ny2: 1.05
+      nx: -0.95,
+      ny: -0.9,
+      width: 1.95,
+      height: 1.95
     }
   }
 
@@ -427,7 +427,10 @@ function draw() {
   drawIndicators()
   pop()
 
+  push()
+  vCanvas.translate(layout.outerFrame.nx, layout.outerFrame.ny)
   drawOuterFrame()
+  pop()
 
   push()
   vCanvas.translate(layout.needle.nx, layout.needle.ny)
@@ -487,13 +490,8 @@ function drawOuterFrame() {
   noFill()
   stroke(CONFIG.COLORS.MAIN)
   vCanvas.strokeWeight(0.007)
-  rectMode(CORNERS)
-  vCanvas.rect(
-    layout.outerFrame.nx1,
-    layout.outerFrame.ny1,
-    layout.outerFrame.nx2,
-    layout.outerFrame.ny2
-  )
+  rectMode(CORNER)
+  vCanvas.rect(0, 0, layout.outerFrame.width, layout.outerFrame.height)
 }
 
 function drawNeedle() {
