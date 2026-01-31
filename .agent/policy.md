@@ -22,7 +22,11 @@ This project follows these core principles:
 
 1. **Explicit Approval Required**: Do NOT execute any code changes until the implementation plan is approved.
 2. **Verified Editing Protocol**:
-   - **Pre-Verification Source Review**: After any modification, you MUST use `view_file` to confirm the changes match the intended state BEFORE proceeding to verification.
+   - **Strict Source Review (Side-Effect Check)**: After any modification, you MUST use `view_file` to confirm:
+     - a) All planned changes were applied.
+     - b) **Unintended deletions or side-effects have NOT occurred in surrounding code.**
+     - c) If critical classes or functions were near the edit range, confirm their existence via `grep_search` or `outline`.
+   - **Atomic Edits**: Avoid "Mega-Chunks". Prefer multiple small, focused replacement chunks over a single large block to minimize over-inclusion errors.
    - **Immediate Stop on Tool Failure**: If a replacement tool fails, STOP immediately and report to the user.
 3. **Artifact Language**: All user-facing artifacts (`implementation_plan.md`, `discussion.md`, `walkthrough.md`) MUST be provided in Japanese.
 4. **Code Comments**: Do not write about the history in comments. Describe the current intent concisely.
