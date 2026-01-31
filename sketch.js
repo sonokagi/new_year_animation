@@ -291,40 +291,6 @@ class Layout {
   }
 }
 
-class ZodiacGroup {
-  draw() {
-    for (
-      let relativeYear = layout.pastDisplayLimit;
-      relativeYear >= layout.futureDisplayLimit;
-      relativeYear--
-    ) {
-      const state = layout.getZodiacState(relativeYear)
-
-      push()
-      vCanvas.translate(state.pos.nx, state.pos.ny)
-      this._drawZodiac(state)
-      pop()
-    }
-  }
-
-  _drawZodiac(state) {
-    const { zodiac, style, alpha } = state
-
-    fill(colorWithAlpha(style.color, alpha))
-    stroke(colorWithAlpha(CONFIG.COLORS.MAIN, alpha))
-    vCanvas.strokeWeight(0.007)
-    rectMode(CENTER)
-    vCanvas.rect(0, 0, style.nBoxSize, style.nBoxSize)
-
-    drawText(zodiac, {
-      size: style.nTextSize,
-      align: [CENTER, CENTER],
-      color: colorWithAlpha(CONFIG.COLORS.BACK_GROUND, alpha),
-      style: BOLD
-    })
-  }
-}
-
 class Animator {
   constructor() {
     this._progress = 1.0
@@ -366,7 +332,6 @@ let animator
 // Layout State
 let vCanvas
 let layout
-let zodiacs
 
 function setup() {
   createCanvas(windowWidth, windowHeight)
@@ -375,7 +340,6 @@ function setup() {
 
   targetYear = new Date().getFullYear()
   animator = new Animator()
-  zodiacs = new ZodiacGroup()
 
   // Initial Layout Calculation
   updateLayout()
@@ -443,7 +407,18 @@ function draw() {
   drawFooter()
   pop()
 
-  zodiacs.draw()
+  for (
+    let relativeYear = layout.pastDisplayLimit;
+    relativeYear >= layout.futureDisplayLimit;
+    relativeYear--
+  ) {
+    const state = layout.getZodiacState(relativeYear)
+
+    push()
+    vCanvas.translate(state.pos.nx, state.pos.ny)
+    drawZodiac(state)
+    pop()
+  }
 }
 
 function mousePressed() {
@@ -541,6 +516,23 @@ function drawFooter() {
     align: [LEFT, BOTTOM],
     color: CONFIG.COLORS.MAIN,
     style: NORMAL
+  })
+}
+
+function drawZodiac(state) {
+  const { zodiac, style, alpha } = state
+
+  fill(colorWithAlpha(style.color, alpha))
+  stroke(colorWithAlpha(CONFIG.COLORS.MAIN, alpha))
+  vCanvas.strokeWeight(0.007)
+  rectMode(CENTER)
+  vCanvas.rect(0, 0, style.nBoxSize, style.nBoxSize)
+
+  drawText(zodiac, {
+    size: style.nTextSize,
+    align: [CENTER, CENTER],
+    color: colorWithAlpha(CONFIG.COLORS.BACK_GROUND, alpha),
+    style: BOLD
   })
 }
 
