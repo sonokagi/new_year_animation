@@ -73,9 +73,6 @@ class VirtualCanvas {
 }
 
 class Layout {
-  static ZODIAC_SYMBOLS = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
-  static OFFSET_YEAR_0 = 8 // 西暦0年の干支は(8:申)である
-
   constructor(animator, targetYear) {
     this._animator = animator
     this._targetYear = targetYear
@@ -197,11 +194,6 @@ class Layout {
     return this._animator._running ? this._targetYear - 1 : this._targetYear
   }
 
-  _zodiacSymbol(absoluteYear) {
-    const idx = (Layout.OFFSET_YEAR_0 + absoluteYear) % Layout.ZODIAC_SYMBOLS.length
-    return Layout.ZODIAC_SYMBOLS[idx]
-  }
-
   /**
    * その年の干支を表示する座標（nx, ny）を返す
    */
@@ -214,8 +206,12 @@ class Layout {
    * その年の干支を描画するためのメタデータ（記号、スタイル、不透明度）を返す
    */
   zodiacSymbol(relativeYear) {
+    const symbols = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+    const offset = 8 // 西暦0年の干支は(8:申)である
+
     const absoluteYear = this._targetYear - relativeYear
-    return this._zodiacSymbol(absoluteYear)
+    const idx = (offset + absoluteYear) % symbols.length
+    return symbols[idx]
   }
 
   zodiacStyle(relativeYear) {
