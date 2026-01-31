@@ -442,7 +442,15 @@ function draw() {
   drawHeader()
   pop()
 
-  drawYearLabels()
+  push()
+  vCanvas.translate(layout.yearMain.nx, layout.yearMain.ny)
+  drawYearMainLabel()
+  pop()
+
+  push()
+  vCanvas.translate(layout.yearSub.nx, layout.yearSub.ny)
+  drawYearSubLabel()
+  pop()
 
   push()
   vCanvas.translate(layout.footer.nx, layout.footer.ny)
@@ -518,31 +526,26 @@ function drawHeader() {
   drawText("NEW YEAR!", config)
 }
 
-function drawYearLabels() {
+function drawYearMainLabel() {
   const displayYearMain = layout.getMainYearValue()
-  const displayYearSub = displayYearMain - 1
 
-  // Previous Year (Gray)
-  push()
-  vCanvas.translate(layout.yearSub.nx, layout.yearSub.ny)
-  drawText(displayYearSub + ":", {
-    size: 0.1,
-    align: [RIGHT, BOTTOM],
-    color: CONFIG.COLORS.SUB,
-    style: NORMAL
-  })
-  pop()
-
-  // Current Year (Black)
-  push()
-  vCanvas.translate(layout.yearMain.nx, layout.yearMain.ny)
   drawText(displayYearMain + ":", {
     size: 0.17,
     align: [RIGHT, BOTTOM],
     color: CONFIG.COLORS.MAIN,
     style: NORMAL
   })
-  pop()
+}
+
+function drawYearSubLabel() {
+  const displayYearSub = layout.getMainYearValue() - 1
+
+  drawText(displayYearSub + ":", {
+    size: 0.1,
+    align: [RIGHT, BOTTOM],
+    color: CONFIG.COLORS.SUB,
+    style: NORMAL
+  })
 }
 
 function drawFooter() {
