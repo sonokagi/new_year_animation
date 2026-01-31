@@ -139,9 +139,9 @@ class Layout {
       ny: -0.2
     }
 
-    // 西暦ラベル（Main/Sub）の座標
-    this.yearMain = this._getYearLabelPosition(0)
-    this.yearSub = this._getYearLabelPosition(1)
+    // 西暦ラベル（Current/Previous）の座標
+    this.posCurrentYear = this._getYearLabelPosition(0)
+    this.posPreviousYear = this._getYearLabelPosition(1)
 
     // 5. Timeline Configuration (Master)
     this.futureDisplayLimit = -3 // 未来方向に何年分表示するか
@@ -190,8 +190,8 @@ class Layout {
   /**
    * 現在のアニメーション状態に基づき、メインとして表示すべき西暦（数値）を返す
    */
-  getMainYearValue() {
-    return this._animator._running ? this._year.current - 1 : this._year.current
+  getDisplayedYearValue() {
+    return this._animator._running ? this._year.value - 1 : this._year.value
   }
 
   /**
@@ -328,10 +328,6 @@ class Year {
     this.value++
   }
 
-  get current() {
-    return this.value
-  }
-
   getZodiac(relativeYear) {
     const targetYear = this.value - relativeYear
     const idx = (Year.OFFSET_YEAR_0 + targetYear) % Year.ZODIACS.length
@@ -443,13 +439,13 @@ function draw() {
   pop()
 
   push()
-  vCanvas.translate(layout.yearMain.nx, layout.yearMain.ny)
-  drawYearMainLabel()
+  vCanvas.translate(layout.posCurrentYear.nx, layout.posCurrentYear.ny)
+  drawCurrentYearLabel()
   pop()
 
   push()
-  vCanvas.translate(layout.yearSub.nx, layout.yearSub.ny)
-  drawYearSubLabel()
+  vCanvas.translate(layout.posPreviousYear.nx, layout.posPreviousYear.ny)
+  drawPreviousYearLabel()
   pop()
 
   push()
@@ -526,10 +522,10 @@ function drawHeader() {
   drawText("NEW YEAR!", config)
 }
 
-function drawYearMainLabel() {
-  const displayYearMain = layout.getMainYearValue()
+function drawCurrentYearLabel() {
+  const currentYear = layout.getDisplayedYearValue()
 
-  drawText(displayYearMain + ":", {
+  drawText(currentYear + ":", {
     size: 0.17,
     align: [RIGHT, BOTTOM],
     color: CONFIG.COLORS.MAIN,
@@ -537,10 +533,10 @@ function drawYearMainLabel() {
   })
 }
 
-function drawYearSubLabel() {
-  const displayYearSub = layout.getMainYearValue() - 1
+function drawPreviousYearLabel() {
+  const previousYear = layout.getDisplayedYearValue() - 1
 
-  drawText(displayYearSub + ":", {
+  drawText(previousYear + ":", {
     size: 0.1,
     align: [RIGHT, BOTTOM],
     color: CONFIG.COLORS.SUB,
