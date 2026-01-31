@@ -169,7 +169,7 @@ class Layout {
    * (干支の箱の左下隅を基準とするポリシーを定義)
    */
   _yearLabelPosition(relativeYear) {
-    const angle = this._zodiacAngle(relativeYear)
+    const angle = this._zodiacBaseAngle(relativeYear)
     const pos = this._zodiacOrbit(angle)
     const style = this._zodiacStyle(angle)
 
@@ -183,10 +183,10 @@ class Layout {
   /**
    * 現在のアニメーション進捗に基づいた干支の角度を取得する
    */
-  _currentZodiacAngle(relativeYear) {
+  _zodiacAngle(relativeYear) {
     return this._animator.interpolate(
-      this._zodiacAngle(relativeYear - 1),
-      this._zodiacAngle(relativeYear)
+      this._zodiacBaseAngle(relativeYear - 1),
+      this._zodiacBaseAngle(relativeYear)
     )
   }
 
@@ -206,7 +206,7 @@ class Layout {
    * その年の干支を表示する座標（nx, ny）を返す
    */
   zodiacPosition(relativeYear) {
-    const angle = this._currentZodiacAngle(relativeYear)
+    const angle = this._zodiacAngle(relativeYear)
     return this._zodiacOrbit(angle)
   }
 
@@ -216,7 +216,7 @@ class Layout {
   zodiacContext(relativeYear) {
     const absoluteYear = this._targetYear - relativeYear
     const zodiac = this._zodiacSymbol(absoluteYear)
-    const angle = this._currentZodiacAngle(relativeYear)
+    const angle = this._zodiacAngle(relativeYear)
     const style = this._zodiacStyle(angle)
     const alpha = this._zodiacAlpha(relativeYear)
 
@@ -248,7 +248,7 @@ class Layout {
    * 指定された角度が強調位置（highlightAngle）にどれだけ「近いか」を 0.0 ~ 1.0 で返す
    */
   _proximity(angle) {
-    const targetAngle = this._zodiacAngle(0)
+    const targetAngle = this._zodiacBaseAngle(0)
     const dist = abs(angle - targetAngle)
 
     // 強調範囲（隣の干支との間隔）より離れている場合は 0 (近さなし)
@@ -274,7 +274,7 @@ class Layout {
     }
   }
 
-  _zodiacAngle(relativeYear = 0) {
+  _zodiacBaseAngle(relativeYear = 0) {
     const angle = this.zodiac.angle
     // 1. 論理的な「年」から直接座標（ベース角度）を算出
     const baseAngle = angle.highlight + relativeYear * angle.spacing
