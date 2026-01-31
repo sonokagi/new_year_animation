@@ -143,8 +143,8 @@ class Layout {
     }
 
     // 西暦ラベル（Current/Previous）の座標
-    this.posCurrentYear = this._getYearLabelPosition(0)
-    this.posPreviousYear = this._getYearLabelPosition(1)
+    this.posCurrentYear = this._yearLabelPosition(0)
+    this.posPreviousYear = this._yearLabelPosition(1)
 
     // 5. Timeline Configuration (Master)
     this.futureDisplayLimit = -3 // 未来方向に何年分表示するか
@@ -168,10 +168,10 @@ class Layout {
    * 指定した相対年に対する西暦ラベルの配置座標を返す
    * (干支の箱の左下隅を基準とするポリシーを定義)
    */
-  _getYearLabelPosition(relativeYear) {
-    const angle = this.getZodiacAngle(relativeYear)
+  _yearLabelPosition(relativeYear) {
+    const angle = this.zodiacAngle(relativeYear)
     const pos = this.zodiacOrbit(angle)
-    const style = this.getZodiacStyle(angle)
+    const style = this.zodiacStyle(angle)
 
     const offset = style.nBoxSize / 2
     return {
@@ -183,21 +183,21 @@ class Layout {
   /**
    * 現在のアニメーション進捗に基づいた干支の角度を取得する
    */
-  _getCurrentZodiacAngle(relativeYear) {
+  _currentZodiacAngle(relativeYear) {
     return this._animator.interpolate(
-      this.getZodiacAngle(relativeYear - 1),
-      this.getZodiacAngle(relativeYear)
+      this.zodiacAngle(relativeYear - 1),
+      this.zodiacAngle(relativeYear)
     )
   }
 
   /**
    * 現在のアニメーション状態に基づき、メインとして表示すべき西暦（数値）を返す
    */
-  getDisplayedYearValue() {
+  displayedYearValue() {
     return this._animator._running ? this._targetYear - 1 : this._targetYear
   }
 
-  _getZodiacSymbol(absoluteYear) {
+  _zodiacSymbol(absoluteYear) {
     const idx = (Layout.OFFSET_YEAR_0 + absoluteYear) % Layout.ZODIAC_SYMBOLS.length
     return Layout.ZODIAC_SYMBOLS[idx]
   }
@@ -206,7 +206,7 @@ class Layout {
    * その年の干支を表示する座標（nx, ny）を返す
    */
   zodiacPosition(relativeYear) {
-    const angle = this._getCurrentZodiacAngle(relativeYear)
+    const angle = this._currentZodiacAngle(relativeYear)
     return this.zodiacOrbit(angle)
   }
 
@@ -215,10 +215,10 @@ class Layout {
    */
   zodiacContext(relativeYear) {
     const absoluteYear = this._targetYear - relativeYear
-    const zodiac = this._getZodiacSymbol(absoluteYear)
-    const angle = this._getCurrentZodiacAngle(relativeYear)
-    const style = this.getZodiacStyle(angle)
-    const alpha = this._getZodiacAlpha(relativeYear)
+    const zodiac = this._zodiacSymbol(absoluteYear)
+    const angle = this._currentZodiacAngle(relativeYear)
+    const style = this.zodiacStyle(angle)
+    const alpha = this._zodiacAlpha(relativeYear)
 
     return { zodiac, style, alpha }
   }
@@ -226,7 +226,7 @@ class Layout {
   /**
    * ループ境界におけるフェード処理（アルファ値）を算出する
    */
-  _getZodiacAlpha(relativeYear) {
+  _zodiacAlpha(relativeYear) {
     if (relativeYear === this.futureDisplayLimit) {
       return this._animator.interpolate(0, 255) // Fade-in
     }
@@ -247,8 +247,8 @@ class Layout {
   /**
    * 指定された角度が強調位置（highlightAngle）にどれだけ「近いか」を 0.0 ~ 1.0 で返す
    */
-  getProximity(angle) {
-    const targetAngle = this.getZodiacAngle(0)
+  proximity(angle) {
+    const targetAngle = this.zodiacAngle(0)
     const dist = abs(angle - targetAngle)
 
     // 強調範囲（隣の干支との間隔）より離れている場合は 0 (近さなし)
@@ -263,9 +263,9 @@ class Layout {
   /**
    * その角度における干支の完成されたスタイル（サイズ、色、近さ）を返す
    */
-  getZodiacStyle(angle) {
+  zodiacStyle(angle) {
     const style = this.zodiac.style
-    const proximity = this.getProximity(angle)
+    const proximity = this.proximity(angle)
 
     return {
       nBoxSize: lerp(style.normal.nBoxSize, style.highlight.nBoxSize, proximity),
@@ -274,7 +274,7 @@ class Layout {
     }
   }
 
-  getZodiacAngle(relativeYear = 0) {
+  zodiacAngle(relativeYear = 0) {
     const angle = this.zodiac.angle
     // 1. 論理的な「年」から直接座標（ベース角度）を算出
     const baseAngle = angle.highlight + relativeYear * angle.spacing
@@ -288,7 +288,7 @@ class Layout {
   /**
    * 現在のアニメーション進捗に基づいた針の相対ベクトル（向き）を返す
    */
-  getNeedleVector() {
+  needleVector() {
     const target = this.zodiacPosition(0)
     return {
       dx: (target.nx - this.needle.nx) * this.needle.lengthRatio,
@@ -471,7 +471,7 @@ function drawOuterFrame() {
 }
 
 function drawNeedle() {
-  const vector = layout.getNeedleVector()
+  const vector = layout.needleVector()
 
   push()
   stroke(CONFIG.COLORS.ACCENT)
@@ -495,7 +495,7 @@ function drawHeader() {
 }
 
 function drawCurrentYearLabel() {
-  const currentYear = layout.getDisplayedYearValue()
+  const currentYear = layout.displayedYearValue()
 
   drawText(currentYear + ":", {
     size: 0.17,
@@ -506,7 +506,7 @@ function drawCurrentYearLabel() {
 }
 
 function drawPreviousYearLabel() {
-  const previousYear = layout.getDisplayedYearValue() - 1
+  const previousYear = layout.displayedYearValue() - 1
 
   drawText(previousYear + ":", {
     size: 0.1,
