@@ -213,14 +213,22 @@ class Layout {
   /**
    * その年の干支を描画するためのメタデータ（記号、スタイル、不透明度）を返す
    */
-  zodiacContext(relativeYear) {
+  zodiacSymbol(relativeYear) {
     const absoluteYear = this._targetYear - relativeYear
-    const zodiac = this._zodiacSymbol(absoluteYear)
+    return this._zodiacSymbol(absoluteYear)
+  }
+
+  zodiacStyle(relativeYear) {
     const angle = this._zodiacAngle(relativeYear)
     const style = this._zodiacStyle(angle)
     const alpha = this._zodiacAlpha(relativeYear)
 
-    return { zodiac, style, alpha }
+    return {
+      nBoxSize: style.nBoxSize,
+      nTextSize: style.nTextSize,
+      color: style.color,
+      alpha: alpha
+    }
   }
 
   /**
@@ -526,10 +534,11 @@ function drawFooter() {
 }
 
 function drawZodiac(relativeYear) {
-  const { zodiac, style, alpha } = layout.zodiacContext(relativeYear)
+  const zodiac = layout.zodiacSymbol(relativeYear)
+  const style = layout.zodiacStyle(relativeYear)
 
-  fill(colorWithAlpha(style.color, alpha))
-  stroke(colorWithAlpha(CONFIG.COLORS.MAIN, alpha))
+  fill(colorWithAlpha(style.color, style.alpha))
+  stroke(colorWithAlpha(CONFIG.COLORS.MAIN, style.alpha))
   vCanvas.strokeWeight(0.007)
   rectMode(CENTER)
   vCanvas.rect(0, 0, style.nBoxSize, style.nBoxSize)
@@ -537,7 +546,7 @@ function drawZodiac(relativeYear) {
   drawText(zodiac, {
     size: style.nTextSize,
     align: [CENTER, CENTER],
-    color: colorWithAlpha(CONFIG.COLORS.BACK_GROUND, alpha),
+    color: colorWithAlpha(CONFIG.COLORS.BACK_GROUND, style.alpha),
     style: BOLD
   })
 }
