@@ -30,21 +30,26 @@ This project follows these core principles:
 ### Implementation Process
 
 1. **Explicit Approval Required**: Do NOT execute any code changes until the implementation plan is approved.
-2. **Verified Editing Protocol**:
+2. **Plan Classification**: At the beginning of each implementation plan (`implementation_plan.md`), you MUST explicitly categorize the change as one of the following:
+   - **[Behavioral Change]**: Features, bug fixes, or visual adjustments that change how the app behaves or looks.
+   - **[Structural Change (Refactoring)]**: Internal code cleanup or reorganization with ZERO change to external behavior or appearance.
+3. **Verified Editing Protocol**:
    - **Strict Source Review (Side-Effect Check)**: After any modification, you MUST use `view_file` to confirm:
      - a) All planned changes were applied.
      - b) **Unintended deletions or side-effects have NOT occurred in surrounding code.**
      - c) If critical classes or functions were near the edit range, confirm their existence via `grep_search` or `outline`.
    - **Atomic Edits**: Avoid "Mega-Chunks". Prefer multiple small, focused replacement chunks over a single large block to minimize over-inclusion errors.
    - **Immediate Stop on Tool Failure**: If a replacement tool fails, STOP immediately and report to the user.
-3. **Artifact Language**: All user-facing artifacts (`implementation_plan.md`, `discussion.md`, `walkthrough.md`) MUST be provided in Japanese.
-4. **Code Comments**: Do not write about the history in comments. Describe the current intent concisely.
+4. **Artifact Language**: All user-facing artifacts (`implementation_plan.md`, `discussion.md`, `walkthrough.md`) MUST be provided in Japanese.
+5. **Code Comments**: Do not write about the history in comments. Describe the current intent concisely.
 
 ### Refactoring & Architecture
 
 1. Follow "Simplicity First" and "YAGNI".
 2. Improvements should be made in small, meaningful phases with user approval.
-3. When a discussion with expert personas (Martin Fowler, Kent Beck, t-wada, Uncle Bob) is required:
+3. **Behavioral Integrity**: When performing a [Structural Change], AI MUST verify that external behavior remains 100% unchanged. You MUST include a declaration in the plan: "I have self-reviewed that external behavior will remain 100% unchanged."
+   - Any intended behavior changes or bug fixes MUST be separated into a different task labeled as [Behavioral Change].
+4. When a discussion with expert personas (Martin Fowler, Kent Beck, t-wada, Uncle Bob) is required:
    - Use a single artifact file named `discussion.md`.
    - **Overwrite** the content of `discussion.md` to keep it focused.
    - Present only the summary or final conclusion in the chat (in Japanese).
