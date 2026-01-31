@@ -170,7 +170,7 @@ class Layout {
    */
   _getYearLabelPosition(relativeYear) {
     const angle = this.getZodiacAngle(relativeYear)
-    const pos = this.getZodiacPosition(angle)
+    const pos = this.zodiacOrbit(angle)
     const style = this.getZodiacStyle(angle)
 
     const offset = style.nBoxSize / 2
@@ -203,17 +203,24 @@ class Layout {
   }
 
   /**
-   * その年の干支を描画するための全状態（座標、スタイル、不透明度）を返す
+   * その年の干支を表示する座標（nx, ny）を返す
    */
-  getZodiacState(relativeYear) {
+  zodiacPosition(relativeYear) {
+    const angle = this._getCurrentZodiacAngle(relativeYear)
+    return this.zodiacOrbit(angle)
+  }
+
+  /**
+   * その年の干支を描画するためのメタデータ（記号、スタイル、不透明度）を返す
+   */
+  zodiacContext(relativeYear) {
     const absoluteYear = this._targetYear - relativeYear
     const zodiac = this._getZodiacSymbol(absoluteYear)
     const angle = this._getCurrentZodiacAngle(relativeYear)
-    const pos = this.getZodiacPosition(angle)
     const style = this.getZodiacStyle(angle)
     const alpha = this._getZodiacAlpha(relativeYear)
 
-    return { zodiac, pos, style, alpha }
+    return { zodiac, style, alpha }
   }
 
   /**
@@ -229,7 +236,7 @@ class Layout {
     return 255
   }
 
-  getZodiacPosition(angle) {
+  zodiacOrbit(angle) {
     const pos = this.zodiac.position
     return {
       nx: pos.center.nx + cos(angle) * pos.radius.nx,
@@ -283,7 +290,7 @@ class Layout {
    */
   getNeedleVector() {
     const angle = this._getCurrentZodiacAngle(0)
-    const target = this.getZodiacPosition(angle)
+    const target = this.zodiacOrbit(angle)
     return {
       dx: (target.nx - this.needle.nx) * this.needle.lengthRatio,
       dy: (target.ny - this.needle.ny) * this.needle.lengthRatio
@@ -412,11 +419,11 @@ function draw() {
     relativeYear >= layout.futureDisplayLimit;
     relativeYear--
   ) {
-    const state = layout.getZodiacState(relativeYear)
+    const pos = layout.zodiacPosition(relativeYear)
 
     push()
-    vCanvas.translate(state.pos.nx, state.pos.ny)
-    drawZodiac(state)
+    vCanvas.translate(pos.nx, pos.ny)
+    drawZodiac(relativeYear)
     pop()
   }
 }
@@ -519,8 +526,8 @@ function drawFooter() {
   })
 }
 
-function drawZodiac(state) {
-  const { zodiac, style, alpha } = state
+function drawZodiac(relativeYear) {
+  const { zodiac, style, alpha } = layout.zodiacContext(relativeYear)
 
   fill(colorWithAlpha(style.color, alpha))
   stroke(colorWithAlpha(CONFIG.COLORS.MAIN, alpha))
