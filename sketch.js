@@ -289,8 +289,7 @@ class Layout {
    * 現在のアニメーション進捗に基づいた針の相対ベクトル（向き）を返す
    */
   getNeedleVector() {
-    const angle = this._getCurrentZodiacAngle(0)
-    const target = this.zodiacOrbit(angle)
+    const target = this.zodiacPosition(0)
     return {
       dx: (target.nx - this.needle.nx) * this.needle.lengthRatio,
       dy: (target.ny - this.needle.ny) * this.needle.lengthRatio
