@@ -140,8 +140,8 @@ class Layout {
     }
 
     // 西暦ラベル（Current/Previous）の座標
-    this.posCurrentYear = this._yearLabelPosition(0)
-    this.posPreviousYear = this._yearLabelPosition(1)
+    this.currentYearLabel = this._yearLabelPosition(0)
+    this.previousYearLabel = this._yearLabelPosition(1)
 
     // 5. Timeline Configuration (Master)
     this.futureDisplayLimit = -3 // 未来方向に何年分表示するか
@@ -396,12 +396,12 @@ function draw() {
   pop()
 
   push()
-  vCanvas.translate(layout.posCurrentYear.nx, layout.posCurrentYear.ny)
+  vCanvas.translate(layout.currentYearLabel.nx, layout.currentYearLabel.ny)
   drawCurrentYearLabel()
   pop()
 
   push()
-  vCanvas.translate(layout.posPreviousYear.nx, layout.posPreviousYear.ny)
+  vCanvas.translate(layout.previousYearLabel.nx, layout.previousYearLabel.ny)
   drawPreviousYearLabel()
   pop()
 
