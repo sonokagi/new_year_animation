@@ -168,7 +168,7 @@ class Layout {
   _yearLabelPosition(relativeYear) {
     const angle = this._zodiacBaseAngle(relativeYear)
     const pos = this._zodiacOrbit(angle)
-    const style = this._zodiacStyle(angle)
+    const style = this._morphedZodiacStyle(angle)
 
     const offset = style.nBoxSize / 2
     return {
@@ -216,7 +216,7 @@ class Layout {
 
   zodiacStyle(relativeYear) {
     const angle = this._zodiacAngle(relativeYear)
-    const style = this._zodiacStyle(angle)
+    const style = this._morphedZodiacStyle(angle)
     const alpha = this._zodiacAlpha(relativeYear)
 
     return {
@@ -249,28 +249,21 @@ class Layout {
   }
 
   /**
-   * 指定された角度が強調位置（highlightAngle）にどれだけ「近いか」を 0.0 ~ 1.0 で返す
+   * その角度における干支の完成されたスタイル（サイズ、色、近さ）を返す
+   * 近さを算出し、スタイルをモーフィング（変容）させる。
    */
-  _proximity(angle) {
-    const targetAngle = this._zodiacBaseAngle(0)
-    const dist = abs(angle - targetAngle)
+  _morphedZodiacStyle(angle) {
+    // 基準位置からの距離に基づき、変形の度合い（1.0〜0.0）を算出
+    const dist = abs(angle - this._zodiacBaseAngle(0))
+    let proximity = 1.0 - dist / this.zodiac.angle.spacing
 
-    // 強調範囲（隣の干支との間隔）より離れている場合は 0 (近さなし)
+    // 強調範囲（spacing）より離れている場合は 0
     if (dist >= this.zodiac.angle.spacing) {
-      return 0
+      proximity = 0
     }
 
-    // 近さに応じて 1.0 (中心) 〜 0.0 (境界) を線形に返す
-    return 1.0 - dist / this.zodiac.angle.spacing
-  }
-
-  /**
-   * その角度における干支の完成されたスタイル（サイズ、色、近さ）を返す
-   */
-  _zodiacStyle(angle) {
+    // 近さに応じてスタイルをモーフィング
     const style = this.zodiac.style
-    const proximity = this._proximity(angle)
-
     return {
       nBoxSize: lerp(style.normal.nBoxSize, style.highlight.nBoxSize, proximity),
       nTextSize: lerp(style.normal.nTextSize, style.highlight.nTextSize, proximity),
