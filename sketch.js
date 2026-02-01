@@ -191,7 +191,7 @@ class Layout {
    * 現在のアニメーション状態に基づき、メインとして表示すべき西暦（数値）を返す
    */
   displayedYearValue() {
-    return this._animator._running ? this._targetYear - 1 : this._targetYear
+    return this._animator.running ? this._targetYear - 1 : this._targetYear
   }
 
   /**
@@ -297,16 +297,16 @@ class Layout {
 class Animator {
   constructor() {
     this._progress = 1.0
-    this._running = false
+    this.running = false
   }
 
   play() {
     this._progress = 0.0
-    this._running = true
+    this.running = true
   }
 
   update() {
-    if (!this._running) return
+    if (!this.running) return
 
     // 目的地(1.0)に向かって、毎フレーム残りの距離の一定割合(SPEED)を詰める
     // これにより、到着直前にゆっくりになる滑らかな動き（Ease-Out）になる
@@ -317,7 +317,7 @@ class Animator {
     const THRESHOLD = 0.05
     if (1.0 - this._progress < THRESHOLD) {
       this._progress = 1.0
-      this._running = false
+      this.running = false
     }
   }
 
@@ -425,7 +425,7 @@ function draw() {
 }
 
 function mousePressed() {
-  if (animator._running) return
+  if (animator.running) return
   targetYear++
   updateLayout() // 最新の targetYear でレイアウトを更新
   animator.play()
