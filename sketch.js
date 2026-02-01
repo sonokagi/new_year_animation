@@ -120,10 +120,10 @@ class Layout {
         // キー: 相対年 (relativeYear), 値: 角度の補正度数
         adjustments: {
           0: -1.5, // 今年 (Current)
-          "-1": -4.5, // 来年 (Next)
-          "-2": -2.5, // 2年後
-          "-3": 0, // 3年後 (表示境界)
-          "-4": 2.0 // 4年後 (補間用予備)
+          1: -4.5, // 来年 (Next)
+          2: -2.5, // 2年後
+          3: 0, // 3年後 (表示境界)
+          4: 2.0 // 4年後 (補間用予備)
         }
       },
       style: {
@@ -166,11 +166,11 @@ class Layout {
 
     // 西暦ラベル（Current/Previous）の座標
     this.currentYearLabel = this._yearLabelPosition(0)
-    this.previousYearLabel = this._yearLabelPosition(1)
+    this.previousYearLabel = this._yearLabelPosition(-1)
 
     // 5. Timeline Configuration (Master)
-    this.futureDisplayLimit = -3 // 未来方向に何年分表示するか
-    this.pastDisplayLimit = 9 // 過去方向に何年分表示するか
+    this.futureDisplayLimit = 3 // 未来方向に何年分表示するか
+    this.pastDisplayLimit = -9 // 過去方向に何年分表示するか
 
     this.footer = {
       nx: -1.0 + this._margin,
@@ -207,7 +207,7 @@ class Layout {
    */
   _zodiacAngle(relativeYear) {
     return this._animator.interpolate(
-      this._zodiacBaseAngle(relativeYear - 1),
+      this._zodiacBaseAngle(relativeYear + 1),
       this._zodiacBaseAngle(relativeYear)
     )
   }
@@ -234,7 +234,7 @@ class Layout {
     const symbols = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
     const offset = 8 // 西暦0年の干支は(8:申)である
 
-    const absoluteYear = this._targetYear - relativeYear
+    const absoluteYear = this._targetYear + relativeYear
     const idx = (offset + absoluteYear) % symbols.length
     return symbols[idx]
   }
@@ -299,7 +299,8 @@ class Layout {
   _zodiacBaseAngle(relativeYear = 0) {
     const angle = this.zodiac.angle
     // 1. 論理的な「年」から直接座標（ベース角度）を算出
-    const baseAngle = angle.highlight + relativeYear * angle.spacing
+    // 未来(relativeYear > 0)を反時計回り(角度減少)方向に配置する
+    const baseAngle = angle.highlight - relativeYear * angle.spacing
 
     // 2. 直接論理年ベースの補正値を解決
     const adj = angle.adjustments[relativeYear] || 0
@@ -442,8 +443,8 @@ function draw() {
 
   for (
     let relativeYear = layout.pastDisplayLimit;
-    relativeYear >= layout.futureDisplayLimit;
-    relativeYear--
+    relativeYear <= layout.futureDisplayLimit;
+    relativeYear++
   ) {
     const pos = layout.zodiacPosition(relativeYear)
 
