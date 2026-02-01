@@ -1,3 +1,22 @@
+/**
+ * --- 年賀状干支アニメーション：設計思想 ---
+ *
+ * 本プロジェクトは「Simplicity First（単純さ優先）」と「関心の分離」を軸に、
+ * 以下の3層構造で構築されています：
+ *
+ * 1. Virtualization (VirtualCanvas):
+ *    物理的な画面レイアウトを「-1.0 〜 1.0」の比率座標に変換します。
+ *    これにより、デバイスの解像度に関わらず、数学的に直感的な配置が可能になります。
+ *
+ * 2. Logic & SSOT (Layout):
+ *    幾何学的計算（どこに何があるか）を全てこのクラスに集約します。
+ *    描画命令は一切持たず、ピュアな「真実の計算元」として機能します。
+ *
+ * 3. Animation State (Animator):
+ *    「目的地に向かう時間（0.0 〜 1.0）」の進捗のみを管理します。
+ *    Layout はこの進捗を受け取り、時間軸上の座標を計算し、描画関数へ渡します。
+ */
+
 /* --- CONFIGURATION --- */
 const CONFIG = {
   COLORS: {
@@ -17,6 +36,7 @@ const CONFIG = {
 
 /**
  * 画面サイズに対する比率ベースの座標系を提供し、1:1のアスペクト比を維持するクラス
+ * 職責：座標・スケーリングの専門家。比率を受け取りピクセルを返す。色の知識は持たない。
  */
 class VirtualCanvas {
   constructor(screenW, screenH) {
@@ -72,6 +92,11 @@ class VirtualCanvas {
   }
 }
 
+/**
+ * 全ての幾何学的配置と表示スタイルを計算し、一元管理するクラス (Single Source of Truth)
+ * 職責：配置の専門家。描画命令（fill, stroke等）は呼んではならない。
+ * 座標計算とスタイルのモーフィング（変容）の方針のみを解決する。
+ */
 class Layout {
   constructor(animator, targetYear) {
     this._animator = animator
@@ -294,6 +319,11 @@ class Layout {
   }
 }
 
+/**
+ * アニメーションの進捗状態を管理するクラス
+ * 職責：時間の専門家。ただひとつの進捗（progress）を Ease-Out で更新し続ける。
+ * 何が動くか（干支か針か）といった具体的な描画内容には関知しない。
+ */
 class Animator {
   constructor() {
     this._progress = 1.0
