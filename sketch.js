@@ -19,12 +19,6 @@
 
 /* --- CONFIGURATION --- */
 const CONFIG = {
-  COLORS: {
-    BACK_GROUND: 255, // 背景色 (白)
-    MAIN: 0, // メイン色（黒）
-    SUB: 120, // サブ色（グレー）
-    ACCENT: [255, 0, 0] // アクセント色（赤）
-  },
   VIRTUAL_CANVAS: {
     OCCUPANCY_W: 0.95, // 横方向の画面占有率
     OCCUPANCY_H: 0.75 // 縦方向の画面占有率
@@ -104,7 +98,15 @@ class Layout {
     // --- 内部幾何学パラメータ ---
     this._margin = 0.02 // 基本マージン（2%）
 
-    // 1. Zodiac (干支): レイアウト全体のアンカー
+    // 1. Colors: すべての色を [R, G, B, A] 形式の配列で管理
+    this.color = {
+      background: [255, 255, 255, 255], // 背景色 (白)
+      main: [0, 0, 0, 255], // メイン色（黒）
+      sub: [120, 120, 120, 255], // サブ色（グレー）
+      accent: [255, 0, 0, 255] // アクセント色（赤）
+    }
+
+    // 2. Zodiac (干支): レイアウト全体のアンカー
     this.zodiac = {
       position: {
         center: { nx: 1.2, ny: 0 }, // 干支配置の中心位置
@@ -130,30 +132,30 @@ class Layout {
         normal: {
           nBoxSize: 0.3,
           nTextSize: 0.24,
-          color: CONFIG.COLORS.SUB
+          color: this.color.sub
         },
         highlight: {
           nBoxSize: 0.6,
           nTextSize: 0.48,
-          color: CONFIG.COLORS.MAIN
+          color: this.color.main
         }
       }
     }
 
-    // 2. Indicators (指示器): 背面の赤い円弧や装飾
+    // 3. Indicators (指示器): 背面の赤い円弧や装飾
     this.indicators = {
       nx: this.zodiac.position.center.nx,
       ny: this.zodiac.position.center.ny
     }
 
-    // 3. Needle (針): アクティブな干支を指す赤い針
+    // 4. Needle (針): アクティブな干支を指す赤い針
     this.needle = {
       nx: 1.0 - this._margin * 4,
       ny: 0,
       lengthRatio: 0.65
     }
 
-    // 4. UI Elements: レイアウト全体の基準となるオフセットや枠
+    // 5. UI Elements: レイアウト全体の基準となるオフセットや枠
     this.offset = {
       nx: 0,
       ny: -0.24
@@ -168,7 +170,7 @@ class Layout {
     this.currentYearLabel = this._yearLabelPosition(0)
     this.previousYearLabel = this._yearLabelPosition(-1)
 
-    // 5. Timeline Configuration (Master)
+    // 6. Timeline Configuration (Master)
     this.futureDisplayLimit = 3 // 未来方向に何年分表示するか
     this.pastDisplayLimit = -9 // 過去方向に何年分表示するか
 
@@ -247,8 +249,15 @@ class Layout {
     return {
       nBoxSize: style.nBoxSize,
       nTextSize: style.nTextSize,
-      color: style.color,
-      alpha: alpha
+      // アルファ値を解決した完成済みの [R, G, B, A] 配列を返す
+      fillColor: [style.color[0], style.color[1], style.color[2], alpha],
+      strokeColor: [this.color.main[0], this.color.main[1], this.color.main[2], alpha],
+      textColor: [
+        this.color.background[0],
+        this.color.background[1],
+        this.color.background[2],
+        alpha
+      ]
     }
   }
 
@@ -292,7 +301,13 @@ class Layout {
     return {
       nBoxSize: lerp(style.normal.nBoxSize, style.highlight.nBoxSize, proximity),
       nTextSize: lerp(style.normal.nTextSize, style.highlight.nTextSize, proximity),
-      color: lerp(style.normal.color, style.highlight.color, proximity)
+      // 色のモーフィング。結果として [R, G, B, 255] 形式を維持する。
+      color: [
+        lerp(this.color.sub[0], this.color.main[0], proximity),
+        lerp(this.color.sub[1], this.color.main[1], proximity),
+        lerp(this.color.sub[2], this.color.main[2], proximity),
+        255
+      ]
     }
   }
 
@@ -398,7 +413,7 @@ function updateLayout() {
 function draw() {
   animator.update()
 
-  background(CONFIG.COLORS.BACK_GROUND)
+  background(layout.color.background)
 
   // 1. VirtualCanvas: Establish (0,0) at screen center
   vCanvas.setup()
@@ -471,13 +486,13 @@ function drawIndicators() {
 
   // 1. Red Arc
   noFill()
-  stroke(CONFIG.COLORS.ACCENT)
+  stroke(layout.color.accent)
   vCanvas.strokeWeight(0.01)
   // Main Arc: 101.5 to 228 degrees
   vCanvas.arc(radius.x * 2, radius.y * 2, 101.5, 228)
 
   // 2. Decorative Dots
-  fill(CONFIG.COLORS.ACCENT)
+  fill(layout.color.accent)
   noStroke()
   for (let i = 0; i < 4; i++) {
     // Start at 120deg, spaced by 35deg
@@ -492,7 +507,7 @@ function drawIndicators() {
 
 function drawOuterFrame() {
   noFill()
-  stroke(CONFIG.COLORS.MAIN)
+  stroke(layout.color.main)
   vCanvas.strokeWeight(0.007)
   rectMode(CORNER)
   vCanvas.rect(0, 0, layout.outerFrame.width, layout.outerFrame.height)
@@ -502,7 +517,7 @@ function drawNeedle() {
   const vector = layout.needleVector()
 
   push()
-  stroke(CONFIG.COLORS.ACCENT)
+  stroke(layout.color.accent)
   vCanvas.strokeWeight(0.05)
   strokeCap(ROUND)
   vCanvas.line(0, 0, vector.dx, vector.dy)
@@ -513,7 +528,7 @@ function drawHeader() {
   const config = {
     size: 0.24,
     align: [RIGHT, CENTER],
-    color: CONFIG.COLORS.MAIN,
+    color: layout.color.main,
     style: BOLDITALIC
   }
 
@@ -528,7 +543,7 @@ function drawCurrentYearLabel() {
   drawText(currentYear + ":", {
     size: 0.17,
     align: [RIGHT, BOTTOM],
-    color: CONFIG.COLORS.MAIN,
+    color: layout.color.main,
     style: NORMAL
   })
 }
@@ -539,7 +554,7 @@ function drawPreviousYearLabel() {
   drawText(previousYear + ":", {
     size: 0.1,
     align: [RIGHT, BOTTOM],
-    color: CONFIG.COLORS.SUB,
+    color: layout.color.sub,
     style: NORMAL
   })
 }
@@ -548,7 +563,7 @@ function drawFooter() {
   drawText("今年もよろしくお願いします。", {
     size: 0.07,
     align: [LEFT, BOTTOM],
-    color: CONFIG.COLORS.MAIN,
+    color: layout.color.main,
     style: NORMAL
   })
 }
@@ -557,8 +572,8 @@ function drawZodiac(relativeYear) {
   const zodiac = layout.zodiacSymbol(relativeYear)
   const style = layout.zodiacStyle(relativeYear)
 
-  fill(colorWithAlpha(style.color, style.alpha))
-  stroke(colorWithAlpha(CONFIG.COLORS.MAIN, style.alpha))
+  fill(style.fillColor)
+  stroke(style.strokeColor)
   vCanvas.strokeWeight(0.007)
   rectMode(CENTER)
   vCanvas.rect(0, 0, style.nBoxSize, style.nBoxSize)
@@ -566,7 +581,7 @@ function drawZodiac(relativeYear) {
   drawText(zodiac, {
     size: style.nTextSize,
     align: [CENTER, CENTER],
-    color: colorWithAlpha(CONFIG.COLORS.BACK_GROUND, style.alpha),
+    color: style.textColor,
     style: BOLD
   })
 }
@@ -584,15 +599,4 @@ function drawText(content, config) {
   textAlign(config.align[0], config.align[1])
   vCanvas.textSize(config.size)
   vCanvas.text(content, 0, 0)
-}
-
-// --- Global Helpers ---
-
-/**
- * Returns a p5.Color object with the specified opacity applied.
- */
-function colorWithAlpha(baseColor, opacity) {
-  const c = color(baseColor)
-  c.setAlpha(opacity)
-  return c
 }
