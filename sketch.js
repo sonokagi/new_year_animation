@@ -222,14 +222,6 @@ class Layout {
   }
 
   /**
-   * その年の干支を表示する座標（nx, ny）を返す
-   */
-  zodiacPosition(relativeYear) {
-    const angle = this._zodiacAngle(relativeYear)
-    return this._zodiacOrbit(angle)
-  }
-
-  /**
    * その年の干支を描画するためのメタデータ（記号、スタイル、不透明度）を返す
    */
   zodiacSymbol(relativeYear) {
@@ -373,6 +365,23 @@ class Animator {
       dy: (target.ny - layout.needle.ny) * layout.needle.lengthRatio
     }
   }
+
+  /**
+   * 特定の相対年に対する、現在のアニメーション進捗に基づいた座標を算出する
+   */
+  getZodiacPosition(relativeYear) {
+    return layout._zodiacOrbit(this._zodiacAngle(relativeYear))
+  }
+
+  /**
+   * アニメーション状態を考慮した、特定の相対年の干支の角度 [度]
+   */
+  _zodiacAngle(relativeYear) {
+    return this.interpolate(
+      layout._zodiacBaseAngle(relativeYear + 1),
+      layout._zodiacBaseAngle(relativeYear)
+    )
+  }
 }
 
 // Domain State
@@ -464,7 +473,7 @@ function draw() {
     relativeYear <= layout.futureDisplayLimit;
     relativeYear++
   ) {
-    const pos = layout.zodiacPosition(relativeYear)
+    const pos = animator.getZodiacPosition(relativeYear)
 
     push()
     vCanvas.translate(pos.nx, pos.ny)
