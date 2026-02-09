@@ -29,6 +29,7 @@ This project follows these core principles:
      - a) All planned changes were applied.
      - b) **Unintended deletions or side-effects have NOT occurred in surrounding code.**
      - c) If critical classes or functions were near the edit range, confirm their existence via `grep_search` or `outline`.
+   - **Pre-Implementation Usage Search**: Before deleting or renaming any function/method, you MUST search for ALL usages and list them in the implementation plan. Do NOT rely solely on `grep_search` results; cross-verify with `view_file` as `grep_search` may return incomplete results.
    - **Plan-to-Diff Review (Anti-Hallucination)**: After execution, you MUST compare the resulting diff (or tool output) against `implementation_plan.md`.
      - **Detection**: Check for "kindness-driven additions" or "statistical pattern completions" that were NOT in the plan.
      - **Action**: If unplanned code is found, revert/remove it immediately before proceeding to verification.

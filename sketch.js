@@ -92,8 +92,7 @@ class VirtualCanvas {
  * 座標計算とスタイルのモーフィング（変容）の方針のみを解決する。
  */
 class Layout {
-  constructor(animator, targetYear) {
-    this._animator = animator
+  constructor(targetYear) {
     this._targetYear = targetYear
     // --- 内部幾何学パラメータ ---
     this._margin = 0.02 // 基本マージン（2%）
@@ -202,13 +201,6 @@ class Layout {
       nx: pos.nx - offset - this._margin,
       ny: pos.ny + offset
     }
-  }
-
-  /**
-   * 現在のアニメーション状態に基づき、メインとして表示すべき西暦（数値）を返す
-   */
-  displayedYearValue() {
-    return this._animator.running ? this._targetYear - 1 : this._targetYear
   }
 
   /**
@@ -375,6 +367,13 @@ class Animator {
     }
     return 255
   }
+
+  /**
+   * 現在のアニメーション状態に基づき、表示すべき西暦（数値）を返す
+   */
+  getDisplayedYear() {
+    return this.running ? targetYear - 1 : targetYear
+  }
 }
 
 // Domain State
@@ -412,7 +411,7 @@ function windowResized() {
  */
 function updateLayout() {
   vCanvas = new VirtualCanvas(width, height)
-  layout = new Layout(animator, targetYear)
+  layout = new Layout(targetYear)
 }
 
 function draw() {
@@ -543,7 +542,7 @@ function drawHeader() {
 }
 
 function drawCurrentYearLabel() {
-  const currentYear = layout.displayedYearValue()
+  const currentYear = animator.getDisplayedYear()
 
   drawText(currentYear + ":", {
     size: 0.17,
@@ -554,7 +553,7 @@ function drawCurrentYearLabel() {
 }
 
 function drawPreviousYearLabel() {
-  const previousYear = layout.displayedYearValue() - 1
+  const previousYear = animator.getDisplayedYear() - 1
 
   drawText(previousYear + ":", {
     size: 0.1,
