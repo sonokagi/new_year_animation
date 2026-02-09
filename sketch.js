@@ -92,8 +92,7 @@ class VirtualCanvas {
  * 座標計算とスタイルのモーフィング（変容）の方針のみを解決する。
  */
 class Layout {
-  constructor(targetYear) {
-    this._targetYear = targetYear
+  constructor() {
     // --- 内部幾何学パラメータ ---
     this._margin = 0.02 // 基本マージン（2%）
 
@@ -210,7 +209,7 @@ class Layout {
     const symbols = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
     const offset = 8 // 西暦0年の干支は(8:申)である
 
-    const absoluteYear = this._targetYear + relativeYear
+    const absoluteYear = targetYear + relativeYear
     const idx = (offset + absoluteYear) % symbols.length
     return symbols[idx]
   }
@@ -411,7 +410,7 @@ function windowResized() {
  */
 function updateLayout() {
   vCanvas = new VirtualCanvas(width, height)
-  layout = new Layout(targetYear)
+  layout = new Layout()
 }
 
 function draw() {
@@ -477,7 +476,7 @@ function draw() {
 function mousePressed() {
   if (animator.running) return
   targetYear++
-  updateLayout() // 最新の targetYear でレイアウトを更新
+  updateLayout()
   animator.play()
 }
 
