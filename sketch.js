@@ -205,16 +205,6 @@ class Layout {
   }
 
   /**
-   * 現在のアニメーション進捗に基づいた干支の角度を取得する
-   */
-  _zodiacAngle(relativeYear) {
-    return this._animator.interpolate(
-      this._zodiacBaseAngle(relativeYear + 1),
-      this._zodiacBaseAngle(relativeYear)
-    )
-  }
-
-  /**
    * 現在のアニメーション状態に基づき、メインとして表示すべき西暦（数値）を返す
    */
   displayedYearValue() {
@@ -222,7 +212,7 @@ class Layout {
   }
 
   /**
-   * その年の干支を描画するためのメタデータ（記号、スタイル、不透明度）を返す
+   * その年の干支を描画するための記号を返す
    */
   zodiacSymbol(relativeYear) {
     const symbols = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
@@ -231,39 +221,6 @@ class Layout {
     const absoluteYear = this._targetYear + relativeYear
     const idx = (offset + absoluteYear) % symbols.length
     return symbols[idx]
-  }
-
-  zodiacStyle(relativeYear) {
-    const angle = this._zodiacAngle(relativeYear)
-    const style = this._morphedZodiacStyle(angle)
-    const alpha = this._zodiacAlpha(relativeYear)
-
-    return {
-      nBoxSize: style.nBoxSize,
-      nTextSize: style.nTextSize,
-      // アルファ値を解決した完成済みの [R, G, B, A] 配列を返す
-      fillColor: [style.color[0], style.color[1], style.color[2], alpha],
-      strokeColor: [this.color.main[0], this.color.main[1], this.color.main[2], alpha],
-      textColor: [
-        this.color.background[0],
-        this.color.background[1],
-        this.color.background[2],
-        alpha
-      ]
-    }
-  }
-
-  /**
-   * ループ境界におけるフェード処理（アルファ値）を算出する
-   */
-  _zodiacAlpha(relativeYear) {
-    if (relativeYear === this.futureDisplayLimit) {
-      return this._animator.interpolate(0, 255) // Fade-in
-    }
-    if (relativeYear === this.pastDisplayLimit) {
-      return this._animator.interpolate(255, 0) // Fade-out
-    }
-    return 255
   }
 
   _zodiacOrbit(angle) {
@@ -367,13 +324,6 @@ class Animator {
   }
 
   /**
-   * 特定の相対年に対する、現在のアニメーション進捗に基づいた座標を算出する
-   */
-  getZodiacPosition(relativeYear) {
-    return layout._zodiacOrbit(this._zodiacAngle(relativeYear))
-  }
-
-  /**
    * アニメーション状態を考慮した、特定の相対年の干支の角度 [度]
    */
   _zodiacAngle(relativeYear) {
@@ -381,6 +331,49 @@ class Animator {
       layout._zodiacBaseAngle(relativeYear + 1),
       layout._zodiacBaseAngle(relativeYear)
     )
+  }
+
+  /**
+   * 特定の相対年に対する、現在のアニメーション進捗に基づいた座標を算出する
+   */
+  getZodiacPosition(relativeYear) {
+    const angle = this._zodiacAngle(relativeYear)
+    return layout._zodiacOrbit(angle)
+  }
+
+  /**
+   * その年の干支を描画するための完成されたスタイルを返す
+   */
+  getZodiacStyle(relativeYear) {
+    const angle = this._zodiacAngle(relativeYear)
+    const style = layout._morphedZodiacStyle(angle)
+    const alpha = this._zodiacAlpha(relativeYear)
+
+    return {
+      nBoxSize: style.nBoxSize,
+      nTextSize: style.nTextSize,
+      fillColor: [style.color[0], style.color[1], style.color[2], alpha],
+      strokeColor: [layout.color.main[0], layout.color.main[1], layout.color.main[2], alpha],
+      textColor: [
+        layout.color.background[0],
+        layout.color.background[1],
+        layout.color.background[2],
+        alpha
+      ]
+    }
+  }
+
+  /**
+   * ループ境界におけるフェード処理（アルファ値）を算出する
+   */
+  _zodiacAlpha(relativeYear) {
+    if (relativeYear === layout.futureDisplayLimit) {
+      return this.interpolate(0, 255) // Fade-in
+    }
+    if (relativeYear === layout.pastDisplayLimit) {
+      return this.interpolate(255, 0) // Fade-out
+    }
+    return 255
   }
 }
 
@@ -582,7 +575,7 @@ function drawFooter() {
 
 function drawZodiac(relativeYear) {
   const zodiac = layout.zodiacSymbol(relativeYear)
-  const style = layout.zodiacStyle(relativeYear)
+  const style = animator.getZodiacStyle(relativeYear)
 
   fill(style.fillColor)
   stroke(style.strokeColor)
