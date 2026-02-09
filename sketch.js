@@ -322,17 +322,6 @@ class Layout {
 
     return baseAngle + adj
   }
-
-  /**
-   * 現在のアニメーション進捗に基づいた針の相対ベクトル（向き）を返す
-   */
-  needleVector() {
-    const target = this.zodiacPosition(0)
-    return {
-      dx: (target.nx - this.needle.nx) * this.needle.lengthRatio,
-      dy: (target.ny - this.needle.ny) * this.needle.lengthRatio
-    }
-  }
 }
 
 /**
@@ -369,6 +358,20 @@ class Animator {
 
   interpolate(a, b) {
     return lerp(a, b, this._progress)
+  }
+
+  /**
+   * 現在のアニメーション進捗に基づいた針の相対ベクトル（向き）を算出する
+   */
+  getNeedleVector() {
+    // 針の「目的地」は、今年(relativeYear:0)の回転後座標
+    const angle = this.interpolate(layout._zodiacBaseAngle(1), layout._zodiacBaseAngle(0))
+    const target = layout._zodiacOrbit(angle)
+
+    return {
+      dx: (target.nx - layout.needle.nx) * layout.needle.lengthRatio,
+      dy: (target.ny - layout.needle.ny) * layout.needle.lengthRatio
+    }
   }
 }
 
@@ -514,7 +517,7 @@ function drawOuterFrame() {
 }
 
 function drawNeedle() {
-  const vector = layout.needleVector()
+  const vector = animator.getNeedleVector()
 
   push()
   stroke(layout.color.accent)
