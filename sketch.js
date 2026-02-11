@@ -387,9 +387,8 @@ function setup() {
 
   targetYear = new Date().getFullYear()
   animator = new Animator()
-
-  // Initial Layout Calculation
-  updateLayout()
+  layout = new Layout()
+  vCanvas = new VirtualCanvas(width, height)
 
   // Trigger initial animation
   animator.play()
@@ -397,15 +396,7 @@ function setup() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight)
-  updateLayout()
-}
-
-/**
- * Recalculates layout parameters based on current window size.
- */
-function updateLayout() {
   vCanvas = new VirtualCanvas(width, height)
-  layout = new Layout()
 }
 
 function draw() {
@@ -471,7 +462,6 @@ function draw() {
 function mousePressed() {
   if (animator.running) return
   targetYear++
-  updateLayout()
   animator.play()
 }
 
