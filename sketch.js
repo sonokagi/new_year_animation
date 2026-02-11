@@ -304,9 +304,8 @@ class Animator {
    * 現在のアニメーション進捗に基づいた針の相対ベクトル（向き）を算出する
    */
   getNeedleVector() {
-    // 針の「目的地」は、今年(relativeYear:0)の回転後座標
-    const angle = this.interpolate(layout._zodiacBaseAngle(1), layout._zodiacBaseAngle(0))
-    const target = layout._zodiacOrbit(angle)
+    // 針は今年の干支の位置を指す
+    const target = this.getZodiacPosition(0)
 
     return {
       dx: (target.nx - layout.needle.nx) * layout.needle.lengthRatio,
@@ -338,7 +337,16 @@ class Animator {
   getZodiacStyle(relativeYear) {
     const angle = this._zodiacAngle(relativeYear)
     const style = layout._morphedZodiacStyle(angle)
-    const alpha = this._zodiacAlpha(relativeYear)
+
+    // フェード処理
+    let alpha
+    if (relativeYear === layout.futureDisplayLimit) {
+      alpha = this.interpolate(0, 255) // 新しい干支をフェードイン
+    } else if (relativeYear === layout.pastDisplayLimit) {
+      alpha = this.interpolate(255, 0) // 古い干支をフェードアウト
+    } else {
+      alpha = 255 // その他の干支は通常表示
+    }
 
     return {
       nBoxSize: style.nBoxSize,
@@ -352,19 +360,6 @@ class Animator {
         alpha
       ]
     }
-  }
-
-  /**
-   * ループ境界におけるフェード処理（アルファ値）を算出する
-   */
-  _zodiacAlpha(relativeYear) {
-    if (relativeYear === layout.futureDisplayLimit) {
-      return this.interpolate(0, 255) // Fade-in
-    }
-    if (relativeYear === layout.pastDisplayLimit) {
-      return this.interpolate(255, 0) // Fade-out
-    }
-    return 255
   }
 
   /**
