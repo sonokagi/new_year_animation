@@ -192,6 +192,7 @@ class Layout {
     }
   }
 
+  // 指定角度に対応する楕円軌道上の座標を返す
   _zodiacOrbit(angle) {
     const pos = this.zodiac.position
     return {
@@ -296,7 +297,7 @@ class Animator {
     }
   }
 
-  // アニメーション状態を考慮した、特定の相対年の干支の角度 [度]
+  // アニメーション前の位置(+1)から現在の位置へ補間した角度を返す
   _zodiacAngle(relativeYear) {
     return this.interpolate(
       layout._zodiacBaseAngle(relativeYear + 1),
@@ -304,17 +305,13 @@ class Animator {
     )
   }
 
-  /**
-   * 特定の相対年に対する、現在のアニメーション進捗に基づいた座標を算出する
-   */
+  // 特定の相対年に対する、アニメーション進捗に基づいた座標を算出する
   getZodiacPosition(relativeYear) {
     const angle = this._zodiacAngle(relativeYear)
     return layout._zodiacOrbit(angle)
   }
 
-  /**
-   * その年の干支を描画するための完成されたスタイルを返す
-   */
+  // その年の干支の完成されたスタイルを返す
   getZodiacStyle(relativeYear) {
     const angle = this._zodiacAngle(relativeYear)
     const style = layout._morphedZodiacStyle(angle)
@@ -343,9 +340,7 @@ class Animator {
     }
   }
 
-  /**
-   * 現在のアニメーション状態に基づき、表示すべき西暦（数値）を返す
-   */
+  // 現在のアニメーション状態に基づき、表示すべき西暦を返す
   getDisplayedYear() {
     return this.running ? targetYear - 1 : targetYear
   }
@@ -438,6 +433,7 @@ function draw() {
   }
 }
 
+// 干支ホイールの目印（弧とドット）を描画する
 function drawIndicators() {
   const radius = {
     nx: 1.36 * 1.25,
@@ -542,11 +538,7 @@ function drawZodiac(relativeYear) {
   })
 }
 
-/**
- * テキスト描画ヘルパー。常に (0, 0) に描画する。
- * @param {string} content - テキスト内容
- * @param {Object} config - 設定 {size: 比率, align: [h, v], color: 色, style: 書体}
- */
+// テキスト描画ヘルパー。常に (0, 0) に描画する。
 function drawText(content, config) {
   fill(config.color)
   noStroke()
