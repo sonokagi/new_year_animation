@@ -295,8 +295,8 @@ class Animator {
     const target = this.getZodiacPosition(0)
 
     return {
-      dx: (target.nx - layout.needle.nx) * layout.needle.lengthRatio,
-      dy: (target.ny - layout.needle.ny) * layout.needle.lengthRatio
+      nx: (target.nx - layout.needle.nx) * layout.needle.lengthRatio,
+      ny: (target.ny - layout.needle.ny) * layout.needle.lengthRatio
     }
   }
 
@@ -444,22 +444,22 @@ function draw() {
 
 function drawIndicators() {
   const radius = {
-    x: 1.36 * 1.25,
-    y: 1.36 * 0.75
+    nx: 1.36 * 1.25,
+    ny: 1.36 * 0.75
   }
 
   noFill()
   stroke(layout.color.accent)
   vCanvas.strokeWeight(0.01)
-  vCanvas.arc(radius.x * 2, radius.y * 2, 101.5, 228)
+  vCanvas.arc(radius.nx * 2, radius.ny * 2, 101.5, 228)
 
   fill(layout.color.accent)
   noStroke()
   for (let i = 0; i < 4; i++) {
-    const degree = 120 + i * 35
+    const angle = 120 + i * 35
 
     push()
-    vCanvas.translate(cos(degree) * radius.x, sin(degree) * radius.y)
+    vCanvas.translate(cos(angle) * radius.nx, sin(angle) * radius.ny)
     vCanvas.circle(0.06)
     pop()
   }
@@ -480,7 +480,7 @@ function drawNeedle() {
   stroke(layout.color.accent)
   vCanvas.strokeWeight(0.05)
   strokeCap(ROUND)
-  vCanvas.line(0, 0, vector.dx, vector.dy)
+  vCanvas.line(0, 0, vector.nx, vector.ny)
   pop()
 }
 
@@ -529,7 +529,7 @@ function drawFooter() {
 }
 
 function drawZodiac(relativeYear) {
-  const zodiac = layout.zodiacSymbol(relativeYear)
+  const symbol = layout.zodiacSymbol(relativeYear)
   const style = animator.getZodiacStyle(relativeYear)
 
   fill(style.fillColor)
@@ -538,7 +538,7 @@ function drawZodiac(relativeYear) {
   rectMode(CENTER)
   vCanvas.rect(0, 0, style.nBoxSize, style.nBoxSize)
 
-  drawText(zodiac, {
+  drawText(symbol, {
     size: style.nTextSize,
     align: [CENTER, CENTER],
     color: style.textColor,
