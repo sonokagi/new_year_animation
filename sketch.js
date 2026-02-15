@@ -102,6 +102,8 @@ class Layout {
     }
 
     this.zodiac = {
+      futureLimit: 3, // 未来方向に何年分表示するか
+      pastLimit: -9, // 過去方向に何年分表示するか
       position: {
         center: { nx: 1.2, ny: 0 }, // 干支配置の中心位置
         radius: {
@@ -111,7 +113,7 @@ class Layout {
       },
       angle: {
         spacing: 11, // 干支どうしの間隔（度数）
-        highlight: 133, // アクティブな干支を表示する基準角度
+        currentYear: 133, // 今年の干支が配置される基準角度
         // 干支の配置（角度）の微調整マップ
         // キー: 相対年 (relativeYear), 値: 角度の補正度数
         adjustments: {
@@ -123,15 +125,17 @@ class Layout {
         }
       },
       style: {
-        normal: {
-          nBoxSize: 0.3,
-          nTextSize: 0.24,
-          color: this.color.sub
-        },
-        highlight: {
+        current: {
+          // 今年の干支は強調表示
           nBoxSize: 0.6,
           nTextSize: 0.48,
           color: this.color.main
+        },
+        other: {
+          // その他の干支は通常表示
+          nBoxSize: 0.3,
+          nTextSize: 0.24,
+          color: this.color.sub
         }
       }
     }
@@ -160,9 +164,6 @@ class Layout {
     // 西暦ラベル（今年/前年）の座標
     this.currentYearLabel = this._yearLabelPosition(0)
     this.previousYearLabel = this._yearLabelPosition(-1)
-
-    this.futureDisplayLimit = 3 // 未来方向に何年分表示するか
-    this.pastDisplayLimit = -9 // 過去方向に何年分表示するか
 
     this.footer = {
       nx: -1.0 + this._margin,
@@ -214,8 +215,8 @@ class Layout {
     // 近さに応じてスタイルをモーフィング
     const style = this.zodiac.style
     return {
-      nBoxSize: lerp(style.normal.nBoxSize, style.highlight.nBoxSize, proximity),
-      nTextSize: lerp(style.normal.nTextSize, style.highlight.nTextSize, proximity),
+      nBoxSize: lerp(style.other.nBoxSize, style.current.nBoxSize, proximity),
+      nTextSize: lerp(style.other.nTextSize, style.current.nTextSize, proximity),
       // 色のモーフィング。結果として [R, G, B, 255] 形式を維持する。
       color: [
         lerp(this.color.sub[0], this.color.main[0], proximity),
@@ -230,7 +231,7 @@ class Layout {
     const angle = this.zodiac.angle
     // 1. 論理的な「年」から直接座標（ベース角度）を算出
     // 未来(relativeYear > 0)を反時計回り(角度減少)方向に配置する
-    const baseAngle = angle.highlight - relativeYear * angle.spacing
+    const baseAngle = angle.currentYear - relativeYear * angle.spacing
 
     // 2. 直接論理年ベースの補正値を解決
     const adj = angle.adjustments[relativeYear] || 0
@@ -325,9 +326,9 @@ class Animator {
 
     // フェード処理
     let alpha
-    if (relativeYear === layout.futureDisplayLimit) {
+    if (relativeYear === layout.zodiac.futureLimit) {
       alpha = this.interpolate(0, 255) // 新しい干支をフェードイン
-    } else if (relativeYear === layout.pastDisplayLimit) {
+    } else if (relativeYear === layout.zodiac.pastLimit) {
       alpha = this.interpolate(255, 0) // 古い干支をフェードアウト
     } else {
       alpha = 255 // その他の干支は通常表示
@@ -429,8 +430,8 @@ function draw() {
   pop()
 
   for (
-    let relativeYear = layout.pastDisplayLimit;
-    relativeYear <= layout.futureDisplayLimit;
+    let relativeYear = layout.zodiac.pastLimit;
+    relativeYear <= layout.zodiac.futureLimit;
     relativeYear++
   ) {
     const pos = animator.getZodiacPosition(relativeYear)
