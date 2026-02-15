@@ -17,7 +17,6 @@
  *    Layout はこの進捗を受け取り、時間軸上の座標を計算し、描画関数へ渡します。
  */
 
-/* --- CONFIGURATION --- */
 const CONFIG = {
   VIRTUAL_CANVAS: {
     OCCUPANCY_W: 0.95, // 横方向の画面占有率
@@ -93,10 +92,9 @@ class VirtualCanvas {
  */
 class Layout {
   constructor() {
-    // --- 内部幾何学パラメータ ---
     this._margin = 0.02 // 基本マージン（2%）
 
-    // 1. Colors: すべての色を [R, G, B, A] 形式の配列で管理
+    // すべての色を [R, G, B, A] 形式の配列で管理
     this.color = {
       background: [255, 255, 255, 255], // 背景色 (白)
       main: [0, 0, 0, 255], // メイン色（黒）
@@ -104,7 +102,6 @@ class Layout {
       accent: [255, 0, 0, 255] // アクセント色（赤）
     }
 
-    // 2. Zodiac (干支): レイアウト全体のアンカー
     this.zodiac = {
       position: {
         center: { nx: 1.2, ny: 0 }, // 干支配置の中心位置
@@ -140,20 +137,17 @@ class Layout {
       }
     }
 
-    // 3. Indicators (指示器): 背面の赤い円弧や装飾
     this.indicators = {
       nx: this.zodiac.position.center.nx,
       ny: this.zodiac.position.center.ny
     }
 
-    // 4. Needle (針): アクティブな干支を指す赤い針
     this.needle = {
       nx: 1.0 - this._margin * 4,
       ny: 0,
       lengthRatio: 0.65
     }
 
-    // 5. UI Elements: レイアウト全体の基準となるオフセットや枠
     this.offset = {
       nx: 0,
       ny: -0.24
@@ -168,7 +162,6 @@ class Layout {
     this.currentYearLabel = this._yearLabelPosition(0)
     this.previousYearLabel = this._yearLabelPosition(-1)
 
-    // 6. Timeline Configuration (Master)
     this.futureDisplayLimit = 3 // 未来方向に何年分表示するか
     this.pastDisplayLimit = -9 // 過去方向に何年分表示するか
 
@@ -185,11 +178,8 @@ class Layout {
     }
   }
 
-  // POSITION HELPERS
-  /**
-   * 指定した相対年に対する西暦ラベルの配置座標を返す
-   * (干支の箱の左下隅を基準とするポリシーを定義)
-   */
+  // 指定した相対年に対する西暦ラベルの配置座標を返す
+  // (干支の箱の左下隅を基準とするポリシーを定義)
   _yearLabelPosition(relativeYear) {
     const angle = this._zodiacBaseAngle(relativeYear)
     const pos = this._zodiacOrbit(angle)
@@ -222,10 +212,8 @@ class Layout {
     }
   }
 
-  /**
-   * その角度における干支の完成されたスタイル（サイズ、色、近さ）を返す
-   * 近さを算出し、スタイルをモーフィング（変容）させる。
-   */
+  // その角度における干支の完成されたスタイル（サイズ、色、近さ）を返す
+  // 近さを算出し、スタイルをモーフィング（変容）させる。
   _morphedZodiacStyle(angle) {
     // 基準位置からの距離に基づき、変形の度合い（1.0〜0.0）を算出
     const dist = abs(angle - this._zodiacBaseAngle(0))
@@ -313,9 +301,7 @@ class Animator {
     }
   }
 
-  /**
-   * アニメーション状態を考慮した、特定の相対年の干支の角度 [度]
-   */
+  // アニメーション状態を考慮した、特定の相対年の干支の角度 [度]
   _zodiacAngle(relativeYear) {
     return this.interpolate(
       layout._zodiacBaseAngle(relativeYear + 1),
@@ -370,13 +356,8 @@ class Animator {
   }
 }
 
-// Domain State
 let targetYear
-
-// Animation State
 let animator
-
-// Layout State
 let vCanvas
 let layout
 
@@ -390,7 +371,6 @@ function setup() {
   layout = new Layout()
   vCanvas = new VirtualCanvas(width, height)
 
-  // Trigger initial animation
   animator.play()
 }
 
@@ -404,10 +384,8 @@ function draw() {
 
   background(layout.color.background)
 
-  // 1. VirtualCanvas: Establish (0,0) at screen center
   vCanvas.setup()
 
-  // 2. Layout: Apply compositional offset
   vCanvas.translate(layout.offset.nx, layout.offset.ny)
 
   push()
@@ -466,24 +444,19 @@ function mousePressed() {
 }
 
 function drawIndicators() {
-  // Shared Geometry
   const radius = {
     x: 1.36 * 1.25,
     y: 1.36 * 0.75
   }
 
-  // 1. Red Arc
   noFill()
   stroke(layout.color.accent)
   vCanvas.strokeWeight(0.01)
-  // Main Arc: 101.5 to 228 degrees
   vCanvas.arc(radius.x * 2, radius.y * 2, 101.5, 228)
 
-  // 2. Decorative Dots
   fill(layout.color.accent)
   noStroke()
   for (let i = 0; i < 4; i++) {
-    // Start at 120deg, spaced by 35deg
     const degree = 120 + i * 35
 
     push()
@@ -575,8 +548,7 @@ function drawZodiac(relativeYear) {
 }
 
 /**
- * 独自のテキスト描画ヘルパー
- * (0, 0) に描画するため、配置には push/translate を使用することを推奨します。
+ * テキスト描画ヘルパー
  * @param {string} content - テキスト内容
  * @param {Object} config - 設定 {size: 比率, align: [h, v], color: 色, style: 書体}
  */
