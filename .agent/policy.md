@@ -17,6 +17,11 @@ This project follows these core principles:
 1. **Explicit Permission Required**: Git commits and merges MUST NOT be performed automatically. You MUST ask for and receive explicit permission from the user BEFORE executing a command that results in a commit.
    - **Two-Step Approval Principle**: "Approval for implementation" and "Approval for commit" are separate steps. "Implement" only permits code changes and verification, NOT committing.
    - **Re-confirmation after Verification**: After verification, always ask again if it is okay to commit.
+2. **Commit Message Format**: Use Conventional Commits in **English, single line**.
+   - Format: `type: short description` (lowercase, no period, no scope)
+   - Types: `feat` (new feature / behavior change), `refactor` (structural change, behavior unchanged), `fix` (bug fix), `docs` (comments or documentation only), `chore` (config / tooling)
+   - **No Phase/Step numbers.** Describe _what_ was done, not which step it belongs to.
+   - Body is optional. Use only when the subject line alone is insufficient.
 
 ### Implementation Process
 
