@@ -192,18 +192,6 @@ class Layout {
     }
   }
 
-  /**
-   * その年の干支を描画するための記号を返す
-   */
-  zodiacSymbol(relativeYear) {
-    const symbols = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
-    const offset = 8 // 西暦0年の干支は(8:申)である
-
-    const absoluteYear = targetYear + relativeYear
-    const idx = (offset + absoluteYear) % symbols.length
-    return symbols[idx]
-  }
-
   _zodiacOrbit(angle) {
     const pos = this.zodiac.position
     return {
@@ -249,6 +237,18 @@ class Layout {
     const adj = angle.adjustments[relativeYear] || 0
 
     return baseAngle + adj
+  }
+
+  /**
+   * その年の干支を描画するための記号を返す
+   */
+  zodiacSymbol(relativeYear) {
+    const symbols = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+    const offset = 8 // 西暦0年の干支は(8:申)である
+
+    const absoluteYear = targetYear + relativeYear
+    const idx = (offset + absoluteYear) % symbols.length
+    return symbols[idx]
   }
 }
 
@@ -358,8 +358,8 @@ class Animator {
 
 let targetYear
 let animator
-let vCanvas
 let layout
+let vCanvas
 
 function setup() {
   createCanvas(windowWidth, windowHeight)
@@ -377,6 +377,12 @@ function setup() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight)
   vCanvas = new VirtualCanvas(width, height)
+}
+
+function mousePressed() {
+  if (animator.running) return
+  targetYear++
+  animator.play()
 }
 
 function draw() {
@@ -435,12 +441,6 @@ function draw() {
     drawZodiac(relativeYear)
     pop()
   }
-}
-
-function mousePressed() {
-  if (animator.running) return
-  targetYear++
-  animator.play()
 }
 
 function drawIndicators() {
