@@ -8,13 +8,12 @@
  *    物理的な画面レイアウトを「-1.0 〜 1.0」の比率座標に変換します。
  *    これにより、デバイスの解像度に関わらず、数学的に直感的な配置が可能になります。
  *
- * 2. Logic & SSOT (Layout):
- *    幾何学的計算（どこに何があるか）を全てこのクラスに集約します。
- *    描画命令は一切持たず、ピュアな「真実の計算元」として機能します。
+ * 2. Layout（静的）:
+ *    幾何学的配置（座標・スタイル・色）の、時間に依存しない静的な値を提供します。
  *
- * 3. Animation State (Animator):
- *    「目的地に向かう時間（0.0 〜 1.0）」の進捗のみを管理します。
- *    Layout はこの進捗を受け取り、時間軸上の座標を計算し、描画関数へ渡します。
+ * 3. Animator（動的）:
+ *    幾何学的配置の、アニメーション進捗に応じて変化する動的な値を提供します。
+ *    内部で Layout の静的な値を時間軸で補間しています。
  */
 
 const CONFIG = {
@@ -158,7 +157,7 @@ class Layout {
       ny: -0.2
     }
 
-    // 西暦ラベル（Current/Previous）の座標
+    // 西暦ラベル（今年/前年）の座標
     this.currentYearLabel = this._yearLabelPosition(0)
     this.previousYearLabel = this._yearLabelPosition(-1)
 
@@ -548,7 +547,7 @@ function drawZodiac(relativeYear) {
 }
 
 /**
- * テキスト描画ヘルパー
+ * テキスト描画ヘルパー。常に (0, 0) に描画する。
  * @param {string} content - テキスト内容
  * @param {Object} config - 設定 {size: 比率, align: [h, v], color: 色, style: 書体}
  */
