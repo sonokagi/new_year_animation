@@ -200,8 +200,7 @@ class Layout {
     }
   }
 
-  // その角度における干支の完成されたスタイル（サイズ、色、近さ）を返す
-  // 近さを算出し、スタイルをモーフィング（変容）させる。
+  // 基準位置からの近さに応じて、スタイル（サイズ・色）をモーフィングして返す
   _morphedZodiacStyle(angle) {
     // 基準位置からの距離に基づき、変形の度合い（1.0〜0.0）を算出
     const dist = abs(angle - this._zodiacBaseAngle(0))
@@ -239,9 +238,7 @@ class Layout {
     return baseAngle + adj
   }
 
-  /**
-   * その年の干支を描画するための記号を返す
-   */
+  // 指定された相対年に対応する干支の記号を返す
   zodiacSymbol(relativeYear) {
     const symbols = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
     const offset = 8 // 西暦0年の干支は(8:申)である
@@ -254,8 +251,8 @@ class Layout {
 
 /**
  * アニメーションの進捗状態を管理するクラス
- * 職責：時間の専門家。ただひとつの進捗（progress）を Ease-Out で更新し続ける。
- * 何が動くか（干支か針か）といった具体的な描画内容には関知しない。
+ * 職責：時間の専門家。進捗（progress）を Ease-Out で更新し、
+ * Layout の静的な値を補間して動的な座標・スタイルを提供する。
  */
 class Animator {
   constructor() {
@@ -288,9 +285,7 @@ class Animator {
     return lerp(a, b, this._progress)
   }
 
-  /**
-   * 現在のアニメーション進捗に基づいた針の相対ベクトル（向き）を算出する
-   */
+  // 針の根元から先端への変位ベクトルを算出する
   getNeedleVector() {
     // 針は今年の干支の位置を指す
     const target = this.getZodiacPosition(0)
