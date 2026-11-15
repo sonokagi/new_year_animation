@@ -23,7 +23,15 @@ const CONFIG = {
   },
   ANIMATION: {
     SPEED: 0.1 // アニメーション速度（追従率: 0.05〜0.2程度で調整）
+  },
+  MOURNING: {
+    START: Date.parse("2026-11-01T00:00:00+09:00"),
+    END: Date.parse("2027-02-01T00:00:00+09:00")
   }
+}
+
+function isMourningPeriod(now) {
+  return CONFIG.MOURNING.START <= now.getTime() && now.getTime() < CONFIG.MOURNING.END
 }
 
 /**
@@ -90,16 +98,23 @@ class VirtualCanvas {
  * 座標計算とスタイルのモーフィング（変容）の方針のみを解決する。
  */
 class Layout {
-  constructor() {
+  constructor(mourning = false) {
     this._margin = 0.02 // 基本マージン（2%）
 
     // すべての色を [R, G, B, A] 形式の配列で管理
-    this.color = {
-      background: [255, 255, 255, 255], // 背景色 (白)
-      main: [0, 0, 0, 255], // メイン色（黒）
-      sub: [120, 120, 120, 255], // サブ色（グレー）
-      accent: [255, 0, 0, 255] // アクセント色（赤）
-    }
+    this.color = mourning
+      ? {
+          background: [250, 250, 250, 255],
+          main: [105, 105, 105, 255],
+          sub: [155, 155, 155, 255],
+          accent: [140, 140, 140, 255]
+        }
+      : {
+          background: [255, 255, 255, 255], // 背景色 (白)
+          main: [0, 0, 0, 255], // メイン色（黒）
+          sub: [120, 120, 120, 255], // サブ色（グレー）
+          accent: [255, 0, 0, 255] // アクセント色（赤）
+        }
 
     this.zodiac = {
       futureLimit: 3, // 未来方向に何年分表示するか
@@ -350,18 +365,21 @@ let targetYear
 let animator
 let layout
 let vCanvas
+let mourning
 
 function setup() {
   createCanvas(windowWidth, windowHeight)
   textFont("Noto Sans JP")
   angleMode(DEGREES)
 
-  targetYear = new Date().getFullYear()
+  const now = new Date()
+  mourning = isMourningPeriod(now)
+  targetYear = now.getFullYear()
   animator = new Animator()
-  layout = new Layout()
+  layout = new Layout(mourning)
   vCanvas = new VirtualCanvas(width, height)
 
-  animator.play()
+  if (!mourning) animator.play()
 }
 
 function windowResized() {
@@ -370,13 +388,13 @@ function windowResized() {
 }
 
 function mousePressed() {
-  if (animator.running) return
+  if (mourning || animator.running) return
   targetYear++
   animator.play()
 }
 
 function draw() {
-  animator.update()
+  if (!mourning) animator.update()
 
   background(layout.color.background)
 
@@ -477,6 +495,22 @@ function drawNeedle() {
 }
 
 function drawHeader() {
+  if (mourning) {
+    const config = {
+      size: 0.09,
+      align: [LEFT, TOP],
+      color: layout.color.main,
+      style: NORMAL
+    }
+
+    vCanvas.translate(-1.1, -0.3)
+    for (const line of ["喪中につき", "新年のご挨拶は", "控えさせていただきます"]) {
+      drawText(line, config)
+      vCanvas.translate(0, 0.16)
+    }
+    return
+  }
+
   const config = {
     size: 0.24,
     align: [RIGHT, CENTER],
@@ -512,7 +546,9 @@ function drawPreviousYearLabel() {
 }
 
 function drawFooter() {
-  drawText("今年もよろしくお願いします。", {
+  const message = mourning ? "今後ともよろしくお願いいたします" : "今年もよろしくお願いします。"
+
+  drawText(message, {
     size: 0.07,
     align: [LEFT, BOTTOM],
     color: layout.color.main,
