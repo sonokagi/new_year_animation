@@ -547,17 +547,9 @@ function drawPreviousYearLabel() {
 
 function drawFooter() {
   const message = mourning ? "今後ともよろしくお願いいたします" : "今年もよろしくお願いします。"
-  let size = 0.07
-
-  if (mourning) {
-    textStyle(NORMAL)
-    vCanvas.textSize(size)
-    const availableWidth = vCanvas.pixel(layout.outerFrame.width)
-    size *= min(1, availableWidth / textWidth(message))
-  }
 
   drawText(message, {
-    size,
+    size: 0.07,
     align: [LEFT, BOTTOM],
     color: layout.color.main,
     style: NORMAL
